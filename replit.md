@@ -27,12 +27,17 @@ PeppolFlow helps accounting teams monitor and improve Peppol readiness across th
 - `artifacts/peppol-flow/src/components/peppol-ui.tsx` — reusable product UI primitives
 - `artifacts/peppol-flow/src/lib/mock-data.ts` — typed dashboard data source for the first UI pass
 - `artifacts/peppol-flow/prisma/schema.prisma` — PostgreSQL multi-tenant persistence foundation
+- `artifacts/peppol-flow/prisma/seed.ts` — idempotent development seed data
+- `artifacts/peppol-flow/prisma/migrations/` — checked-in Prisma migrations
+- `artifacts/peppol-flow/prisma.config.ts` — Prisma schema, migration, and seed configuration
 - `artifacts/peppol-flow/src/index.css` — product theme, typography, motion, and responsive styles
 
 ## Architecture decisions
 
 - The first pass is intentionally mock-data driven so the information architecture can be validated before business rules and authentication are introduced.
 - Tenant ownership is represented at the persistence boundary through organizations and memberships; client records belong to an organization.
+- Operational records are organization-scoped, with companies owning readiness history and optional links from tasks and incidents.
+- Seed records use stable IDs and upserts so development seeding is safe to rerun.
 - Supporting routes share the same shell and use intentional empty states rather than pretending their workflows are complete.
 
 ## Product
@@ -46,7 +51,8 @@ The current release provides a dashboard-first SaaS shell for client readiness m
 
 ## Gotchas
 
-- Mock data is not persisted yet; the Prisma schema is ready for the next backend pass.
+- The UI still reads mock data; Phase 2 creates and seeds the persistence layer but intentionally does not add API integration.
+- Run database commands from the PeppolFlow package: `db:generate`, `db:migrate`, and `db:seed`.
 
 ## Pointers
 
