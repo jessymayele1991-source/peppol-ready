@@ -63,16 +63,16 @@ export type TrendPoint = { month: string; score: number };
 
 export const organization: Organization = {
   id: 'org_northstar_accounting',
-  name: 'Northstar Accounting',
+  name: 'Northstar Boekhouding',
   slug: 'northstar-accounting',
-  plan: 'Professional',
+  plan: 'Professioneel',
 };
 
 export const user: User = {
   id: 'usr-01',
   name: 'Elise Martin',
   email: 'elise@northstar.be',
-  role: 'Workspace owner',
+  role: 'Eigenaar van werkruimte',
   avatarInitials: 'EM',
 };
 

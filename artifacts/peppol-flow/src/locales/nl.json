@@ -1,0 +1,158 @@
+{
+  "meta": { "code": "nl", "name": "Nederlands" },
+  "common": {
+    "workspace": "Werkruimte",
+    "viewAll": "Alles bekijken",
+    "retry": "Opnieuw proberen",
+    "notConfigured": "Niet ingesteld",
+    "noBillingContact": "Geen facturatiecontact",
+    "workspaceIncident": "Incident in werkruimte",
+    "professionalWorkspace": "Professionele werkruimte",
+    "loading": "Laden",
+    "close": "Sluiten",
+    "more": "Meer",
+    "previous": "Vorige",
+    "next": "Volgende",
+    "previousSlide": "Vorige dia",
+    "nextSlide": "Volgende dia",
+    "pagination": "Paginanavigatie",
+    "previousPage": "Ga naar vorige pagina",
+    "nextPage": "Ga naar volgende pagina",
+    "morePages": "Meer pagina’s",
+    "breadcrumb": "Broodkruimelnavigatie",
+    "sidebar": "Zijbalk",
+    "sidebarDescription": "Toont de mobiele zijbalk.",
+    "toggleSidebar": "Zijbalk in- of uitklappen"
+  },
+  "nav": {
+    "monitor": "Monitoren",
+    "operate": "Beheren",
+    "workspace": "Werkruimte",
+    "dashboard": "Dashboard",
+    "clients": "Klanten",
+    "readiness": "Gereedheid",
+    "actions": "Acties",
+    "incidents": "Incidenten",
+    "reports": "Rapporten",
+    "users": "Gebruikers",
+    "settings": "Instellingen"
+  },
+  "topbar": {
+    "search": "Zoek klanten, incidenten…",
+    "notifications": "Meldingen",
+    "notificationMessage": "3 klantendossiers vragen vandaag aandacht.",
+    "profileSettings": "Profielinstellingen",
+    "signOut": "Afmelden",
+    "language": "Taal",
+    "openMenu": "Menu openen",
+    "closeMenu": "Menu sluiten"
+  },
+  "workspace": {
+    "switcherHint": "De werkruimtekiezer is klaar voor uitbreiding",
+    "helpTitle": "Hulp nodig?",
+    "helpDescription": "Onze Peppol-specialisten staan voor je klaar.",
+    "contactSupport": "Neem contact op"
+  },
+  "roles": { "owner": "Eigenaar van werkruimte" },
+  "dashboard": {
+    "pulse": "Werkruimteoverzicht",
+    "title": "Peppol-gereedheid in één oogopslag",
+    "subtitle": "Live en verklaarbare gereedheid binnen {{organization}}.",
+    "exportReport": "Rapport exporteren",
+    "kpi": {
+      "totalClients": "Totaal klanten",
+      "totalClientsNote": "Bedrijven in deze werkruimte",
+      "ready": "Peppol-gereed",
+      "networkShare": "{{percent}}% van het netwerk",
+      "actionRequired": "Actie vereist",
+      "actionRequiredNote": "Eén of meer actieve risico’s",
+      "highRisk": "Hoog risico",
+      "highRiskNote": "Kritieke blokkades gedetecteerd",
+      "notRegistered": "Niet geregistreerd",
+      "notRegisteredNote": "Peppol-registratie ontbreekt"
+    },
+    "distribution": {
+      "eyebrow": "Huidig netwerk",
+      "title": "Verdeling van gereedheid",
+      "averageScore": "gemiddelde score"
+    },
+    "trend": {
+      "eyebrow": "Gemiddelde score",
+      "title": "Gereedheidstrend",
+      "lastSixMonths": "Laatste 6 maanden",
+      "storedAssessments": "Opgeslagen beoordelingen",
+      "calculatedFrom": "Berekend op basis van opgeslagen gereedheidsbeoordelingen",
+      "points": "{{value}} ptn."
+    },
+    "actions": {
+      "eyebrow": "Gegenereerde risico’s",
+      "title": "Actiecentrum",
+      "openQueue": "Actiewachtrij openen"
+    },
+    "clients": {
+      "eyebrow": "{{count}} accounts",
+      "title": "Klantenoverzicht",
+      "filters": "Filters",
+      "all": "Alle klanten",
+      "sorted": "Gesorteerd op gereedheidsrisico",
+      "search": "Klanten zoeken",
+      "client": "Klant",
+      "package": "Pakket",
+      "status": "Status",
+      "score": "Score",
+      "checked": "Gecontroleerd",
+      "action": "Actie",
+      "reviewRisks": "Risico’s bekijken",
+      "view": "Bekijken",
+      "emptySearch": "Geen klanten gevonden voor deze zoekopdracht.",
+      "showing": "{{visible}} van {{total}} klanten getoond",
+      "clearSearch": "Zoekopdracht wissen"
+    },
+    "incidents": {
+      "eyebrow": "Laatste activiteit",
+      "title": "Recente incidenten",
+      "openMonitor": "Incidentenmonitor openen"
+    },
+    "loading": "Gereedheid van werkruimte wordt berekend…",
+    "errorTitle": "Gereedheidsgegevens zijn tijdelijk niet beschikbaar",
+    "errorDescription": "De engine kon deze werkruimte niet berekenen. Probeer het zo opnieuw."
+  },
+  "status": {
+    "READY": "Gereed",
+    "CONFIGURING": "In configuratie",
+    "AT_RISK": "Risico",
+    "NOT_REGISTERED": "Niet geregistreerd"
+  },
+  "risk": {
+    "NOT_REGISTERED": "Niet geregistreerd",
+    "MISSING_RECEIVING_ADDRESS": "Ontvangstadres ontbreekt",
+    "SOFTWARE_NOT_READY": "Software niet gereed",
+    "INVALID_CERTIFICATE": "Certificaat ongeldig",
+    "TEST_INVOICE_MISSING": "Validatie vereist controle",
+    "ASSESSMENT_MISSING": "Beoordeling ontbreekt",
+    "ASSESSMENT_STALE": "Beoordeling is verouderd",
+    "OPEN_CRITICAL_INCIDENT": "Kritiek incident open"
+  },
+  "incident": {
+    "incident_fjord_rejected": "Factuur geweigerd door access point",
+    "incident_noma_certificate": "Certificaat van endpoint verloopt binnenkort",
+    "incident_green_resolved": "Opzoeken van deelnemer vertraagd"
+  },
+  "placeholder": {
+    "tagline": "Een gerichte werkruimte voor teams die met zekerheid werken.",
+    "prepare": "Werkruimte voorbereiden",
+    "clients": { "eyebrow": "Klantenbestand", "title": "Je klantennetwerk is klaar om te verbinden", "description": "Na het importeren van klantendossiers kan je team hier elk Peppol-profiel zoeken, segmenteren en bekijken." },
+    "readiness": { "eyebrow": "Gereedheidsinzichten", "title": "Een scherper beeld krijgt vorm", "description": "Vergelijk klantgroepen, ontdek afwijkingen en begrijp wat gereedheidsscores tegenhoudt." },
+    "actions": { "eyebrow": "Actiewachtrij", "title": "Houd het werk in beweging", "description": "Geprioriteerde acties verschijnen hier met eigenaar, context en de beste volgende stap." },
+    "incidents": { "eyebrow": "Incidentenmonitor", "title": "Een rustige operationele dag", "description": "Deze ruimte is voorbereid op leveringsfouten, validatieproblemen en aflopende certificaten." },
+    "reports": { "eyebrow": "Rapportagestudio", "title": "Rapporten zonder wildgroei aan spreadsheets", "description": "Bouw terugkerende gereedheidsoverzichten voor klanten en belanghebbenden." },
+    "users": { "eyebrow": "Team van werkruimte", "title": "Breng je medewerkers samen", "description": "Nodig teamleden uit, wijs rollen toe en maak eigenaarschap zichtbaar." },
+    "settings": { "eyebrow": "Werkruimte-instellingen", "title": "Maak PeppolFlow van jou", "description": "Voorkeuren, integraties, meldingsregels en toegangsbeheer komen hier samen." }
+  },
+  "errors": {
+    "unexpectedTitle": "Er ging iets mis",
+    "unexpectedDescription": "Dit onderdeel ondervond een fout. De rest van de applicatie blijft werken.",
+    "notFoundTitle": "404 Pagina niet gevonden",
+    "notFoundDescription": "Deze pagina bestaat niet of is verplaatst."
+  }
+}
