@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "PeppolFlow"
+description = "A premium SaaS dashboard for accounting firms and companies to monitor Peppol readiness across their client portfolio, with readiness insights, action tracking, incidents, reports, and team administration."
+version = "1.0.0"
+id = "artifacts/peppol-flow"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24972
+
+[services.development]
+run = "pnpm --filter @workspace/peppol-flow run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/peppol-flow", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/peppol-flow/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24972"
+BASE_PATH = "/"
