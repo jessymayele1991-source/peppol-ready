@@ -1,6 +1,6 @@
-# [Project name]
+# PeppolFlow
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+PeppolFlow helps accounting teams monitor and improve Peppol readiness across their client network.
 
 ## Run & Operate
 
@@ -22,23 +22,31 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/peppol-flow/src/App.tsx` — routed application shell and workspace navigation
+- `artifacts/peppol-flow/src/pages/dashboard.tsx` — dashboard composition
+- `artifacts/peppol-flow/src/components/peppol-ui.tsx` — reusable product UI primitives
+- `artifacts/peppol-flow/src/lib/mock-data.ts` — typed dashboard data source for the first UI pass
+- `artifacts/peppol-flow/prisma/schema.prisma` — PostgreSQL multi-tenant persistence foundation
+- `artifacts/peppol-flow/src/index.css` — product theme, typography, motion, and responsive styles
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The first pass is intentionally mock-data driven so the information architecture can be validated before business rules and authentication are introduced.
+- Tenant ownership is represented at the persistence boundary through organizations and memberships; client records belong to an organization.
+- Supporting routes share the same shell and use intentional empty states rather than pretending their workflows are complete.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+The current release provides a dashboard-first SaaS shell for client readiness monitoring, including readiness KPIs, distribution and trend views, action prioritization, incident visibility, and a searchable client overview.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Use the uploaded dashboard screenshot as a visual reference without copying it exactly.
+- Prioritize premium enterprise SaaS polish and responsive behavior.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Mock data is not persisted yet; the Prisma schema is ready for the next backend pass.
 
 ## Pointers
 
