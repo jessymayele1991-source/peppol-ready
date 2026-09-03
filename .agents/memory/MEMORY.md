@@ -1,0 +1,1 @@
+- [Prisma configuration compatibility](prisma-config-compatibility.md) — this workspace’s Prisma version keeps the datasource URL in schema.prisma, not the newer config env helper.
