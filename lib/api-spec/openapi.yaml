@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: readiness
+    description: Peppol readiness scoring and dashboard operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,54 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /readiness/dashboard:
+    get:
+      operationId: getReadinessDashboard
+      tags: [readiness]
+      summary: Get readiness dashboard data
+      description: Returns organization-scoped readiness KPIs, trends, risks, incidents, and companies.
+      parameters:
+        - in: query
+          name: organizationId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Readiness dashboard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadinessDashboard"
+        "404":
+          description: Organization not found
+  /companies/{companyId}/readiness/calculate:
+    post:
+      operationId: calculateCompanyReadiness
+      tags: [readiness]
+      summary: Calculate company readiness
+      description: Calculates and persists a new readiness assessment from weighted Peppol criteria.
+      parameters:
+        - in: path
+          name: companyId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReadinessAssessmentInput"
+      responses:
+        "200":
+          description: Calculated readiness assessment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadinessAssessment"
+        "404":
+          description: Company not found
 components:
   schemas:
     HealthStatus:
@@ -33,4 +83,220 @@ components:
           type: string
       required:
         - status
+    PeppolStatus:
+      type: string
+      enum: [READY, CONFIGURING, AT_RISK, NOT_REGISTERED]
+    RiskSeverity:
+      type: string
+      enum: [info, warning, critical]
+    ReadinessAssessmentInput:
+      type: object
+      properties:
+        participantRegistered:
+          type: boolean
+        receivingAddressConfigured:
+          type: boolean
+        peppolCapableSoftware:
+          type: boolean
+        certificateValid:
+          type: boolean
+        successfulTestInvoice:
+          type: boolean
+        checkedAt:
+          type: string
+          format: date-time
+        source:
+          type: string
+          minLength: 1
+      required:
+        - participantRegistered
+        - receivingAddressConfigured
+        - peppolCapableSoftware
+        - certificateValid
+        - successfulTestInvoice
+    ReadinessFactor:
+      type: object
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        weight:
+          type: number
+        passed:
+          type: boolean
+        earnedPoints:
+          type: number
+        message:
+          type: string
+      required: [key, label, weight, passed, earnedPoints, message]
+    RiskIndicator:
+      type: object
+      properties:
+        code:
+          type: string
+        label:
+          type: string
+        severity:
+          $ref: "#/components/schemas/RiskSeverity"
+        message:
+          type: string
+        remediation:
+          type: string
+      required: [code, label, severity, message, remediation]
+    ReadinessAssessment:
+      type: object
+      properties:
+        companyId:
+          type: string
+        score:
+          type: number
+          minimum: 0
+          maximum: 100
+        status:
+          $ref: "#/components/schemas/PeppolStatus"
+        riskLevel:
+          $ref: "#/components/schemas/RiskSeverity"
+        factors:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReadinessFactor"
+        risks:
+          type: array
+          items:
+            $ref: "#/components/schemas/RiskIndicator"
+        calculatedAt:
+          type: string
+          format: date-time
+      required:
+        [companyId, score, status, riskLevel, factors, risks, calculatedAt]
+    DashboardKpis:
+      type: object
+      properties:
+        totalCompanies:
+          type: number
+        peppolReady:
+          type: number
+        actionRequired:
+          type: number
+        highRisk:
+          type: number
+        notRegistered:
+          type: number
+        averageScore:
+          type: number
+      required:
+        [totalCompanies, peppolReady, actionRequired, highRisk, notRegistered, averageScore]
+    ReadinessBreakdown:
+      type: object
+      properties:
+        ready:
+          type: number
+        configuring:
+          type: number
+        atRisk:
+          type: number
+        notRegistered:
+          type: number
+      required: [ready, configuring, atRisk, notRegistered]
+    ReadinessTrendPoint:
+      type: object
+      properties:
+        period:
+          type: string
+        label:
+          type: string
+        averageScore:
+          type: number
+      required: [period, label, averageScore]
+    DashboardAction:
+      type: object
+      properties:
+        code:
+          type: string
+        label:
+          type: string
+        count:
+          type: number
+        severity:
+          $ref: "#/components/schemas/RiskSeverity"
+      required: [code, label, count, severity]
+    DashboardIncident:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        companyId:
+          type: [string, "null"]
+        companyName:
+          type: [string, "null"]
+        severity:
+          $ref: "#/components/schemas/RiskSeverity"
+        status:
+          type: string
+        occurredAt:
+          type: string
+          format: date-time
+      required: [id, title, companyId, companyName, severity, status, occurredAt]
+    DashboardCompany:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: [string, "null"]
+        accountingPackage:
+          type: [string, "null"]
+        status:
+          $ref: "#/components/schemas/PeppolStatus"
+        score:
+          type: number
+        lastCheckedAt:
+          type: [string, "null"]
+          format: date-time
+        risks:
+          type: array
+          items:
+            $ref: "#/components/schemas/RiskIndicator"
+      required: [id, name, email, accountingPackage, status, score, lastCheckedAt, risks]
+    ReadinessDashboard:
+      type: object
+      properties:
+        organization:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+          required: [id, name]
+        generatedAt:
+          type: string
+          format: date-time
+        kpis:
+          $ref: "#/components/schemas/DashboardKpis"
+        breakdown:
+          $ref: "#/components/schemas/ReadinessBreakdown"
+        trend:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReadinessTrendPoint"
+        actions:
+          type: array
+          items:
+            $ref: "#/components/schemas/DashboardAction"
+        incidents:
+          type: array
+          items:
+            $ref: "#/components/schemas/DashboardIncident"
+        companies:
+          type: array
+          items:
+            $ref: "#/components/schemas/DashboardCompany"
+      required:
+        [organization, generatedAt, kpis, breakdown, trend, actions, incidents, companies]
 

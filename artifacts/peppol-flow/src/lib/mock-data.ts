@@ -62,9 +62,9 @@ export type ReadinessSnapshot = {
 export type TrendPoint = { month: string; score: number };
 
 export const organization: Organization = {
-  id: 'org-01',
-  name: 'Northstar Accountancy',
-  slug: 'northstar-accountancy',
+  id: 'org_northstar_accounting',
+  name: 'Northstar Accounting',
+  slug: 'northstar-accounting',
   plan: 'Professional',
 };
 
