@@ -1,7 +1,10 @@
 import { type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { ArrowUpRight, Check, ChevronDown, CircleAlert, Info, LoaderCircle } from 'lucide-react';
+import { useI18n } from '@/i18n/i18n';
 import { cn } from '@/lib/utils';
-import { type PeppolStatus, type Severity } from '@/lib/mock-data';
+import { type Severity } from '@/lib/mock-data';
+
+export type PeppolStatusCode = 'READY' | 'CONFIGURING' | 'AT_RISK' | 'NOT_REGISTERED';
 
 export function Button({
   className,
@@ -26,15 +29,16 @@ export function Button({
   );
 }
 
-export function Badge({ status, children }: { status?: PeppolStatus; children?: ReactNode }) {
-  const tone = status === 'Ready'
+export function Badge({ status, children }: { status?: PeppolStatusCode; children?: ReactNode }) {
+  const { t } = useI18n();
+  const tone = status === 'READY'
     ? 'bg-[hsl(157_56%_93%)] text-[hsl(159_58%_30%)]'
-    : status === 'Configuring'
+    : status === 'CONFIGURING'
       ? 'bg-[hsl(43_100%_93%)] text-[hsl(33_77%_37%)]'
-      : status === 'At risk'
+      : status === 'AT_RISK'
         ? 'bg-[hsl(4_100%_95%)] text-[hsl(3_69%_45%)]'
         : 'bg-[hsl(214_30%_94%)] text-[hsl(216_16%_45%)]';
-  return <span className={cn('inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold tracking-[.01em]', tone)}>{children ?? status}</span>;
+  return <span className={cn('inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold tracking-[.01em]', tone)}>{children ?? (status ? t(`status.${status}`) : null)}</span>;
 }
 
 export function SeverityIcon({ severity, size = 15 }: { severity: Severity; size?: number }) {
@@ -67,14 +71,8 @@ export function StatCard({ label, value, note, trend, icon, accent = 'teal', cla
   const accentStyle = { teal: 'bg-[hsl(157_56%_93%)] text-[hsl(159_58%_30%)]', amber: 'bg-[hsl(43_100%_93%)] text-[hsl(33_77%_37%)]', red: 'bg-[hsl(4_100%_95%)] text-[hsl(3_69%_45%)]', navy: 'bg-[hsl(214_35%_94%)] text-[hsl(218_45%_28%)]' }[accent];
   return (
     <div className={cn('card-surface relative min-h-[138px] rounded-xl p-5 transition-transform duration-200 hover:-translate-y-0.5', className)}>
-      <div className="flex items-start justify-between">
-        <p className="text-[11px] font-bold uppercase tracking-[.07em] text-[hsl(var(--muted-foreground))]">{label}</p>
-        <span className={cn('flex h-8 w-8 items-center justify-center rounded-lg', accentStyle)}>{icon}</span>
-      </div>
-      <div className="mt-4 flex items-end gap-2">
-        <span className="mono text-[28px] font-bold leading-none tracking-[-.06em] text-[hsl(var(--foreground))]">{value}</span>
-        {trend && <span className="mb-0.5 text-[11px] font-bold text-[hsl(var(--primary))]">{trend}</span>}
-      </div>
+      <div className="flex items-start justify-between"><p className="text-[11px] font-bold uppercase tracking-[.07em] text-[hsl(var(--muted-foreground))]">{label}</p><span className={cn('flex h-8 w-8 items-center justify-center rounded-lg', accentStyle)}>{icon}</span></div>
+      <div className="mt-4 flex items-end gap-2"><span className="mono text-[28px] font-bold leading-none tracking-[-.06em] text-[hsl(var(--foreground))]">{value}</span>{trend && <span className="mb-0.5 text-[11px] font-bold text-[hsl(var(--primary))]">{trend}</span>}</div>
       <p className="mt-2 text-xs text-[hsl(var(--muted-foreground))]">{note}</p>
     </div>
   );
@@ -84,7 +82,7 @@ export function EmptyState({ icon, title, description, action }: { icon?: ReactN
   return <div className="flex min-h-[400px] flex-col items-center justify-center px-6 py-16 text-center"><div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-[hsl(173_76%_34%/.09)] text-[hsl(var(--primary))]">{icon ?? <LoaderCircle size={25} />}</div><h2 className="text-lg font-bold text-[hsl(var(--foreground))]">{title}</h2><p className="mt-2 max-w-sm text-sm leading-6 text-[hsl(var(--muted-foreground))]">{description}</p>{action && <div className="mt-6">{action}</div>}</div>;
 }
 
-export function ViewAll({ children = 'View all', onClick = () => undefined }: { children?: ReactNode; onClick?: () => void }) {
+export function ViewAll({ children, onClick = () => undefined }: { children: ReactNode; onClick?: () => void }) {
   return <button onClick={onClick} data-testid="button-view-all" className="group inline-flex items-center gap-1 text-xs font-bold text-[hsl(var(--primary))] transition-colors hover:text-[hsl(173_76%_25%)]">{children}<ArrowUpRight size={13} className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" /></button>;
 }
 

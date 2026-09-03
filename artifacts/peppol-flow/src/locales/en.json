@@ -1,0 +1,32 @@
+{
+  "meta": { "code": "en", "name": "English" },
+  "common": { "workspace": "Workspace", "viewAll": "View all", "retry": "Try again", "notConfigured": "Not configured", "noBillingContact": "No billing contact", "workspaceIncident": "Workspace incident", "professionalWorkspace": "Professional workspace", "loading": "Loading", "close": "Close", "more": "More", "previous": "Previous", "next": "Next", "previousSlide": "Previous slide", "nextSlide": "Next slide", "pagination": "Pagination", "previousPage": "Go to previous page", "nextPage": "Go to next page", "morePages": "More pages", "breadcrumb": "Breadcrumb", "sidebar": "Sidebar", "sidebarDescription": "Displays the mobile sidebar.", "toggleSidebar": "Toggle sidebar" },
+  "nav": { "monitor": "Monitor", "operate": "Operate", "workspace": "Workspace", "dashboard": "Dashboard", "clients": "Clients", "readiness": "Readiness", "actions": "Actions", "incidents": "Incidents", "reports": "Reports", "users": "Users", "settings": "Settings" },
+  "topbar": { "search": "Search clients, incidents…", "notifications": "Notifications", "notificationMessage": "3 client records need attention today.", "profileSettings": "Profile settings", "signOut": "Sign out", "language": "Language", "openMenu": "Open menu", "closeMenu": "Close menu" },
+  "workspace": { "switcherHint": "The workspace switcher is ready for more", "helpTitle": "Need a hand?", "helpDescription": "Our Peppol specialists are one message away.", "contactSupport": "Contact support" },
+  "roles": { "owner": "Workspace owner" },
+  "dashboard": {
+    "pulse": "Workspace pulse", "title": "Peppol readiness at a glance", "subtitle": "Live, explainable readiness across {{organization}}.", "exportReport": "Export report",
+    "kpi": { "totalClients": "Total clients", "totalClientsNote": "Companies in this workspace", "ready": "Peppol ready", "networkShare": "{{percent}}% of the network", "actionRequired": "Action required", "actionRequiredNote": "One or more active risks", "highRisk": "High risk", "highRiskNote": "Critical blockers detected", "notRegistered": "Not registered", "notRegisteredNote": "Peppol registration missing" },
+    "distribution": { "eyebrow": "Current network", "title": "Readiness distribution", "averageScore": "average score" },
+    "trend": { "eyebrow": "Average score", "title": "Readiness trend", "lastSixMonths": "Last 6 months", "storedAssessments": "Stored assessments", "calculatedFrom": "Calculated from stored readiness assessments", "points": "{{value}} pts" },
+    "actions": { "eyebrow": "Generated risks", "title": "Action center", "openQueue": "Open action queue" },
+    "clients": { "eyebrow": "{{count}} accounts", "title": "Client overview", "filters": "Filters", "all": "All clients", "sorted": "Sorted by readiness risk", "search": "Search clients", "client": "Client", "package": "Package", "status": "Status", "score": "Score", "checked": "Checked", "action": "Action", "reviewRisks": "Review risks", "view": "View", "emptySearch": "No clients match that search.", "showing": "Showing {{visible}} of {{total}} clients", "clearSearch": "Clear search" },
+    "incidents": { "eyebrow": "Latest activity", "title": "Recent incidents", "openMonitor": "Open incident monitor" },
+    "loading": "Calculating workspace readiness…", "errorTitle": "Readiness data is temporarily unavailable", "errorDescription": "The engine could not calculate this workspace. Try again in a moment."
+  },
+  "status": { "READY": "Ready", "CONFIGURING": "Configuring", "AT_RISK": "At risk", "NOT_REGISTERED": "Not registered" },
+  "risk": { "NOT_REGISTERED": "Not registered", "MISSING_RECEIVING_ADDRESS": "Missing receiving address", "SOFTWARE_NOT_READY": "Software not ready", "INVALID_CERTIFICATE": "Certificate invalid", "TEST_INVOICE_MISSING": "Validation needs review", "ASSESSMENT_MISSING": "Assessment missing", "ASSESSMENT_STALE": "Assessment out of date", "OPEN_CRITICAL_INCIDENT": "Critical incident open" },
+  "incident": { "incident_fjord_rejected": "Invoice rejected by access point", "incident_noma_certificate": "Endpoint certificate expires soon", "incident_green_resolved": "Participant lookup delayed" },
+  "placeholder": {
+    "tagline": "A focused workspace for teams that work with certainty.", "prepare": "Prepare workspace",
+    "clients": { "eyebrow": "Client directory", "title": "Your client network is ready to connect", "description": "Once client records are imported, your team can search, segment, and inspect every Peppol profile here." },
+    "readiness": { "eyebrow": "Readiness intelligence", "title": "A sharper view is coming together", "description": "Compare client groups, spot drift, and understand what is holding scores back." },
+    "actions": { "eyebrow": "Action queue", "title": "Keep the queue moving", "description": "Prioritised work appears here with its owner, context, and next best step." },
+    "incidents": { "eyebrow": "Incident monitor", "title": "A quieter operational day", "description": "This space is prepared for delivery failures, validation issues, and expiring certificates." },
+    "reports": { "eyebrow": "Reporting studio", "title": "Reports, without spreadsheet sprawl", "description": "Build recurring readiness snapshots for clients and stakeholders." },
+    "users": { "eyebrow": "Workspace team", "title": "Bring your operators together", "description": "Invite teammates, assign roles, and make ownership visible." },
+    "settings": { "eyebrow": "Workspace settings", "title": "Make PeppolFlow yours", "description": "Preferences, integrations, notification rules, and access controls come together here." }
+  },
+  "errors": { "unexpectedTitle": "Something went wrong", "unexpectedDescription": "This part of the app hit an error. The rest of the app is still running.", "notFoundTitle": "404 Page not found", "notFoundDescription": "This page does not exist or has moved." }
+}

@@ -1,0 +1,32 @@
+{
+  "meta": { "code": "de", "name": "Deutsch" },
+  "common": { "workspace": "Arbeitsbereich", "viewAll": "Alle anzeigen", "retry": "Erneut versuchen", "notConfigured": "Nicht eingerichtet", "noBillingContact": "Kein Rechnungskontakt", "workspaceIncident": "Vorfall im Arbeitsbereich", "professionalWorkspace": "Professioneller Arbeitsbereich", "loading": "Laden", "close": "Schließen", "more": "Mehr", "previous": "Zurück", "next": "Weiter", "previousSlide": "Vorherige Folie", "nextSlide": "Nächste Folie", "pagination": "Seitennavigation", "previousPage": "Zur vorherigen Seite", "nextPage": "Zur nächsten Seite", "morePages": "Weitere Seiten", "breadcrumb": "Brotkrümelnavigation", "sidebar": "Seitenleiste", "sidebarDescription": "Zeigt die mobile Seitenleiste.", "toggleSidebar": "Seitenleiste umschalten" },
+  "nav": { "monitor": "Überwachen", "operate": "Verwalten", "workspace": "Arbeitsbereich", "dashboard": "Dashboard", "clients": "Kunden", "readiness": "Bereitschaft", "actions": "Aktionen", "incidents": "Vorfälle", "reports": "Berichte", "users": "Benutzer", "settings": "Einstellungen" },
+  "topbar": { "search": "Kunden, Vorfälle suchen…", "notifications": "Benachrichtigungen", "notificationMessage": "3 Kundendatensätze benötigen heute Aufmerksamkeit.", "profileSettings": "Profileinstellungen", "signOut": "Abmelden", "language": "Sprache", "openMenu": "Menü öffnen", "closeMenu": "Menü schließen" },
+  "workspace": { "switcherHint": "Der Arbeitsbereichswechsler ist bereit für mehr", "helpTitle": "Brauchen Sie Hilfe?", "helpDescription": "Unsere Peppol-Spezialisten helfen Ihnen gerne.", "contactSupport": "Support kontaktieren" },
+  "roles": { "owner": "Inhaber des Arbeitsbereichs" },
+  "dashboard": {
+    "pulse": "Arbeitsbereichsübersicht", "title": "Peppol-Bereitschaft auf einen Blick", "subtitle": "Live und nachvollziehbare Bereitschaft für {{organization}}.", "exportReport": "Bericht exportieren",
+    "kpi": { "totalClients": "Kunden gesamt", "totalClientsNote": "Unternehmen in diesem Arbeitsbereich", "ready": "Peppol-bereit", "networkShare": "{{percent}} % des Netzwerks", "actionRequired": "Aktion erforderlich", "actionRequiredNote": "Ein oder mehrere aktive Risiken", "highRisk": "Hohes Risiko", "highRiskNote": "Kritische Blockaden erkannt", "notRegistered": "Nicht registriert", "notRegisteredNote": "Peppol-Registrierung fehlt" },
+    "distribution": { "eyebrow": "Aktuelles Netzwerk", "title": "Bereitschaftsverteilung", "averageScore": "Durchschnittswert" },
+    "trend": { "eyebrow": "Durchschnittswert", "title": "Bereitschaftstrend", "lastSixMonths": "Letzte 6 Monate", "storedAssessments": "Gespeicherte Bewertungen", "calculatedFrom": "Aus gespeicherten Bereitschaftsbewertungen berechnet", "points": "{{value}} Pkt." },
+    "actions": { "eyebrow": "Erzeugte Risiken", "title": "Aktionszentrum", "openQueue": "Aktionswarteschlange öffnen" },
+    "clients": { "eyebrow": "{{count}} Konten", "title": "Kundenübersicht", "filters": "Filter", "all": "Alle Kunden", "sorted": "Nach Bereitschaftsrisiko sortiert", "search": "Kunden suchen", "client": "Kunde", "package": "Paket", "status": "Status", "score": "Wert", "checked": "Geprüft", "action": "Aktion", "reviewRisks": "Risiken prüfen", "view": "Anzeigen", "emptySearch": "Keine Kunden entsprechen dieser Suche.", "showing": "{{visible}} von {{total}} Kunden angezeigt", "clearSearch": "Suche löschen" },
+    "incidents": { "eyebrow": "Letzte Aktivität", "title": "Aktuelle Vorfälle", "openMonitor": "Vorfallmonitor öffnen" },
+    "loading": "Bereitschaft des Arbeitsbereichs wird berechnet…", "errorTitle": "Bereitschaftsdaten sind vorübergehend nicht verfügbar", "errorDescription": "Die Engine konnte diesen Arbeitsbereich nicht berechnen. Versuchen Sie es gleich erneut."
+  },
+  "status": { "READY": "Bereit", "CONFIGURING": "In Einrichtung", "AT_RISK": "Gefährdet", "NOT_REGISTERED": "Nicht registriert" },
+  "risk": { "NOT_REGISTERED": "Nicht registriert", "MISSING_RECEIVING_ADDRESS": "Empfangsadresse fehlt", "SOFTWARE_NOT_READY": "Software nicht bereit", "INVALID_CERTIFICATE": "Zertifikat ungültig", "TEST_INVOICE_MISSING": "Validierung muss geprüft werden", "ASSESSMENT_MISSING": "Bewertung fehlt", "ASSESSMENT_STALE": "Bewertung ist veraltet", "OPEN_CRITICAL_INCIDENT": "Kritischer Vorfall offen" },
+  "incident": { "incident_fjord_rejected": "Rechnung vom Access Point abgelehnt", "incident_noma_certificate": "Endpoint-Zertifikat läuft bald ab", "incident_green_resolved": "Teilnehmersuche verzögert" },
+  "placeholder": {
+    "tagline": "Ein fokussierter Arbeitsbereich für Teams, die mit Sicherheit arbeiten.", "prepare": "Arbeitsbereich vorbereiten",
+    "clients": { "eyebrow": "Kundenverzeichnis", "title": "Ihr Kundennetzwerk ist bereit zur Verbindung", "description": "Nach dem Import kann Ihr Team jedes Peppol-Profil suchen, segmentieren und prüfen." },
+    "readiness": { "eyebrow": "Bereitschaftsanalyse", "title": "Ein klareres Bild entsteht", "description": "Vergleichen Sie Kundengruppen und erkennen Sie, was Werte zurückhält." },
+    "actions": { "eyebrow": "Aktionswarteschlange", "title": "Halten Sie die Arbeit in Bewegung", "description": "Priorisierte Aktionen erscheinen hier mit Verantwortlichem und nächstem Schritt." },
+    "incidents": { "eyebrow": "Vorfallmonitor", "title": "Ein ruhigerer Betriebstag", "description": "Dieser Bereich ist für Zustellfehler und ablaufende Zertifikate vorbereitet." },
+    "reports": { "eyebrow": "Berichtsstudio", "title": "Berichte ohne Tabellenchaos", "description": "Erstellen Sie regelmäßige Bereitschaftsübersichten für Kunden und Beteiligte." },
+    "users": { "eyebrow": "Team des Arbeitsbereichs", "title": "Bringen Sie Ihr Team zusammen", "description": "Laden Sie Kollegen ein, weisen Sie Rollen zu und machen Sie Zuständigkeiten sichtbar." },
+    "settings": { "eyebrow": "Arbeitsbereichseinstellungen", "title": "Machen Sie PeppolFlow zu Ihrem", "description": "Präferenzen, Integrationen, Benachrichtigungen und Zugriff sind hier gebündelt." }
+  },
+  "errors": { "unexpectedTitle": "Etwas ist schiefgelaufen", "unexpectedDescription": "In diesem Bereich ist ein Fehler aufgetreten. Der Rest der Anwendung läuft weiter.", "notFoundTitle": "404 Seite nicht gefunden", "notFoundDescription": "Diese Seite existiert nicht oder wurde verschoben." }
+}

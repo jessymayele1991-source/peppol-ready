@@ -31,6 +31,8 @@ PeppolFlow helps accounting teams monitor and improve Peppol readiness across th
 - `artifacts/peppol-flow/prisma/migrations/` — checked-in Prisma migrations
 - `artifacts/peppol-flow/prisma.config.ts` — Prisma schema, migration, and seed configuration
 - `artifacts/peppol-flow/src/index.css` — product theme, typography, motion, and responsive styles
+- `artifacts/peppol-flow/src/i18n/i18n.tsx` — locale discovery, translation context, per-user preference, and locale-aware formatting
+- `artifacts/peppol-flow/src/locales/*.json` — Dutch, English, French, and German UI copy
 - `artifacts/api-server/src/lib/readiness-engine.ts` — deterministic weighted scoring and explainable risk rules
 - `artifacts/api-server/src/lib/readiness-service.ts` — Prisma-backed assessments and dashboard aggregation
 - `artifacts/api-server/src/routes/readiness.ts` — readiness calculation and dashboard endpoints
@@ -44,6 +46,9 @@ PeppolFlow helps accounting teams monitor and improve Peppol readiness across th
 - Seed records use stable IDs and upserts so development seeding is safe to rerun.
 - Readiness is calculated from five explicit factors totaling 100 points; every failed factor produces an explainable remediation signal.
 - Dashboard reads are organization-scoped and derive KPIs, breakdowns, risk actions, incidents, and trends from stored assessments.
+- Dutch is the default UI language. Every user-facing string must come from the locale files; never hardcode interface copy in components.
+- Locale files are discovered automatically. Add another complete JSON locale with `meta.code` and `meta.name` to expose a new language without changing application code.
+- Language preference is stored per user, and all dates, numbers, and currencies must use the shared i18n formatters.
 - Supporting routes share the same shell and use intentional empty states rather than pretending their workflows are complete.
 
 ## Product
