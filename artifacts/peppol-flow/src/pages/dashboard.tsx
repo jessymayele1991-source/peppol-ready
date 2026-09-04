@@ -24,7 +24,7 @@ function Donut({ ready, configuring, atRisk, total, averageScore }: {
     <div className="relative h-[190px] w-[190px] shrink-0 animate-draw">
       <svg viewBox="0 0 150 150" className="-rotate-90">
         <circle cx="75" cy="75" r="61" fill="none" stroke="hsl(214 34% 94%)" strokeWidth="14" />
-        <circle cx="75" cy="75" r="61" fill="none" stroke="hsl(173 76% 40%)" strokeWidth="14" strokeDasharray={`${first} ${circumference}`} />
+        <circle cx="75" cy="75" r="61" fill="none" stroke="hsl(221 83% 53%)" strokeWidth="14" strokeDasharray={`${first} ${circumference}`} />
         <circle cx="75" cy="75" r="61" fill="none" stroke="hsl(39 92% 57%)" strokeWidth="14" strokeDasharray={`${second} ${circumference}`} strokeDashoffset={-first} />
         <circle cx="75" cy="75" r="61" fill="none" stroke="hsl(3 73% 54%)" strokeWidth="14" strokeDasharray={`${third} ${circumference}`} strokeDashoffset={-(first + second)} />
       </svg>
@@ -46,9 +46,9 @@ function TrendChart({ trend }: { trend: Array<{ period: string; averageScore: nu
       <div className="absolute inset-x-0 top-0 flex justify-between text-[10px] text-[hsl(var(--muted-foreground))]"><span>100%</span><span>75%</span><span>50%</span><span>25%</span></div>
       <svg viewBox="0 0 108 132" preserveAspectRatio="none" className="absolute inset-x-0 top-5 h-[153px] w-full overflow-visible">
         {[24, 47, 70, 93, 116].map((y) => <line key={y} x1="4" x2="104" y1={y} y2={y} stroke="hsl(214 26% 89%)" strokeDasharray="1.5 1.5" />)}
-        {points && <polygon points={`4,116 ${points} 104,116`} fill="hsl(173 76% 40% / .08)" />}
-        {points && <polyline points={points} fill="none" stroke="hsl(173 76% 38%)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />}
-        {trend.map((item, index) => <circle key={item.period} cx={pointX(index)} cy={pointY(item.averageScore)} r="2.3" fill="white" stroke="hsl(173 76% 38%)" strokeWidth="1.5" />)}
+        {points && <polygon points={`4,116 ${points} 104,116`} fill="hsl(221 83% 53% / .08)" />}
+        {points && <polyline points={points} fill="none" stroke="hsl(221 83% 53%)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />}
+        {trend.map((item, index) => <circle key={item.period} cx={pointX(index)} cy={pointY(item.averageScore)} r="2.3" fill="white" stroke="hsl(221 83% 53%)" strokeWidth="1.5" />)}
       </svg>
       <div className="absolute inset-x-0 bottom-0 flex justify-between text-[10px] font-semibold text-[hsl(var(--muted-foreground))]">{trend.map((item) => <span key={item.period}>{formatDate(`${item.period}-01T00:00:00Z`, { month: 'short', timeZone: 'UTC' })}</span>)}</div>
     </div>
@@ -124,7 +124,7 @@ export function Dashboard() {
           <div className="flex flex-col items-center gap-4 px-5 py-6 sm:flex-row sm:justify-between">
             <Donut ready={data.breakdown.ready} configuring={data.breakdown.configuring} atRisk={data.breakdown.atRisk} total={total} averageScore={data.kpis.averageScore} />
             <div className="w-full space-y-4 sm:max-w-[160px]">{[
-              ['READY', data.breakdown.ready, 'hsl(173 76% 40%)'],
+              ['READY', data.breakdown.ready, 'hsl(221 83% 53%)'],
               ['CONFIGURING', data.breakdown.configuring, 'hsl(39 92% 57%)'],
               ['AT_RISK', data.breakdown.atRisk, 'hsl(3 73% 54%)'],
               ['NOT_REGISTERED', data.breakdown.notRegistered, 'hsl(214 24% 67%)'],

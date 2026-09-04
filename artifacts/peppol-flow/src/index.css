@@ -52,14 +52,14 @@
   --foreground: 220 35% 16%;
   --border: 214 26% 89%;
   --input: 214 26% 86%;
-  --ring: 173 76% 38%;
+  --ring: 221 83% 53%;
   --card: 0 0% 100%;
   --card-foreground: 220 35% 16%;
   --card-border: 214 26% 90%;
   --popover: 0 0% 100%;
   --popover-foreground: 220 35% 16%;
   --popover-border: 214 26% 89%;
-  --primary: 173 76% 34%;
+  --primary: 221 83% 53%;
   --primary-foreground: 0 0% 100%;
   --secondary: 214 34% 94%;
   --secondary-foreground: 220 33% 25%;
@@ -69,7 +69,7 @@
   --accent-foreground: 220 35% 16%;
   --destructive: 3 73% 54%;
   --destructive-foreground: 0 0% 100%;
-  --chart-1: 173 76% 40%;
+  --chart-1: 221 83% 53%;
   --chart-2: 39 92% 57%;
   --chart-3: 3 73% 54%;
   --chart-4: 214 73% 60%;
@@ -77,7 +77,7 @@
   --sidebar: 222 45% 17%;
   --sidebar-foreground: 215 25% 88%;
   --sidebar-border: 222 34% 27%;
-  --sidebar-primary: 173 76% 44%;
+  --sidebar-primary: 217 91% 60%;
   --sidebar-primary-foreground: 0 0% 100%;
   --sidebar-accent: 222 35% 24%;
   --sidebar-accent-foreground: 0 0% 100%;
@@ -85,36 +85,6 @@
   --app-font-sans: 'DM Sans', sans-serif;
   --app-font-mono: 'Space Mono', monospace;
   --shadow-card: 0 8px 24px rgba(28, 45, 75, 0.045), 0 1px 2px rgba(28,45,75,0.05);
-}
-
-.dark {
-  --background: 222 40% 11%;
-  --foreground: 210 30% 94%;
-  --border: 222 26% 25%;
-  --input: 222 26% 25%;
-  --card: 222 35% 16%;
-  --card-foreground: 210 30% 94%;
-  --card-border: 222 26% 25%;
-  --popover: 222 35% 16%;
-  --popover-foreground: 210 30% 94%;
-  --popover-border: 222 26% 25%;
-  --primary: 173 68% 45%;
-  --primary-foreground: 222 40% 11%;
-  --secondary: 222 29% 23%;
-  --secondary-foreground: 210 30% 94%;
-  --muted: 222 29% 23%;
-  --muted-foreground: 216 15% 66%;
-  --accent: 39 92% 57%;
-  --accent-foreground: 222 40% 11%;
-  --destructive: 3 73% 59%;
-  --destructive-foreground: 0 0% 100%;
-  --sidebar: 222 45% 10%;
-  --sidebar-foreground: 215 25% 88%;
-  --sidebar-border: 222 34% 21%;
-  --sidebar-primary: 173 76% 44%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 222 35% 18%;
-  --sidebar-accent-foreground: 0 0% 100%;
 }
 
 @layer base {

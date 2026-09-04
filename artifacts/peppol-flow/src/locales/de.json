@@ -26,7 +26,7 @@
     "incidents": { "eyebrow": "Vorfallmonitor", "title": "Ein ruhigerer Betriebstag", "description": "Dieser Bereich ist für Zustellfehler und ablaufende Zertifikate vorbereitet." },
     "reports": { "eyebrow": "Berichtsstudio", "title": "Berichte ohne Tabellenchaos", "description": "Erstellen Sie regelmäßige Bereitschaftsübersichten für Kunden und Beteiligte." },
     "users": { "eyebrow": "Team des Arbeitsbereichs", "title": "Bringen Sie Ihr Team zusammen", "description": "Laden Sie Kollegen ein, weisen Sie Rollen zu und machen Sie Zuständigkeiten sichtbar." },
-    "settings": { "eyebrow": "Arbeitsbereichseinstellungen", "title": "Machen Sie PeppolFlow zu Ihrem", "description": "Präferenzen, Integrationen, Benachrichtigungen und Zugriff sind hier gebündelt." }
+    "settings": { "eyebrow": "Arbeitsbereichseinstellungen", "title": "Machen Sie Peppol Ready zu Ihrem", "description": "Präferenzen, Integrationen, Benachrichtigungen und Zugriff sind hier gebündelt." }
   },
   "errors": { "unexpectedTitle": "Etwas ist schiefgelaufen", "unexpectedDescription": "In diesem Bereich ist ein Fehler aufgetreten. Der Rest der Anwendung läuft weiter.", "notFoundTitle": "404 Seite nicht gefunden", "notFoundDescription": "Diese Seite existiert nicht oder wurde verschoben." }
 }
