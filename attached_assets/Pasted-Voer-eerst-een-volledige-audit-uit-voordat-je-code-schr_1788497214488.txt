@@ -1,0 +1,171 @@
+Voer eerst een volledige audit uit voordat je code schrijft.
+
+Controleer:
+
+- bestaande Prisma schema's
+- bestaande API routes
+- bestaande pagina's
+- bestaande componenten
+- bestaande audit logging
+- bestaande i18n infrastructuur
+
+Maak geen duplicaten.
+
+Hergebruik bestaande componenten, routes en modellen waar mogelijk.
+
+====================================================
+
+FASE 4
+CLIENT MANAGEMENT + PEPPOL READINESS SCANS
+
+Doel:
+
+Maak de kernworkflow van Peppol Ready operationeel.
+
+====================================================
+CLIENT MANAGEMENT
+====================================================
+
+Bouw organisatie-scoped klantenbeheer.
+
+Functionaliteit:
+
+- klantenlijst
+- klantdetailpagina
+- klant aanmaken
+- klant wijzigen
+- klant verwijderen
+
+Velden:
+
+- bedrijfsnaam
+- kvk nummer
+- btw nummer
+- branche
+- contactpersoon
+- email
+- telefoon
+- adres
+- land
+- status
+
+Ondersteun:
+
+- zoeken
+- filteren
+- sorteren
+- paginering
+
+Gebruik contract-first API design.
+
+====================================================
+READINESS SCAN
+====================================================
+
+Per klant:
+
+Maak een scan met 10 controles.
+
+Controles:
+
+1. KvK aanwezig
+2. BTW nummer aanwezig
+3. Contact e-mail aanwezig
+4. ERP systeem bekend
+5. Ondersteunt UBL
+6. Peppol ID geregistreerd
+7. Verstuurt digitale facturen
+8. Ontvangt digitale facturen
+9. Leveranciers digitaal aangesloten
+10. Interne Peppol verantwoordelijke aanwezig
+
+====================================================
+SCORING
+====================================================
+
+Bereken score:
+
+0-100
+
+Categorieën:
+
+0-20
+Niet gestart
+
+21-40
+Basis
+
+41-60
+Gevorderd
+
+61-80
+Klaar
+
+81-100
+Volledig compliant
+
+====================================================
+AANBEVELINGEN
+====================================================
+
+Genereer aanbevelingen op basis van ontbrekende controles.
+
+Voorbeeld:
+
+Geen Peppol ID
+→ registreer Peppol ID
+
+Geen UBL
+→ activeer UBL ondersteuning
+
+Geen digitale leveranciers
+→ start leveranciersprogramma
+
+====================================================
+GESCHIEDENIS
+====================================================
+
+Toon:
+
+- eerdere scans
+- score evolutie
+- datum
+- gebruiker
+
+====================================================
+AUDIT
+====================================================
+
+Elke wijziging registreert:
+
+- gebruiker
+- organisatie
+- actie
+- tijdstip
+
+====================================================
+I18N
+====================================================
+
+Volledig ondersteunen:
+
+- Nederlands
+- Engels
+- Duits
+- Frans
+
+Geen hardcoded teksten.
+
+====================================================
+OPLEVERING
+====================================================
+
+Geef na implementatie:
+
+1. Auditbevindingen
+2. Gewijzigde bestanden
+3. Nieuwe bestanden
+4. API endpoints
+5. Datamodel wijzigingen
+6. Tests
+7. Openstaande risico's
