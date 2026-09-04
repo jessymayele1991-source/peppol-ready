@@ -16,7 +16,7 @@ export function Button({
     <button
       className={cn(
         'inline-flex h-9 items-center justify-center gap-2 rounded-lg px-3.5 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] disabled:cursor-not-allowed disabled:opacity-50',
-        variant === 'primary' && 'bg-[hsl(var(--primary))] text-white shadow-[0_3px_0_hsl(173_76%_27%)] hover:-translate-y-px hover:shadow-[0_4px_0_hsl(173_76%_27%)] active:translate-y-px active:shadow-none',
+        variant === 'primary' && 'bg-[hsl(var(--primary))] text-white shadow-[0_3px_0_hsl(224_76%_38%)] hover:-translate-y-px hover:shadow-[0_4px_0_hsl(224_76%_38%)] active:translate-y-px active:shadow-none',
         variant === 'secondary' && 'border border-[hsl(var(--border))] bg-white text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]',
         variant === 'ghost' && 'text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]',
         variant === 'quiet' && 'h-8 px-2.5 text-xs text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/.08)]',
@@ -79,11 +79,11 @@ export function StatCard({ label, value, note, trend, icon, accent = 'teal', cla
 }
 
 export function EmptyState({ icon, title, description, action }: { icon?: ReactNode; title: string; description: string; action?: ReactNode }) {
-  return <div className="flex min-h-[400px] flex-col items-center justify-center px-6 py-16 text-center"><div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-[hsl(173_76%_34%/.09)] text-[hsl(var(--primary))]">{icon ?? <LoaderCircle size={25} />}</div><h2 className="text-lg font-bold text-[hsl(var(--foreground))]">{title}</h2><p className="mt-2 max-w-sm text-sm leading-6 text-[hsl(var(--muted-foreground))]">{description}</p>{action && <div className="mt-6">{action}</div>}</div>;
+  return <div className="flex min-h-[400px] flex-col items-center justify-center px-6 py-16 text-center"><div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-[hsl(221_83%_53%/.09)] text-[hsl(var(--primary))]">{icon ?? <LoaderCircle size={25} />}</div><h2 className="text-lg font-bold text-[hsl(var(--foreground))]">{title}</h2><p className="mt-2 max-w-sm text-sm leading-6 text-[hsl(var(--muted-foreground))]">{description}</p>{action && <div className="mt-6">{action}</div>}</div>;
 }
 
 export function ViewAll({ children, onClick = () => undefined }: { children: ReactNode; onClick?: () => void }) {
-  return <button onClick={onClick} data-testid="button-view-all" className="group inline-flex items-center gap-1 text-xs font-bold text-[hsl(var(--primary))] transition-colors hover:text-[hsl(173_76%_25%)]">{children}<ArrowUpRight size={13} className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" /></button>;
+  return <button onClick={onClick} data-testid="button-view-all" className="group inline-flex items-center gap-1 text-xs font-bold text-[hsl(var(--primary))] transition-colors hover:text-[hsl(224_76%_38%)]">{children}<ArrowUpRight size={13} className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" /></button>;
 }
 
 export function SelectPill({ children, onClick = () => undefined }: { children: ReactNode; onClick?: () => void }) {

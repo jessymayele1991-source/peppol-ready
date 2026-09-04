@@ -26,7 +26,7 @@
     "incidents": { "eyebrow": "Incident monitor", "title": "A quieter operational day", "description": "This space is prepared for delivery failures, validation issues, and expiring certificates." },
     "reports": { "eyebrow": "Reporting studio", "title": "Reports, without spreadsheet sprawl", "description": "Build recurring readiness snapshots for clients and stakeholders." },
     "users": { "eyebrow": "Workspace team", "title": "Bring your operators together", "description": "Invite teammates, assign roles, and make ownership visible." },
-    "settings": { "eyebrow": "Workspace settings", "title": "Make PeppolFlow yours", "description": "Preferences, integrations, notification rules, and access controls come together here." }
+    "settings": { "eyebrow": "Workspace settings", "title": "Make Peppol Ready yours", "description": "Preferences, integrations, notification rules, and access controls come together here." }
   },
   "errors": { "unexpectedTitle": "Something went wrong", "unexpectedDescription": "This part of the app hit an error. The rest of the app is still running.", "notFoundTitle": "404 Page not found", "notFoundDescription": "This page does not exist or has moved." }
 }

@@ -26,7 +26,7 @@
     "incidents": { "eyebrow": "Suivi des incidents", "title": "Une journée opérationnelle plus calme", "description": "Cet espace est prêt pour les échecs de livraison et les certificats expirants." },
     "reports": { "eyebrow": "Studio de rapports", "title": "Des rapports sans prolifération de feuilles", "description": "Créez des instantanés récurrents pour vos clients et parties prenantes." },
     "users": { "eyebrow": "Équipe de l’espace", "title": "Rassemblez vos collaborateurs", "description": "Invitez vos collègues, attribuez des rôles et rendez les responsabilités visibles." },
-    "settings": { "eyebrow": "Paramètres de l’espace", "title": "Personnalisez PeppolFlow", "description": "Préférences, intégrations, notifications et accès sont réunis ici." }
+    "settings": { "eyebrow": "Paramètres de l’espace", "title": "Personnalisez Peppol Ready", "description": "Préférences, intégrations, notifications et accès sont réunis ici." }
   },
   "errors": { "unexpectedTitle": "Une erreur est survenue", "unexpectedDescription": "Cette partie a rencontré une erreur. Le reste de l’application continue de fonctionner.", "notFoundTitle": "404 Page introuvable", "notFoundDescription": "Cette page n’existe pas ou a été déplacée." }
 }

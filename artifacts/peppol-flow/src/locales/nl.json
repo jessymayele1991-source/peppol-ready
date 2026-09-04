@@ -147,7 +147,7 @@
     "incidents": { "eyebrow": "Incidentenmonitor", "title": "Een rustige operationele dag", "description": "Deze ruimte is voorbereid op leveringsfouten, validatieproblemen en aflopende certificaten." },
     "reports": { "eyebrow": "Rapportagestudio", "title": "Rapporten zonder wildgroei aan spreadsheets", "description": "Bouw terugkerende gereedheidsoverzichten voor klanten en belanghebbenden." },
     "users": { "eyebrow": "Team van werkruimte", "title": "Breng je medewerkers samen", "description": "Nodig teamleden uit, wijs rollen toe en maak eigenaarschap zichtbaar." },
-    "settings": { "eyebrow": "Werkruimte-instellingen", "title": "Maak PeppolFlow van jou", "description": "Voorkeuren, integraties, meldingsregels en toegangsbeheer komen hier samen." }
+    "settings": { "eyebrow": "Werkruimte-instellingen", "title": "Maak Peppol Ready van jou", "description": "Voorkeuren, integraties, meldingsregels en toegangsbeheer komen hier samen." }
   },
   "errors": {
     "unexpectedTitle": "Er ging iets mis",

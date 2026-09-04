@@ -19,21 +19,25 @@ model Organization {
   tasks       Task[]
   incidents   Incident[]
   auditEvents AuditEvent[]
+  reports     Report[]
 
   @@map("organizations")
 }
 
 model User {
-  id             String       @id @default(cuid())
-  name           String
-  email          String       @unique
-  avatarInitials String?
-  createdAt      DateTime     @default(now()) @db.Timestamptz(3)
-  updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
-  memberships    Membership[]
-  assignedTasks  Task[]       @relation("TaskAssignee")
-  createdTasks   Task[]       @relation("TaskCreator")
-  auditEvents    AuditEvent[] @relation("AuditActor")
+  id               String          @id @default(cuid())
+  name             String
+  email            String          @unique
+  avatarInitials   String?
+  createdAt        DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime        @updatedAt @db.Timestamptz(3)
+  memberships      Membership[]
+  assignedTasks    Task[]          @relation("TaskAssignee")
+  createdTasks     Task[]          @relation("TaskCreator")
+  auditEvents      AuditEvent[]    @relation("AuditActor")
+  completedScans   ReadinessScan[] @relation("ReadinessScanCompleter")
+  generatedReports Report[]        @relation("ReportGenerator")
+  preferredLocale  String          @default("nl")
 
   @@map("users")
 }
@@ -59,6 +63,8 @@ model Company {
   legalName          String?
   email              String?
   registrationNumber String?
+  vatNumber          String?
+  industry           String?
   accountingPackage  String?
   peppolStatus       PeppolStatus     @default(NOT_REGISTERED)
   readinessScore     Int              @default(0)
@@ -69,10 +75,60 @@ model Company {
   readinessScores    ReadinessScore[]
   tasks              Task[]
   incidents          Incident[]
+  contacts           ClientContact[]
+  readinessScans     ReadinessScan[]
+  reports            Report[]
 
   @@index([organizationId, peppolStatus])
   @@index([organizationId, name])
   @@map("companies")
+}
+
+model ClientContact {
+  id        String   @id @default(cuid())
+  companyId String
+  name      String
+  email     String?
+  phone     String?
+  role      String?
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, isPrimary])
+  @@map("client_contacts")
+}
+
+model ReadinessScan {
+  id            String            @id @default(cuid())
+  companyId     String
+  completedById String?
+  score         Int
+  category      ReadinessCategory
+  source        String?
+  startedAt     DateTime          @default(now()) @db.Timestamptz(3)
+  completedAt   DateTime?         @db.Timestamptz(3)
+  createdAt     DateTime          @default(now()) @db.Timestamptz(3)
+  company       Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  completedBy   User?             @relation("ReadinessScanCompleter", fields: [completedById], references: [id], onDelete: SetNull)
+  checks        ReadinessCheck[]
+
+  @@index([companyId, completedAt])
+  @@map("readiness_scans")
+}
+
+model ReadinessCheck {
+  id        String        @id @default(cuid())
+  scanId    String
+  key       String
+  passed    Boolean
+  evidence  String?
+  createdAt DateTime      @default(now()) @db.Timestamptz(3)
+  scan      ReadinessScan @relation(fields: [scanId], references: [id], onDelete: Cascade)
+
+  @@unique([scanId, key])
+  @@map("readiness_checks")
 }
 
 model ReadinessScore {
@@ -151,6 +207,29 @@ model AuditEvent {
   @@map("audit_events")
 }
 
+model Report {
+  id             String       @id @default(cuid())
+  organizationId String
+  companyId      String?
+  generatedById  String?
+  type           ReportType
+  status         ReportStatus @default(PENDING)
+  locale         String       @default("nl")
+  filePath       String?
+  periodStart    DateTime?    @db.Timestamptz(3)
+  periodEnd      DateTime?    @db.Timestamptz(3)
+  generatedAt    DateTime?    @db.Timestamptz(3)
+  createdAt      DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  company        Company?     @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  generatedBy    User?        @relation("ReportGenerator", fields: [generatedById], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, type, createdAt])
+  @@index([companyId])
+  @@map("reports")
+}
+
 enum OrganizationPlan {
   STARTER
   PROFESSIONAL
@@ -169,6 +248,27 @@ enum PeppolStatus {
   CONFIGURING
   AT_RISK
   NOT_REGISTERED
+}
+
+enum ReadinessCategory {
+  NOT_STARTED
+  BASIC
+  ADVANCED
+  READY
+  FULLY_COMPLIANT
+}
+
+enum ReportType {
+  READINESS
+  RISK
+  MANAGEMENT
+}
+
+enum ReportStatus {
+  PENDING
+  GENERATING
+  READY
+  FAILED
 }
 
 enum TaskStatus {

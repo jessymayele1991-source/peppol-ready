@@ -1,6 +1,6 @@
-# PeppolFlow
+# Peppol Ready
 
-PeppolFlow helps accounting teams monitor and improve Peppol readiness across their client network.
+Peppol Ready helps accounting firms monitor and improve Peppol readiness, compliance, adoption, and risk across their client network.
 
 ## Run & Operate
 
@@ -37,6 +37,7 @@ PeppolFlow helps accounting teams monitor and improve Peppol readiness across th
 - `artifacts/api-server/src/lib/readiness-service.ts` — Prisma-backed assessments and dashboard aggregation
 - `artifacts/api-server/src/routes/readiness.ts` — readiness calculation and dashboard endpoints
 - `lib/api-spec/openapi.yaml` — typed readiness API contract
+- `docs/peppol-ready-architecture.md` — product boundaries, routes, permissions, domain model, wireframes, and implementation sequence
 
 ## Architecture decisions
 
@@ -45,6 +46,8 @@ PeppolFlow helps accounting teams monitor and improve Peppol readiness across th
 - Operational records are organization-scoped, with companies owning readiness history and optional links from tasks and incidents.
 - Seed records use stable IDs and upserts so development seeding is safe to rerun.
 - Readiness is calculated from five explicit factors totaling 100 points; every failed factor produces an explainable remediation signal.
+- The target schema supports normalized client contacts, ten-check readiness scans, generated reports, per-user locale preferences, and audit activity.
+- Scope explicitly excludes invoice processing, banking, OCR, ledgers, VAT filings, and accounting transactions.
 - Dashboard reads are organization-scoped and derive KPIs, breakdowns, risk actions, incidents, and trends from stored assessments.
 - Dutch is the default UI language. Every user-facing string must come from the locale files; never hardcode interface copy in components.
 - Locale files are discovered automatically. Add another complete JSON locale with `meta.code` and `meta.name` to expose a new language without changing application code.
