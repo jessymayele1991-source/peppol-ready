@@ -1,0 +1,336 @@
+Je bent een senior SaaS architect, senior UX designer en senior full-stack engineer.
+
+Bouw GEEN boekhoudpakket.
+
+Bouw GEEN factuurverwerking.
+
+Bouw GEEN banktransacties.
+
+Bouw GEEN OCR.
+
+Bouw GEEN grootboek.
+
+Bouw GEEN BTW-aangifte.
+
+Bouw GEEN concurrent van Exact, AFAS, Twinfield, Yuki of Ledgr.
+
+Het product heet:
+
+PEPPOL READY
+
+Doel:
+Een SaaS-platform voor accountantskantoren waarmee zij kunnen zien welke klanten klaar zijn voor Peppol en e-facturatieverplichtingen.
+
+Denk aan:
+SecurityScorecard
+GDPR Compliance Platform
+ISO27001 Readiness Platform
+
+Maar dan voor Peppol.
+
+====================================================
+DESIGN
+====================================================
+
+Gebruik de meegeleverde screenshots als visuele inspiratie.
+
+Design moet premium, modern, zakelijk en enterprise aanvoelen.
+
+Kleurenschema:
+
+Primary:
+#2563EB
+
+Primary Light:
+#DBEAFE
+
+Primary Dark:
+#1E40AF
+
+Success:
+#16A34A
+
+Warning:
+#F59E0B
+
+Danger:
+#DC2626
+
+Background:
+#F8FAFC
+
+Cards:
+#FFFFFF
+
+Borders:
+#E2E8F0
+
+Text:
+#0F172A
+
+Subtext:
+#64748B
+
+Gebruik:
+
+- Grote KPI kaarten
+- Moderne tabellen
+- Sidebar links
+- Topbar bovenaan
+- Veel witruimte
+- Afgeronde kaarten
+- Professionele iconen
+- Enterprise SaaS uitstraling
+
+Geen donkere modus.
+
+====================================================
+TALEN
+====================================================
+
+Volledig meertalig:
+
+- Nederlands (standaard)
+- Engels
+- Duits
+- Frans
+
+Alle teksten via i18n.
+
+Geen hardcoded teksten.
+
+Taalwisselaar rechtsboven.
+
+Locale formatting voor:
+
+- Datums
+- Getallen
+- Percentages
+
+====================================================
+GEBRUIKERS
+====================================================
+
+Type gebruiker:
+
+Accountantskantoren.
+
+Een kantoor kan meerdere medewerkers hebben.
+
+Rollen:
+
+- Owner
+- Admin
+- Medewerker
+- Viewer
+
+====================================================
+HOOFDMODULES
+====================================================
+
+1. Dashboard
+
+Toon:
+
+- Totaal klanten
+- Klaar voor Peppol
+- Actie vereist
+- Hoog risico
+- Gemiddelde readiness score
+
+Grafieken:
+
+- Readiness verdeling
+- Risicocategorieën
+- Voortgang door de tijd
+
+====================================================
+2. Klantenbeheer
+====================================================
+
+Overzicht van alle klanten.
+
+Velden:
+
+- Bedrijfsnaam
+- KvK
+- BTW nummer
+- Branche
+- Contactpersoon
+- Status
+- Readiness score
+
+Zoeken
+
+Filteren
+
+Sorteren
+
+Paginering
+
+====================================================
+3. Peppol Readiness Scan
+====================================================
+
+Per klant:
+
+Controlepunten:
+
+- KvK ingevuld
+- BTW nummer aanwezig
+- E-mailadres aanwezig
+- ERP software bekend
+- UBL ondersteuning
+- Peppol ID geregistreerd
+- Facturen digitaal
+- Leveranciers digitaal
+- Ontvangt e-facturen
+- Verstuurt e-facturen
+
+Bereken:
+
+Readiness Score 0-100
+
+Categorie:
+
+- Niet gestart
+- Basis
+- Gevorderd
+- Klaar
+- Volledig compliant
+
+====================================================
+4. Risicodashboard
+====================================================
+
+Toon:
+
+Rood:
+Kritiek
+
+Oranje:
+Actie nodig
+
+Groen:
+Klaar
+
+Per klant:
+
+- Risico
+- Omschrijving
+- Aanbevolen actie
+
+====================================================
+5. Takenbeheer
+====================================================
+
+Taken gekoppeld aan klanten.
+
+Voorbeelden:
+
+- Registreer Peppol ID
+- Controleer ERP systeem
+- Activeer UBL
+- Klant informeren
+
+Status:
+
+- Open
+- In behandeling
+- Voltooid
+
+====================================================
+6. Compliance Center
+====================================================
+
+Toon per klant:
+
+Readiness score
+
+Checklist
+
+Open punten
+
+Aanbevelingen
+
+Voortgang
+
+====================================================
+7. Rapporten
+====================================================
+
+PDF export
+
+Excel export
+
+Readiness rapport
+
+Risicorapport
+
+Management rapport
+
+====================================================
+8. Instellingen
+====================================================
+
+Bedrijfsgegevens
+
+Gebruikers
+
+Rollen
+
+Talen
+
+Branding
+
+====================================================
+DATABASE
+====================================================
+
+Maak een schaalbare multi-tenant architectuur.
+
+Tabellen:
+
+organizations
+users
+memberships
+clients
+client_contacts
+readiness_scans
+readiness_checks
+tasks
+reports
+audit_logs
+
+Gebruik audit logging.
+
+====================================================
+BELANGRIJK
+====================================================
+
+Bouw een echt SaaS-platform.
+
+Niet een demo.
+
+Niet een landing page.
+
+Niet een boekhoudpakket.
+
+Geen factuurverwerking.
+
+Geen transacties.
+
+Geen OCR.
+
+Geen grootboek.
+
+Geen BTW.
+
+Focus uitsluitend op:
+
+PEPPOL READINESS
+PEPPOL COMPLIANCE
+PEPPOL ADOPTIE
+PEPPOL RISICOBEHEER
+
+Maak eerst de volledige architectuur, database, navigatie, wireframes en UX-structuur voordat je begint met implementeren.
