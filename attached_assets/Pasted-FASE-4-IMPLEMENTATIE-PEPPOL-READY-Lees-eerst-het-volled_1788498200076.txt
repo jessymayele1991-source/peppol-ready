@@ -1,0 +1,283 @@
+FASE 4 IMPLEMENTATIE — PEPPOL READY
+
+Lees eerst het volledige auditrapport.
+
+BELANGRIJK:
+Voer eerst een audit uit van de bestaande codebase voordat je iets implementeert.
+
+Controleer expliciet:
+
+- Prisma schema's
+- bestaande Company modellen
+- ClientContact modellen
+- ReadinessScan modellen
+- ReadinessCheck modellen
+- Membership modellen
+- AuditEvent infrastructuur
+- bestaande API routes
+- OpenAPI contracten
+- bestaande React Query hooks
+- bestaande dashboard componenten
+- bestaande i18n infrastructuur
+- bestaande readiness engine
+
+Maak GEEN duplicaten.
+
+Herbruik bestaande implementaties waar mogelijk.
+
+====================================================
+DOEL
+====================================================
+
+Voltooi Fase 4:
+"Let teams manage clients and run complete Peppol scans"
+
+====================================================
+ARCHITECTURE REGELS
+====================================================
+
+1. ReadinessScan + ReadinessCheck worden de primaire bron van waarheid.
+
+2. ReadinessCategory wordt uitsluitend berekend uit score:
+
+0-20 = NOT_STARTED
+21-40 = BASIC
+41-60 = ADVANCED
+61-80 = READY
+81-100 = FULLY_COMPLIANT
+
+3. Tenant context mag NOOIT uit request parameters komen.
+
+Gebruik uitsluitend:
+
+Authenticated User
+→ Membership
+→ Organization
+
+4. Klanten worden standaard gearchiveerd.
+
+Gebruik archivedAt.
+
+Geen hard delete.
+
+5. Audit logging verplicht voor alle mutaties.
+
+====================================================
+STAP 1
+OPENAPI CONTRACT
+====================================================
+
+Voeg contract-first endpoints toe:
+
+GET /api/companies
+
+POST /api/companies
+
+GET /api/companies/{id}
+
+PATCH /api/companies/{id}
+
+DELETE /api/companies/{id}
+
+GET /api/companies/{id}/contacts
+
+POST /api/companies/{id}/contacts
+
+PATCH /api/companies/{id}/contacts/{contactId}
+
+DELETE /api/companies/{id}/contacts/{contactId}
+
+GET /api/companies/{id}/readiness-scans
+
+POST /api/companies/{id}/readiness-scans
+
+GET /api/companies/{id}/readiness-scans/{scanId}
+
+Ondersteun:
+
+- search
+- filtering
+- sorting
+- pagination
+
+====================================================
+STAP 2
+CLIENT MANAGEMENT
+====================================================
+
+Bouw volledige klantenmodule:
+
+/clients
+
+- server-side search
+- server-side filters
+- server-side sorting
+- server-side pagination
+
+Mogelijkheid tot:
+
+- create
+- edit
+- archive
+
+Voeg klantdetailpagina toe:
+
+/clients/:companyId
+
+Toon:
+
+- bedrijfsgegevens
+- contacten
+- huidige score
+- categorie
+- aanbevelingen
+- recente scans
+- auditactiviteiten
+
+====================================================
+STAP 3
+CONTACTPERSONEN
+====================================================
+
+Volledige CRUD.
+
+Velden:
+
+- naam
+- functie
+- e-mail
+- telefoon
+
+Audit verplicht.
+
+====================================================
+STAP 4
+TIENPUNTEN PEPPOL SCAN
+====================================================
+
+Implementeer exact deze checks:
+
+1. KvK aanwezig
+2. BTW aanwezig
+3. Contact e-mail aanwezig
+4. ERP bekend
+5. UBL ondersteund
+6. Peppol ID geregistreerd
+7. Verstuurt digitaal
+8. Ontvangt digitaal
+9. Leveranciers aangesloten
+10. Interne verantwoordelijke aanwezig
+
+Iedere check = 10 punten.
+
+Score = 0-100.
+
+====================================================
+STAP 5
+SCAN OPSLAG
+====================================================
+
+Gebruik:
+
+ReadinessScan
+ReadinessCheck
+
+Sla op:
+
+- actor
+- score
+- categorie
+- aanbevelingen
+- tijdstip
+
+Werk daarna Company readiness bij.
+
+====================================================
+STAP 6
+SCAN HISTORIE
+====================================================
+
+Toon:
+
+- alle scans
+- score evolutie
+- vergelijking scans
+- aanbevelingen per scan
+
+====================================================
+STAP 7
+AUDIT LOGGING
+====================================================
+
+Gebruik AuditEvent voor:
+
+company.created
+company.updated
+company.archived
+
+contact.created
+contact.updated
+contact.deleted
+
+readiness.scan_started
+readiness.scan_completed
+
+Metadata verplicht.
+
+====================================================
+STAP 8
+I18N
+====================================================
+
+Voeg alle nieuwe sleutels toe aan:
+
+- Nederlands
+- Engels
+- Frans
+- Duits
+
+Geen hardcoded tekst.
+
+====================================================
+STAP 9
+TESTS
+====================================================
+
+Voeg toe:
+
+Unit tests
+
+- score grenzen
+- categorie grenzen
+- aanbevelingen
+
+API tests
+
+- CRUD
+- filters
+- sortering
+- paginering
+- tenant isolatie
+
+Frontend tests
+
+- client management
+- scan workflow
+- scan geschiedenis
+
+====================================================
+OPLEVERING
+====================================================
+
+Geef na implementatie:
+
+1. Auditbevindingen
+2. Gewijzigde bestanden
+3. Nieuwe endpoints
+4. Datamodel wijzigingen
+5. Testresultaten
+6. Openstaande risico's
+7. Productie gereed: JA/NEE + motivatie
+
+Maak geen nieuwe algemene UI library.
+Hergebruik bestaande componenten maximaal.
