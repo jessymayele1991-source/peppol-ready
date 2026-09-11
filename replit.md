@@ -29,7 +29,6 @@ Peppol Ready helps accounting firms monitor and improve Peppol readiness, compli
 - `artifacts/peppol-flow/src/App.tsx` — routed application shell and workspace navigation
 - `artifacts/peppol-flow/src/pages/dashboard.tsx` — dashboard composition
 - `artifacts/peppol-flow/src/components/peppol-ui.tsx` — reusable product UI primitives
-- `artifacts/peppol-flow/src/lib/mock-data.ts` — typed dashboard data source for the first UI pass
 - `artifacts/peppol-flow/prisma/schema.prisma` — PostgreSQL multi-tenant persistence foundation
 - `artifacts/peppol-flow/prisma/seed.ts` — idempotent development seed data
 - `artifacts/peppol-flow/prisma/migrations/` — checked-in Prisma migrations
@@ -48,7 +47,6 @@ Peppol Ready helps accounting firms monitor and improve Peppol readiness, compli
 
 ## Architecture decisions
 
-- The first pass is intentionally mock-data driven so the information architecture can be validated before business rules and authentication are introduced.
 - Tenant ownership is represented at the persistence boundary through organizations and memberships; client records belong to an organization.
 - Operational records are organization-scoped, with companies owning readiness history and optional links from tasks and incidents.
 - Prisma is the single ORM. The schema, migrations, and seed live in `artifacts/peppol-flow/prisma/`; the API server consumes the generated client. Never introduce a second ORM against the same database.
@@ -76,9 +74,10 @@ The current release provides a dashboard-first SaaS shell for client readiness m
 
 ## Gotchas
 
-- The dashboard uses the readiness API; the remaining shell identity data is still static until authentication is added.
 - Run database commands from the PeppolFlow package: `db:generate`, `db:migrate`, and `db:seed`.
-- In the OpenAPI contract, score/count fields use `type: number`; this workspace's generated Zod target does not support the emitted `z.int()` helper.
+- In the OpenAPI contract, score/count fields use `type: number`; this workspace's generated Zod target does not support the emitted `z.int()` helper. For the same reason, avoid `format: email` — it emits a Zod v4 helper the pinned Zod 3 lacks.
+- Orval runs with `clean: true`, so a failed generation leaves `lib/api-client-react/src/generated/` empty until the spec is fixed and codegen rerun.
+- The workspace excludes non-linux esbuild and rollup binaries on purpose, so vitest and the build only run on the linux deployment target. Typecheck runs anywhere.
 
 ## Pointers
 
