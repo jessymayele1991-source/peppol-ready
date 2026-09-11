@@ -157,3 +157,9 @@ overrides:
   # pin esbuild workspace-wide; transitive dependents otherwise pull older, vulnerable builds
   "@esbuild-kit/esm-loader": "npm:tsx@^4.21.0"
   esbuild: "0.27.3"
+
+allowBuilds:
+  '@prisma/client': set this to true or false
+  '@prisma/engines': set this to true or false
+  esbuild: set this to true or false
+  prisma: set this to true or false
