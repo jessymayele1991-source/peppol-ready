@@ -121,13 +121,9 @@ export const HealthCheckResponse = zod.object({
 
 
 /**
- * Returns organization-scoped readiness KPIs, trends, risks, incidents, and companies.
+ * Returns readiness KPIs, trends, risks, incidents, and companies for the organization the session is acting in. The tenant is derived from the session and is never accepted as a parameter.
  * @summary Get readiness dashboard data
  */
-export const GetReadinessDashboardQueryParams = zod.object({
-  "organizationId": zod.coerce.string()
-})
-
 export const GetReadinessDashboardResponse = zod.object({
   "organization": zod.object({
   "id": zod.string(),
@@ -188,7 +184,7 @@ export const GetReadinessDashboardResponse = zod.object({
 
 
 /**
- * Calculates and persists a new readiness assessment from weighted Peppol criteria.
+ * Calculates and persists a new readiness assessment from weighted Peppol criteria. The company must belong to the session's organization.
  * @summary Calculate company readiness
  */
 export const CalculateCompanyReadinessParams = zod.object({

@@ -14,7 +14,6 @@ export * from './dashboardAction';
 export * from './dashboardCompany';
 export * from './dashboardIncident';
 export * from './dashboardKpis';
-export * from './getReadinessDashboardParams';
 export * from './healthStatus';
 export * from './loginInput';
 export * from './membershipRole';

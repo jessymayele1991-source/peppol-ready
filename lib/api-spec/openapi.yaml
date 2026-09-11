@@ -117,13 +117,10 @@ paths:
       operationId: getReadinessDashboard
       tags: [readiness]
       summary: Get readiness dashboard data
-      description: Returns organization-scoped readiness KPIs, trends, risks, incidents, and companies.
-      parameters:
-        - in: query
-          name: organizationId
-          required: true
-          schema:
-            type: string
+      description: >-
+        Returns readiness KPIs, trends, risks, incidents, and companies for the
+        organization the session is acting in. The tenant is derived from the
+        session and is never accepted as a parameter.
       responses:
         "200":
           description: Readiness dashboard
@@ -131,14 +128,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ReadinessDashboard"
-        "404":
-          description: Organization not found
+        "401":
+          description: Not signed in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
   /companies/{companyId}/readiness/calculate:
     post:
       operationId: calculateCompanyReadiness
       tags: [readiness]
       summary: Calculate company readiness
-      description: Calculates and persists a new readiness assessment from weighted Peppol criteria.
+      description: >-
+        Calculates and persists a new readiness assessment from weighted Peppol
+        criteria. The company must belong to the session's organization.
       parameters:
         - in: path
           name: companyId
@@ -158,8 +161,24 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ReadinessAssessment"
+        "401":
+          description: Not signed in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Not permitted for this role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
         "404":
-          description: Company not found
+          description: Company not found in this organization
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
 components:
   schemas:
     ApiError:

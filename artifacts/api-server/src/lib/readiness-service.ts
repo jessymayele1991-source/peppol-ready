@@ -270,9 +270,12 @@ export async function getReadinessDashboard(organizationId: string) {
 export async function calculateAndPersistCompanyReadiness(
   companyId: string,
   input: ReadinessInput & { checkedAt?: Date; source?: string },
+  actor: { userId: string; organizationId: string },
 ) {
-  const company = await prisma.company.findUnique({
-    where: { id: companyId },
+  // Scoped to the caller's organization: looking a company up by id alone
+  // would accept any company id in the database.
+  const company = await prisma.company.findFirst({
+    where: { id: companyId, organizationId: actor.organizationId },
     select: { id: true, organizationId: true },
   });
   if (!company) return null;
@@ -311,6 +314,7 @@ export async function calculateAndPersistCompanyReadiness(
     prisma.auditEvent.create({
       data: {
         organizationId: company.organizationId,
+        actorId: actor.userId,
         eventType: "readiness.calculated",
         entityType: "company",
         entityId: companyId,

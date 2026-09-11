@@ -1,8 +1,8 @@
 import { type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { ArrowUpRight, Check, ChevronDown, CircleAlert, Info, LoaderCircle } from 'lucide-react';
+import { type RiskSeverity } from '@workspace/api-client-react';
 import { useI18n } from '@/i18n/i18n';
 import { cn } from '@/lib/utils';
-import { type Severity } from '@/lib/mock-data';
 
 export type PeppolStatusCode = 'READY' | 'CONFIGURING' | 'AT_RISK' | 'NOT_REGISTERED';
 
@@ -41,7 +41,7 @@ export function Badge({ status, children }: { status?: PeppolStatusCode; childre
   return <span className={cn('inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold tracking-[.01em]', tone)}>{children ?? (status ? t(`status.${status}`) : null)}</span>;
 }
 
-export function SeverityIcon({ severity, size = 15 }: { severity: Severity; size?: number }) {
+export function SeverityIcon({ severity, size = 15 }: { severity: RiskSeverity; size?: number }) {
   const Icon = severity === 'critical' ? CircleAlert : severity === 'warning' ? Info : Check;
   return <span className={cn('inline-flex h-6 w-6 items-center justify-center rounded-full', severity === 'critical' ? 'bg-[hsl(4_100%_95%)] text-[hsl(var(--destructive))]' : severity === 'warning' ? 'bg-[hsl(43_100%_93%)] text-[hsl(33_77%_37%)]' : 'bg-[hsl(157_56%_93%)] text-[hsl(159_58%_30%)]')}><Icon size={size} strokeWidth={2.2} /></span>;
 }

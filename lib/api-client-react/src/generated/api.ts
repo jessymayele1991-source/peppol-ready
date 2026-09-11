@@ -21,7 +21,6 @@ import type {
 
 import type {
   ApiError,
-  GetReadinessDashboardParams,
   HealthStatus,
   LoginInput,
   ReadinessAssessment,
@@ -430,28 +429,21 @@ export function useHealthCheck<TData = Awaited<ReturnType<typeof healthCheck>>, 
 
 
 
-export const getGetReadinessDashboardUrl = (params: GetReadinessDashboardParams,) => {
-  const normalizedParams = new URLSearchParams();
+export const getGetReadinessDashboardUrl = () => {
 
-  Object.entries(params || {}).forEach(([key, value]) => {
 
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : String(value))
-    }
-  });
 
-  const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/readiness/dashboard?${stringifiedParams}` : `/api/readiness/dashboard`
+  return `/api/readiness/dashboard`
 }
 
 /**
- * Returns organization-scoped readiness KPIs, trends, risks, incidents, and companies.
+ * Returns readiness KPIs, trends, risks, incidents, and companies for the organization the session is acting in. The tenant is derived from the session and is never accepted as a parameter.
  * @summary Get readiness dashboard data
  */
-export const getReadinessDashboard = async (params: GetReadinessDashboardParams, options?: Parameters<typeof customFetch>[1]): Promise<ReadinessDashboard> => {
+export const getReadinessDashboard = async ( options?: Parameters<typeof customFetch>[1]): Promise<ReadinessDashboard> => {
 
-  return customFetch<ReadinessDashboard>(getGetReadinessDashboardUrl(params),
+  return customFetch<ReadinessDashboard>(getGetReadinessDashboardUrl(),
   {
     ...options,
     method: 'GET'
@@ -464,23 +456,23 @@ export const getReadinessDashboard = async (params: GetReadinessDashboardParams,
 
 
 
-export const getGetReadinessDashboardQueryKey = (params?: GetReadinessDashboardParams,) => {
+export const getGetReadinessDashboardQueryKey = () => {
     return [
-    `/api/readiness/dashboard`, ...(params ? [params] : [])
+    `/api/readiness/dashboard`
     ] as const;
     }
 
 
-export const getGetReadinessDashboardQueryOptions = <TData = Awaited<ReturnType<typeof getReadinessDashboard>>, TError = ErrorType<void>>(params: GetReadinessDashboardParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getReadinessDashboard>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetReadinessDashboardQueryOptions = <TData = Awaited<ReturnType<typeof getReadinessDashboard>>, TError = ErrorType<ApiError>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getReadinessDashboard>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetReadinessDashboardQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetReadinessDashboardQueryKey();
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReadinessDashboard>>> = ({ signal }) => getReadinessDashboard(params, { signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReadinessDashboard>>> = ({ signal }) => getReadinessDashboard({ signal, ...requestOptions });
 
 
 
@@ -490,19 +482,19 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetReadinessDashboardQueryResult = NonNullable<Awaited<ReturnType<typeof getReadinessDashboard>>>
-export type GetReadinessDashboardQueryError = ErrorType<void>
+export type GetReadinessDashboardQueryError = ErrorType<ApiError>
 
 
 /**
  * @summary Get readiness dashboard data
  */
 
-export function useGetReadinessDashboard<TData = Awaited<ReturnType<typeof getReadinessDashboard>>, TError = ErrorType<void>>(
- params: GetReadinessDashboardParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getReadinessDashboard>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export function useGetReadinessDashboard<TData = Awaited<ReturnType<typeof getReadinessDashboard>>, TError = ErrorType<ApiError>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getReadinessDashboard>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getGetReadinessDashboardQueryOptions(params,options)
+  const queryOptions = getGetReadinessDashboardQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
@@ -524,7 +516,7 @@ export const getCalculateCompanyReadinessUrl = (companyId: string,) => {
 }
 
 /**
- * Calculates and persists a new readiness assessment from weighted Peppol criteria.
+ * Calculates and persists a new readiness assessment from weighted Peppol criteria. The company must belong to the session's organization.
  * @summary Calculate company readiness
  */
 export const calculateCompanyReadiness = async (companyId: string,
@@ -543,7 +535,7 @@ export const calculateCompanyReadiness = async (companyId: string,
 
 
 
-export const getCalculateCompanyReadinessMutationOptions = <TError = ErrorType<void>,
+export const getCalculateCompanyReadinessMutationOptions = <TError = ErrorType<ApiError>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof calculateCompanyReadiness>>, TError,{companyId: string;data: BodyType<ReadinessAssessmentInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof calculateCompanyReadiness>>, TError,{companyId: string;data: BodyType<ReadinessAssessmentInput>}, TContext> => {
 
@@ -572,12 +564,12 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type CalculateCompanyReadinessMutationResult = NonNullable<Awaited<ReturnType<typeof calculateCompanyReadiness>>>
     export type CalculateCompanyReadinessMutationBody = BodyType<ReadinessAssessmentInput>
-    export type CalculateCompanyReadinessMutationError = ErrorType<void>
+    export type CalculateCompanyReadinessMutationError = ErrorType<ApiError>
 
     /**
  * @summary Calculate company readiness
  */
-export const useCalculateCompanyReadiness = <TError = ErrorType<void>,
+export const useCalculateCompanyReadiness = <TError = ErrorType<ApiError>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof calculateCompanyReadiness>>, TError,{companyId: string;data: BodyType<ReadinessAssessmentInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof calculateCompanyReadiness>>,

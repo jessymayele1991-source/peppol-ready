@@ -2,14 +2,9 @@ import { useMemo, useState } from 'react';
 import { ArrowDownRight, ArrowUpRight, CircleAlert, LoaderCircle, Search, ShieldCheck, SlidersHorizontal, UsersRound } from 'lucide-react';
 import { getGetReadinessDashboardQueryKey, useGetReadinessDashboard, type DashboardCompany } from '@workspace/api-client-react';
 import { Badge, Button, Card, SelectPill, SeverityIcon, StatCard, ViewAll, type PeppolStatusCode } from '@/components/peppol-ui';
+import { useSession } from '@/auth/session-context';
 import { useI18n } from '@/i18n/i18n';
-import type { Severity } from '@/lib/mock-data';
-
-const ORGANIZATION_ID = 'org_northstar_accounting';
-
-function initials(name: string) {
-  return name.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase();
-}
+import { initials } from '@/lib/initials';
 
 function Donut({ ready, configuring, atRisk, total, averageScore }: {
   ready: number; configuring: number; atRisk: number; total: number; averageScore: number;
@@ -70,12 +65,14 @@ function DashboardState({ error, onRetry }: { error?: boolean; onRetry?: () => v
 
 export function Dashboard() {
   const { formatDate, formatNumber, t } = useI18n();
+  const { session } = useSession();
   const [activeStatus, setActiveStatus] = useState<PeppolStatusCode | 'ALL'>('ALL');
   const [search, setSearch] = useState('');
   const [showStored, setShowStored] = useState(false);
+  // The organization comes from the session, so it is not part of the key.
+  // Switching workspace invalidates every query instead.
   const { data, isLoading, isError, refetch } = useGetReadinessDashboard(
-    { organizationId: ORGANIZATION_ID },
-    { query: { queryKey: getGetReadinessDashboardQueryKey({ organizationId: ORGANIZATION_ID }), staleTime: 30_000, refetchOnWindowFocus: true } },
+    { query: { queryKey: getGetReadinessDashboardQueryKey(), staleTime: 30_000, refetchOnWindowFocus: true } },
   );
 
   const clients = useMemo(() => (data?.companies ?? []).map((company: DashboardCompany) => ({
@@ -107,7 +104,7 @@ export function Dashboard() {
   return (
     <div className="space-y-6">
       <div className="animate-rise flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-        <div><p className="mono text-[10px] font-bold uppercase tracking-[.16em] text-[hsl(var(--primary))]">{t('dashboard.pulse')} / {formatDate(data.generatedAt, { day: '2-digit', month: 'short' })}</p><h1 className="mt-2 text-[28px] font-bold tracking-[-.045em] sm:text-[32px]">{t('dashboard.title')}</h1><p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{t('dashboard.subtitle', { organization: data.organization.name })}</p></div>
+        <div><p className="mono text-[10px] font-bold uppercase tracking-[.16em] text-[hsl(var(--primary))]">{t('dashboard.pulse')} / {formatDate(data.generatedAt, { day: '2-digit', month: 'short' })}</p><h1 className="mt-2 text-[28px] font-bold tracking-[-.045em] sm:text-[32px]">{t('dashboard.title')}</h1><p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{t('dashboard.subtitle', { organization: session?.organization.name ?? data.organization.name })}</p></div>
         <Button variant="secondary" onClick={() => window.print()} data-testid="button-export-report"><ArrowDownRight size={15} /> {t('dashboard.exportReport')}</Button>
       </div>
 
@@ -135,7 +132,7 @@ export function Dashboard() {
           <div className="px-5 pb-4 pt-5"><div className="mb-1 flex items-center gap-2"><span className="mono text-[27px] font-bold tracking-[-.06em]">{formatNumber(latestTrend)}%</span><span className="flex items-center gap-1 text-xs font-bold text-[hsl(var(--primary))]"><ArrowUpRight size={13} /> {t('dashboard.trend.points', { value: `${trendDelta >= 0 ? '+' : ''}${formatNumber(trendDelta)}` })}</span></div><p className="text-xs text-[hsl(var(--muted-foreground))]">{t('dashboard.trend.calculatedFrom')}</p><TrendChart trend={data.trend} /></div>
         </Card>
         <Card title={t('dashboard.actions.title')} eyebrow={t('dashboard.actions.eyebrow')} action={<ViewAll onClick={() => setActiveStatus('AT_RISK')}>{t('common.viewAll')}</ViewAll>}>
-          <div className="divide-y divide-[hsl(var(--border)/.7)] px-5">{data.actions.slice(0, 5).map((action) => <button onClick={() => setActiveStatus(action.code === 'NOT_REGISTERED' ? 'NOT_REGISTERED' : 'AT_RISK')} key={action.code} className="flex w-full items-center gap-3 py-3 text-left"><SeverityIcon severity={action.severity as Severity} size={13} /><span className="min-w-0 flex-1 truncate text-xs font-semibold">{t(`risk.${action.code}`)}</span><span className="mono rounded-md bg-[hsl(var(--muted))] px-2 py-1 text-[10px] font-bold">{formatNumber(action.count)}</span></button>)}</div>
+          <div className="divide-y divide-[hsl(var(--border)/.7)] px-5">{data.actions.slice(0, 5).map((action) => <button onClick={() => setActiveStatus(action.code === 'NOT_REGISTERED' ? 'NOT_REGISTERED' : 'AT_RISK')} key={action.code} className="flex w-full items-center gap-3 py-3 text-left"><SeverityIcon severity={action.severity} size={13} /><span className="min-w-0 flex-1 truncate text-xs font-semibold">{t(`risk.${action.code}`)}</span><span className="mono rounded-md bg-[hsl(var(--muted))] px-2 py-1 text-[10px] font-bold">{formatNumber(action.count)}</span></button>)}</div>
           <div className="px-5 pb-5 pt-3"><Button className="w-full" onClick={() => setActiveStatus('AT_RISK')}>{t('dashboard.actions.openQueue')} <ArrowUpRight size={14} /></Button></div>
         </Card>
       </div>
@@ -153,7 +150,7 @@ export function Dashboard() {
           <div className="flex items-center justify-between border-t border-[hsl(var(--border)/.7)] px-5 py-3 text-[11px] text-[hsl(var(--muted-foreground))]"><span>{t('dashboard.clients.showing', { visible: formatNumber(filteredClients.length), total: formatNumber(clients.length) })}</span><ViewAll onClick={() => setSearch('')}>{t('dashboard.clients.clearSearch')}</ViewAll></div>
         </Card>
         <Card title={t('dashboard.incidents.title')} eyebrow={t('dashboard.incidents.eyebrow')} action={<ViewAll>{t('common.viewAll')}</ViewAll>}>
-          <div className="divide-y divide-[hsl(var(--border)/.7)] px-5">{data.incidents.map((incident) => <button key={incident.id} className="flex w-full items-center gap-3 py-3 text-left"><SeverityIcon severity={incident.severity as Severity} size={13} /><span className="min-w-0 flex-1"><span className="block truncate text-xs font-bold">{t(`incident.${incident.id}`)}</span><span className="mt-0.5 block text-[10px] text-[hsl(var(--muted-foreground))]">{incident.companyName ?? t('common.workspaceIncident')}</span></span><span className="whitespace-nowrap text-[10px] text-[hsl(var(--muted-foreground))]">{formatDate(incident.occurredAt, { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</span></button>)}</div>
+          <div className="divide-y divide-[hsl(var(--border)/.7)] px-5">{data.incidents.map((incident) => <button key={incident.id} className="flex w-full items-center gap-3 py-3 text-left"><SeverityIcon severity={incident.severity} size={13} /><span className="min-w-0 flex-1"><span className="block truncate text-xs font-bold">{t(`incident.${incident.id}`)}</span><span className="mt-0.5 block text-[10px] text-[hsl(var(--muted-foreground))]">{incident.companyName ?? t('common.workspaceIncident')}</span></span><span className="whitespace-nowrap text-[10px] text-[hsl(var(--muted-foreground))]">{formatDate(incident.occurredAt, { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</span></button>)}</div>
           <div className="px-5 pb-5 pt-3"><Button variant="secondary" className="w-full">{t('dashboard.incidents.openMonitor')} <ArrowUpRight size={14} /></Button></div>
         </Card>
       </div>

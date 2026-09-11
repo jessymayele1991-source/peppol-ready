@@ -239,7 +239,3 @@ export interface ReadinessDashboard {
   companies: DashboardCompany[];
 }
 
-export type GetReadinessDashboardParams = {
-organizationId: string;
-};
-
