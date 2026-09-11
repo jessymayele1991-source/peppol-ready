@@ -8,15 +8,16 @@ Peppol Ready helps accounting firms monitor and improve Peppol readiness, compli
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
+- `pnpm --filter @workspace/peppol-flow run db:migrate` — apply pending Prisma migrations
+- `pnpm --filter @workspace/peppol-flow run db:seed` — seed development data (idempotent)
 - Required env: `DATABASE_URL` — Postgres connection string
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
 - API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
+- DB: PostgreSQL + Prisma ORM
+- Validation: Zod, generated from the OpenAPI spec by Orval
 - API codegen: Orval (from OpenAPI spec)
 - Build: esbuild (CJS bundle)
 
@@ -44,6 +45,7 @@ Peppol Ready helps accounting firms monitor and improve Peppol readiness, compli
 - The first pass is intentionally mock-data driven so the information architecture can be validated before business rules and authentication are introduced.
 - Tenant ownership is represented at the persistence boundary through organizations and memberships; client records belong to an organization.
 - Operational records are organization-scoped, with companies owning readiness history and optional links from tasks and incidents.
+- Prisma is the single ORM. The schema, migrations, and seed live in `artifacts/peppol-flow/prisma/`; the API server consumes the generated client. Never introduce a second ORM against the same database.
 - Seed records use stable IDs and upserts so development seeding is safe to rerun.
 - Readiness is calculated from five explicit factors totaling 100 points; every failed factor produces an explainable remediation signal.
 - The target schema supports normalized client contacts, ten-check readiness scans, generated reports, per-user locale preferences, and audit activity.
