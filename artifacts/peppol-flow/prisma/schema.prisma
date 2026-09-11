@@ -28,6 +28,7 @@ model User {
   id               String          @id @default(cuid())
   name             String
   email            String          @unique
+  passwordHash     String?
   avatarInitials   String?
   createdAt        DateTime        @default(now()) @db.Timestamptz(3)
   updatedAt        DateTime        @updatedAt @db.Timestamptz(3)
@@ -40,6 +41,20 @@ model User {
   preferredLocale  String          @default("nl")
 
   @@map("users")
+}
+
+/// Session storage for the API server. Modelled in Prisma on purpose: a table
+/// created by the session store itself would read as drift on the next
+/// `prisma migrate dev` and invite a database reset.
+model UserSession {
+  sid       String   @id
+  data      Json
+  expiresAt DateTime @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  @@index([expiresAt])
+  @@map("user_sessions")
 }
 
 model Membership {

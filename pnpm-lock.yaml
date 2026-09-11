@@ -405,6 +405,9 @@ importers:
       '@prisma/client':
         specifier: 6.16.2
         version: 6.16.2(prisma@6.16.2(typescript@5.9.3))(typescript@5.9.3)
+      '@workspace/password':
+        specifier: workspace:*
+        version: link:../../lib/password
     devDependencies:
       '@hookform/resolvers':
         specifier: ^3.10.0
@@ -619,6 +622,12 @@ importers:
       zod:
         specifier: 'catalog:'
         version: 3.25.76
+
+  lib/password:
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.9.5
 
   scripts:
     devDependencies:

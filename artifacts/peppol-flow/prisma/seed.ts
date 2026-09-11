@@ -9,10 +9,17 @@ import {
   TaskPriority,
   TaskStatus,
 } from "@prisma/client";
+import { hashPassword } from "@workspace/password";
 
 const prisma = new PrismaClient();
 
 const organizationId = "org_northstar_accounting";
+
+/**
+ * Every seeded account shares this password. Override it with SEED_PASSWORD
+ * for any database that is not a throwaway development one.
+ */
+const seedPassword = process.env["SEED_PASSWORD"] ?? "peppol-ready-dev";
 
 const users = [
   {
@@ -217,11 +224,15 @@ async function seed() {
     },
   });
 
+  // One hash for every seeded account. Reseeding resets the development
+  // password, which is the intended behaviour for a recoverable dev database.
+  const passwordHash = await hashPassword(seedPassword);
+
   for (const user of users) {
     await prisma.user.upsert({
       where: { id: user.id },
-      update: user,
-      create: user,
+      update: { ...user, passwordHash },
+      create: { ...user, passwordHash },
     });
   }
 

@@ -13,7 +13,8 @@
     "db:seed": "prisma db seed"
   },
   "dependencies": {
-    "@prisma/client": "6.16.2"
+    "@prisma/client": "6.16.2",
+    "@workspace/password": "workspace:*"
   },
   "devDependencies": {
     "@hookform/resolvers": "^3.10.0",
