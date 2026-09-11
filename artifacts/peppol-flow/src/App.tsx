@@ -1,15 +1,17 @@
 import { type ReactNode, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AlertTriangle, BarChart3, Bell, ChevronDown, CircleHelp, Languages, LayoutDashboard, LogOut, Menu, Search, Settings, ShieldCheck, Users, X, Zap } from 'lucide-react';
+import { AlertTriangle, BarChart3, Bell, Check, ChevronDown, CircleHelp, Languages, LayoutDashboard, LoaderCircle, LogOut, Menu, Search, Settings, ShieldCheck, Users, X, Zap } from 'lucide-react';
 import { Link, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { SessionProvider, useSession } from '@/auth/session-context';
 import { I18nProvider, useI18n } from '@/i18n/i18n';
+import { initials } from '@/lib/initials';
 import NotFound from '@/pages/not-found';
 import { Dashboard } from '@/pages/dashboard';
+import { Login } from '@/pages/login';
 import { Placeholder, type PlaceholderPage } from '@/pages/placeholder';
-import { organization, user } from '@/lib/mock-data';
 
 const queryClient = new QueryClient();
 
@@ -32,6 +34,7 @@ const navGroups = [
 
 function Shell({ children }: { children: ReactNode }) {
   const { language, languages, setLanguage, t } = useI18n();
+  const { session, signOut, switchOrganization } = useSession();
   const [location] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
@@ -41,6 +44,9 @@ function Shell({ children }: { children: ReactNode }) {
     (match, group) => match ?? group.items.find((item) => item.href === location)?.key,
     undefined,
   ) ?? 'dashboard';
+
+  if (!session) return null;
+  const { organization, user, role, memberships } = session;
 
   return (
     <div className="flex min-h-[100dvh] bg-[hsl(var(--background))]">
@@ -52,14 +58,32 @@ function Shell({ children }: { children: ReactNode }) {
           </Link>
           <button aria-label={t('topbar.closeMenu')} onClick={() => setMobileOpen(false)} data-testid="button-close-mobile-menu" className="rounded-md p-1 text-[hsl(var(--sidebar-foreground)/.7)] hover:bg-[hsl(var(--sidebar-accent))] lg:hidden"><X size={17} /></button>
         </div>
-        <button onClick={() => setWorkspaceOpen(!workspaceOpen)} data-testid="button-workspace-switcher" className="relative mt-7 flex w-full items-center gap-3 rounded-xl border border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar-accent)/.72)] p-3 text-left transition-colors hover:bg-[hsl(var(--sidebar-accent))]">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[hsl(39_92%_57%)] text-[11px] font-bold text-[hsl(var(--sidebar))]">NA</span>
-          <span className="min-w-0 flex-1"><span className="block truncate text-xs font-bold text-white">{organization.name}</span><span className="mt-0.5 block text-[10px] text-[hsl(var(--sidebar-foreground)/.62)]">{t('common.professionalWorkspace')}</span></span>
+        <button onClick={() => setWorkspaceOpen(!workspaceOpen)} aria-expanded={workspaceOpen} data-testid="button-workspace-switcher" className="relative mt-7 flex w-full items-center gap-3 rounded-xl border border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar-accent)/.72)] p-3 text-left transition-colors hover:bg-[hsl(var(--sidebar-accent))]">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[hsl(39_92%_57%)] text-[11px] font-bold text-[hsl(var(--sidebar))]">{initials(organization.name)}</span>
+          <span className="min-w-0 flex-1"><span className="block truncate text-xs font-bold text-white">{organization.name}</span><span className="mt-0.5 block text-[10px] text-[hsl(var(--sidebar-foreground)/.62)]">{t(`plan.${organization.plan}`)}</span></span>
           <ChevronDown size={14} className={`transition-transform ${workspaceOpen ? 'rotate-180' : ''}`} />
-          {workspaceOpen && <span className="absolute left-0 right-0 top-[calc(100%+7px)] z-10 rounded-lg border border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar))] p-2 text-xs font-semibold text-white shadow-xl">{organization.name}<span className="mt-1 block text-[10px] font-normal text-[hsl(var(--sidebar-foreground)/.6)]">{t('workspace.switcherHint')}</span></span>}
         </button>
+        {workspaceOpen && (
+          <div role="menu" aria-label={t('auth.switchWorkspace')} className="mt-1.5 space-y-0.5 rounded-lg border border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar))] p-1.5 shadow-xl">
+            {memberships.map((membership) => {
+              const active = membership.organizationId === organization.id;
+              return (
+                <button
+                  key={membership.organizationId}
+                  role="menuitem"
+                  data-testid={`button-switch-${membership.organizationId}`}
+                  onClick={() => { setWorkspaceOpen(false); if (!active) void switchOrganization(membership.organizationId); }}
+                  className={`flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-xs font-semibold transition-colors ${active ? 'bg-[hsl(var(--sidebar-accent))] text-white' : 'text-[hsl(var(--sidebar-foreground)/.78)] hover:bg-[hsl(var(--sidebar-accent))] hover:text-white'}`}
+                >
+                  <span className="min-w-0 flex-1 truncate">{membership.organizationName}<span className="mt-0.5 block text-[10px] font-normal text-[hsl(var(--sidebar-foreground)/.6)]">{t(`roles.${membership.role}`)}</span></span>
+                  {active && <Check size={13} className="shrink-0 text-[hsl(var(--sidebar-primary))]" />}
+                </button>
+              );
+            })}
+          </div>
+        )}
         <nav className="mt-8 flex-1 space-y-6 overflow-y-auto">
-          {navGroups.map((group) => <div key={group.key}><p className="mono mb-2 px-3 text-[9px] font-bold uppercase tracking-[.16em] text-[hsl(var(--sidebar-foreground)/.48)]">{t(`nav.${group.key}`)}</p><div className="space-y-1">{group.items.map((item) => { const Icon = item.icon; const active = item.href === location; return <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)} data-testid={`link-nav-${item.key}`} className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-semibold transition-all duration-200 ${active ? 'bg-[hsl(var(--sidebar-primary))] text-white shadow-[0_5px_14px_hsl(221_83%_53%/.18)]' : 'text-[hsl(var(--sidebar-foreground)/.72)] hover:bg-[hsl(var(--sidebar-accent))] hover:text-white'}`}><Icon size={16} strokeWidth={active ? 2.4 : 1.9} /><span>{t(`nav.${item.key}`)}</span>{item.key === 'actions' && <span className="mono ml-auto rounded bg-[hsl(39_92%_57%)] px-1.5 py-0.5 text-[9px] font-bold text-[hsl(var(--sidebar))]">27</span>}</Link>; })}</div></div>)}
+          {navGroups.map((group) => <div key={group.key}><p className="mono mb-2 px-3 text-[9px] font-bold uppercase tracking-[.16em] text-[hsl(var(--sidebar-foreground)/.48)]">{t(`nav.${group.key}`)}</p><div className="space-y-1">{group.items.map((item) => { const Icon = item.icon; const active = item.href === location; return <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)} data-testid={`link-nav-${item.key}`} className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-semibold transition-all duration-200 ${active ? 'bg-[hsl(var(--sidebar-primary))] text-white shadow-[0_5px_14px_hsl(221_83%_53%/.18)]' : 'text-[hsl(var(--sidebar-foreground)/.72)] hover:bg-[hsl(var(--sidebar-accent))] hover:text-white'}`}><Icon size={16} strokeWidth={active ? 2.4 : 1.9} /><span>{t(`nav.${item.key}`)}</span></Link>; })}</div></div>)}
         </nav>
         <div className="mt-5 rounded-xl border border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar-accent)/.65)] p-3.5"><div className="flex items-start gap-2.5"><CircleHelp size={16} className="mt-0.5 shrink-0 text-[hsl(var(--sidebar-primary))]" /><div><p className="text-xs font-bold text-white">{t('workspace.helpTitle')}</p><p className="mt-1 text-[10px] leading-4 text-[hsl(var(--sidebar-foreground)/.62)]">{t('workspace.helpDescription')}</p><button data-testid="button-contact-support" className="mt-2 text-[10px] font-bold text-[hsl(var(--sidebar-primary))] hover:underline">{t('workspace.contactSupport')} <span aria-hidden>→</span></button></div></div></div>
       </aside>
@@ -76,8 +100,8 @@ function Shell({ children }: { children: ReactNode }) {
             <button aria-label={t('topbar.notifications')} onClick={() => setNotificationsOpen(!notificationsOpen)} data-testid="button-notifications" className="relative rounded-lg p-2 text-[hsl(var(--muted-foreground))] transition-colors hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]"><Bell size={17} /><span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[hsl(var(--accent))] ring-2 ring-white" /></button>
             {notificationsOpen && <div className="absolute right-[100px] top-11 z-30 w-64 rounded-xl border border-[hsl(var(--border))] bg-white p-3 shadow-xl"><p className="text-xs font-bold">{t('topbar.notifications')}</p><p className="mt-2 rounded-lg bg-[hsl(var(--muted))] p-2.5 text-[11px] leading-4 text-[hsl(var(--muted-foreground))]">{t('topbar.notificationMessage')}</p></div>}
             <span className="hidden h-5 w-px bg-[hsl(var(--border))] sm:block" />
-            <button onClick={() => setProfileOpen(!profileOpen)} data-testid="button-profile-menu" className="flex items-center gap-2 rounded-lg p-1.5 transition-colors hover:bg-[hsl(var(--muted))]"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-[hsl(222_45%_17%)] text-[10px] font-bold text-white">{user.avatarInitials}</span><span className="hidden text-left sm:block"><span className="block text-xs font-bold">{user.name}</span><span className="block text-[10px] text-[hsl(var(--muted-foreground))]">{t('roles.owner')}</span></span><ChevronDown size={13} className={`hidden text-[hsl(var(--muted-foreground))] transition-transform sm:block ${profileOpen ? 'rotate-180' : ''}`} /></button>
-            {profileOpen && <div className="absolute right-0 top-12 z-30 w-52 rounded-xl border border-[hsl(var(--border))] bg-white p-2 shadow-xl"><p className="px-2.5 py-2 text-xs font-bold">{user.email}</p><button data-testid="button-profile-settings" className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]"><Settings size={14} /> {t('topbar.profileSettings')}</button><button data-testid="button-sign-out" className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs text-[hsl(var(--destructive))] hover:bg-[hsl(4_100%_95%)]"><LogOut size={14} /> {t('topbar.signOut')}</button></div>}
+            <button onClick={() => setProfileOpen(!profileOpen)} data-testid="button-profile-menu" className="flex items-center gap-2 rounded-lg p-1.5 transition-colors hover:bg-[hsl(var(--muted))]"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-[hsl(222_45%_17%)] text-[10px] font-bold text-white">{user.avatarInitials}</span><span className="hidden text-left sm:block"><span className="block text-xs font-bold">{user.name}</span><span className="block text-[10px] text-[hsl(var(--muted-foreground))]">{t(`roles.${role}`)}</span></span><ChevronDown size={13} className={`hidden text-[hsl(var(--muted-foreground))] transition-transform sm:block ${profileOpen ? 'rotate-180' : ''}`} /></button>
+            {profileOpen && <div className="absolute right-0 top-12 z-30 w-52 rounded-xl border border-[hsl(var(--border))] bg-white p-2 shadow-xl"><p className="px-2.5 py-2 text-xs font-bold">{user.email}</p><button data-testid="button-profile-settings" className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]"><Settings size={14} /> {t('topbar.profileSettings')}</button><button onClick={() => { setProfileOpen(false); void signOut(); }} data-testid="button-sign-out" className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs text-[hsl(var(--destructive))] hover:bg-[hsl(4_100%_95%)]"><LogOut size={14} /> {t('topbar.signOut')}</button></div>}
           </div>
         </header>
         <div className="mx-auto w-full max-w-[1560px] px-4 py-7 sm:px-7 lg:px-9 lg:py-9">{children}</div>
@@ -86,7 +110,22 @@ function Shell({ children }: { children: ReactNode }) {
   );
 }
 
+function AppLoading() {
+  const { t } = useI18n();
+  return (
+    <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-3 bg-[hsl(var(--background))] text-[hsl(var(--muted-foreground))]">
+      <LoaderCircle className="animate-spin text-[hsl(var(--primary))]" size={26} />
+      <p className="text-sm font-semibold">{t('auth.loading')}</p>
+    </div>
+  );
+}
+
 function Router() {
+  const { session, isLoading } = useSession();
+
+  if (isLoading) return <AppLoading />;
+  if (!session) return <Login />;
+
   const placeholderRoutes: Array<{ path: string; page: PlaceholderPage }> = [
     { path: '/clients', page: 'clients' }, { path: '/readiness', page: 'readiness' },
     { path: '/actions', page: 'actions' }, { path: '/incidents', page: 'incidents' },
@@ -101,8 +140,25 @@ function RoutedErrorBoundary({ children }: { children: ReactNode }) {
   return <ErrorBoundary resetKey={location}>{children}</ErrorBoundary>;
 }
 
+/**
+ * The locale scope follows the session: signed out it stores under an
+ * anonymous key so the sign-in screen can still be translated, and once a
+ * session arrives it adopts that account's preferred language.
+ */
+function LocalizedApp() {
+  const { session } = useSession();
+  return (
+    <I18nProvider userId={session?.user.id} preferredLanguage={session?.user.preferredLocale}>
+      <TooltipProvider>
+        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><Router /></WouterRouter>
+        <Toaster />
+      </TooltipProvider>
+    </I18nProvider>
+  );
+}
+
 function App() {
-  return <I18nProvider userId={user.id}><QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><Router /></WouterRouter><Toaster /></TooltipProvider></QueryClientProvider></I18nProvider>;
+  return <QueryClientProvider client={queryClient}><SessionProvider><LocalizedApp /></SessionProvider></QueryClientProvider>;
 }
 
 export default App;

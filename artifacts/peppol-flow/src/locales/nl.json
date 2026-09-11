@@ -1,5 +1,8 @@
 {
-  "meta": { "code": "nl", "name": "Nederlands" },
+  "meta": {
+    "code": "nl",
+    "name": "Nederlands"
+  },
   "common": {
     "workspace": "Werkruimte",
     "viewAll": "Alles bekijken",
@@ -53,7 +56,12 @@
     "helpDescription": "Onze Peppol-specialisten staan voor je klaar.",
     "contactSupport": "Neem contact op"
   },
-  "roles": { "owner": "Eigenaar van werkruimte" },
+  "roles": {
+    "OWNER": "Eigenaar",
+    "ADMIN": "Beheerder",
+    "MEMBER": "Medewerker",
+    "VIEWER": "Lezer"
+  },
   "dashboard": {
     "pulse": "Werkruimteoverzicht",
     "title": "Peppol-gereedheid in één oogopslag",
@@ -141,18 +149,66 @@
   "placeholder": {
     "tagline": "Een gerichte werkruimte voor teams die met zekerheid werken.",
     "prepare": "Werkruimte voorbereiden",
-    "clients": { "eyebrow": "Klantenbestand", "title": "Je klantennetwerk is klaar om te verbinden", "description": "Na het importeren van klantendossiers kan je team hier elk Peppol-profiel zoeken, segmenteren en bekijken." },
-    "readiness": { "eyebrow": "Gereedheidsinzichten", "title": "Een scherper beeld krijgt vorm", "description": "Vergelijk klantgroepen, ontdek afwijkingen en begrijp wat gereedheidsscores tegenhoudt." },
-    "actions": { "eyebrow": "Actiewachtrij", "title": "Houd het werk in beweging", "description": "Geprioriteerde acties verschijnen hier met eigenaar, context en de beste volgende stap." },
-    "incidents": { "eyebrow": "Incidentenmonitor", "title": "Een rustige operationele dag", "description": "Deze ruimte is voorbereid op leveringsfouten, validatieproblemen en aflopende certificaten." },
-    "reports": { "eyebrow": "Rapportagestudio", "title": "Rapporten zonder wildgroei aan spreadsheets", "description": "Bouw terugkerende gereedheidsoverzichten voor klanten en belanghebbenden." },
-    "users": { "eyebrow": "Team van werkruimte", "title": "Breng je medewerkers samen", "description": "Nodig teamleden uit, wijs rollen toe en maak eigenaarschap zichtbaar." },
-    "settings": { "eyebrow": "Werkruimte-instellingen", "title": "Maak Peppol Ready van jou", "description": "Voorkeuren, integraties, meldingsregels en toegangsbeheer komen hier samen." }
+    "clients": {
+      "eyebrow": "Klantenbestand",
+      "title": "Je klantennetwerk is klaar om te verbinden",
+      "description": "Na het importeren van klantendossiers kan je team hier elk Peppol-profiel zoeken, segmenteren en bekijken."
+    },
+    "readiness": {
+      "eyebrow": "Gereedheidsinzichten",
+      "title": "Een scherper beeld krijgt vorm",
+      "description": "Vergelijk klantgroepen, ontdek afwijkingen en begrijp wat gereedheidsscores tegenhoudt."
+    },
+    "actions": {
+      "eyebrow": "Actiewachtrij",
+      "title": "Houd het werk in beweging",
+      "description": "Geprioriteerde acties verschijnen hier met eigenaar, context en de beste volgende stap."
+    },
+    "incidents": {
+      "eyebrow": "Incidentenmonitor",
+      "title": "Een rustige operationele dag",
+      "description": "Deze ruimte is voorbereid op leveringsfouten, validatieproblemen en aflopende certificaten."
+    },
+    "reports": {
+      "eyebrow": "Rapportagestudio",
+      "title": "Rapporten zonder wildgroei aan spreadsheets",
+      "description": "Bouw terugkerende gereedheidsoverzichten voor klanten en belanghebbenden."
+    },
+    "users": {
+      "eyebrow": "Team van werkruimte",
+      "title": "Breng je medewerkers samen",
+      "description": "Nodig teamleden uit, wijs rollen toe en maak eigenaarschap zichtbaar."
+    },
+    "settings": {
+      "eyebrow": "Werkruimte-instellingen",
+      "title": "Maak Peppol Ready van jou",
+      "description": "Voorkeuren, integraties, meldingsregels en toegangsbeheer komen hier samen."
+    }
   },
   "errors": {
     "unexpectedTitle": "Er ging iets mis",
     "unexpectedDescription": "Dit onderdeel ondervond een fout. De rest van de applicatie blijft werken.",
     "notFoundTitle": "404 Pagina niet gevonden",
     "notFoundDescription": "Deze pagina bestaat niet of is verplaatst."
+  },
+  "plan": {
+    "STARTER": "Starterwerkruimte",
+    "PROFESSIONAL": "Professionele werkruimte",
+    "ENTERPRISE": "Enterprise-werkruimte"
+  },
+  "auth": {
+    "eyebrow": "Veilige toegang",
+    "title": "Meld je aan",
+    "subtitle": "Beheer de Peppol-gereedheid van je klantenportefeuille.",
+    "email": "E-mailadres",
+    "password": "Wachtwoord",
+    "signIn": "Aanmelden",
+    "signingIn": "Bezig met aanmelden…",
+    "invalidCredentials": "Dit e-mailadres en wachtwoord horen niet bij elkaar.",
+    "unexpectedError": "Aanmelden lukte niet. Probeer het zo meteen opnieuw.",
+    "help": "Geen toegang? Vraag de eigenaar van je werkruimte om een uitnodiging.",
+    "signingOut": "Bezig met afmelden…",
+    "loading": "Werkruimte laden…",
+    "switchWorkspace": "Wissel van werkruimte"
   }
 }

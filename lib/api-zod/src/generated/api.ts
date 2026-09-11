@@ -9,6 +9,109 @@ import * as zod from 'zod';
 
 
 /**
+ * Verifies credentials and starts a session.
+ * @summary Sign in
+ */
+
+
+
+export const LoginBody = zod.object({
+  "email": zod.string(),
+  "password": zod.string().min(1)
+})
+
+export const LoginResponse = zod.object({
+  "user": zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string(),
+  "avatarInitials": zod.string().describe('Nullable in the database; the server derives it from the name so the contract always carries a value.'),
+  "preferredLocale": zod.string()
+}),
+  "organization": zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "plan": zod.enum(['STARTER', 'PROFESSIONAL', 'ENTERPRISE'])
+}),
+  "role": zod.enum(['OWNER', 'ADMIN', 'MEMBER', 'VIEWER']),
+  "capabilities": zod.array(zod.enum(['workspace.manage', 'workspace.transfer', 'members.manage', 'clients.write', 'scans.write', 'tasks.manage', 'reports.generate', 'reports.view', 'audit.viewAll', 'audit.viewOwn'])),
+  "memberships": zod.array(zod.object({
+  "organizationId": zod.string(),
+  "organizationName": zod.string(),
+  "role": zod.enum(['OWNER', 'ADMIN', 'MEMBER', 'VIEWER'])
+}))
+}).describe('Invariant: organization.id always appears in memberships, role is always that membership\'s role, and capabilities is always the derivation of role through the server\'s permission matrix.')
+
+
+/**
+ * Destroys the current session.
+ * @summary Sign out
+ */
+export const LogoutResponse = zod.void()
+
+
+/**
+ * Returns the signed-in user, active organization, role, capabilities, and memberships.
+ * @summary Get the current session
+ */
+export const GetSessionResponse = zod.object({
+  "user": zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string(),
+  "avatarInitials": zod.string().describe('Nullable in the database; the server derives it from the name so the contract always carries a value.'),
+  "preferredLocale": zod.string()
+}),
+  "organization": zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "plan": zod.enum(['STARTER', 'PROFESSIONAL', 'ENTERPRISE'])
+}),
+  "role": zod.enum(['OWNER', 'ADMIN', 'MEMBER', 'VIEWER']),
+  "capabilities": zod.array(zod.enum(['workspace.manage', 'workspace.transfer', 'members.manage', 'clients.write', 'scans.write', 'tasks.manage', 'reports.generate', 'reports.view', 'audit.viewAll', 'audit.viewOwn'])),
+  "memberships": zod.array(zod.object({
+  "organizationId": zod.string(),
+  "organizationName": zod.string(),
+  "role": zod.enum(['OWNER', 'ADMIN', 'MEMBER', 'VIEWER'])
+}))
+}).describe('Invariant: organization.id always appears in memberships, role is always that membership\'s role, and capabilities is always the derivation of role through the server\'s permission matrix.')
+
+
+/**
+ * Moves the session to another organization the signed-in user is a member of.
+ * @summary Switch the active organization
+ */
+
+
+
+export const SwitchOrganizationBody = zod.object({
+  "organizationId": zod.string().min(1)
+})
+
+export const SwitchOrganizationResponse = zod.object({
+  "user": zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string(),
+  "avatarInitials": zod.string().describe('Nullable in the database; the server derives it from the name so the contract always carries a value.'),
+  "preferredLocale": zod.string()
+}),
+  "organization": zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "plan": zod.enum(['STARTER', 'PROFESSIONAL', 'ENTERPRISE'])
+}),
+  "role": zod.enum(['OWNER', 'ADMIN', 'MEMBER', 'VIEWER']),
+  "capabilities": zod.array(zod.enum(['workspace.manage', 'workspace.transfer', 'members.manage', 'clients.write', 'scans.write', 'tasks.manage', 'reports.generate', 'reports.view', 'audit.viewAll', 'audit.viewOwn'])),
+  "memberships": zod.array(zod.object({
+  "organizationId": zod.string(),
+  "organizationName": zod.string(),
+  "role": zod.enum(['OWNER', 'ADMIN', 'MEMBER', 'VIEWER'])
+}))
+}).describe('Invariant: organization.id always appears in memberships, role is always that membership\'s role, and capabilities is always the derivation of role through the server\'s permission matrix.')
+
+
+/**
  * Returns server health status
  * @summary Health check
  */

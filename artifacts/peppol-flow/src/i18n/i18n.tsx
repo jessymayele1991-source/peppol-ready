@@ -81,23 +81,60 @@ type I18nContextValue = {
 
 const I18nContext = createContext<I18nContextValue | null>(null);
 
+const ANONYMOUS_SCOPE = 'anonymous';
+
+function preferenceKeyFor(userId: string | undefined) {
+  return `peppolflow:language:${userId ?? ANONYMOUS_SCOPE}`;
+}
+
+function readStoredLanguage(key: string) {
+  try {
+    const stored = window.localStorage.getItem(key);
+    return stored && locales[stored] ? stored : undefined;
+  } catch {
+    // Private windows and blocked site data both throw here.
+    return undefined;
+  }
+}
+
+/**
+ * `userId` is optional because the sign-in screen renders before anyone is
+ * known; that scope stores its choice under an anonymous key. Once a session
+ * arrives the provider switches scope and adopts the account's stored
+ * `preferredLocale` unless that user already chose a language on this device.
+ */
 export function I18nProvider({
   children,
   userId,
+  preferredLanguage,
 }: {
   children: ReactNode;
-  userId: string;
+  userId?: string;
+  preferredLanguage?: string;
 }) {
-  const preferenceKey = `peppolflow:language:${userId}`;
-  const [language, updateLanguage] = useState(() => {
-    const stored = window.localStorage.getItem(preferenceKey);
-    return stored && locales[stored] ? stored : DEFAULT_LANGUAGE;
-  });
+  const preferenceKey = preferenceKeyFor(userId);
+  const [language, updateLanguage] = useState(
+    () => readStoredLanguage(preferenceKey) ?? DEFAULT_LANGUAGE,
+  );
+
+  useEffect(() => {
+    const stored = readStoredLanguage(preferenceKey);
+    const resolved =
+      stored ??
+      (preferredLanguage && locales[preferredLanguage]
+        ? preferredLanguage
+        : DEFAULT_LANGUAGE);
+    updateLanguage(resolved);
+  }, [preferenceKey, preferredLanguage]);
 
   useEffect(() => {
     activeLanguage = language;
     document.documentElement.lang = language;
-    window.localStorage.setItem(preferenceKey, language);
+    try {
+      window.localStorage.setItem(preferenceKey, language);
+    } catch {
+      // A language choice is not worth failing a render over.
+    }
   }, [language, preferenceKey]);
 
   const value = useMemo<I18nContextValue>(() => {

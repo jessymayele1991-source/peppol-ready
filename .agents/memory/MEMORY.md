@@ -1,2 +1,3 @@
 - [Prisma configuration compatibility](prisma-config-compatibility.md) — this workspace’s Prisma version keeps the datasource URL in schema.prisma, not the newer config env helper.
 - [OpenAPI numeric compatibility](openapi-numeric-compatibility.md) — use number schemas for generated score/count fields; integer emits an unsupported Zod helper here.
+- [OpenAPI string format compatibility](openapi-string-format-compatibility.md) — avoid `format: email`; it emits a Zod v4 helper the pinned Zod 3 lacks.

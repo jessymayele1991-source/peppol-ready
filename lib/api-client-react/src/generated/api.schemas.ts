@@ -5,6 +5,104 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type ApiErrorErrorCode = typeof ApiErrorErrorCode[keyof typeof ApiErrorErrorCode];
+
+
+export const ApiErrorErrorCode = {
+  bad_request: 'bad_request',
+  unauthorized: 'unauthorized',
+  forbidden: 'forbidden',
+  not_found: 'not_found',
+  internal_error: 'internal_error',
+} as const;
+
+export type ApiErrorError = {
+  code: ApiErrorErrorCode;
+  message: string;
+};
+
+export interface ApiError {
+  error: ApiErrorError;
+}
+
+export type MembershipRole = typeof MembershipRole[keyof typeof MembershipRole];
+
+
+export const MembershipRole = {
+  OWNER: 'OWNER',
+  ADMIN: 'ADMIN',
+  MEMBER: 'MEMBER',
+  VIEWER: 'VIEWER',
+} as const;
+
+export type OrganizationPlan = typeof OrganizationPlan[keyof typeof OrganizationPlan];
+
+
+export const OrganizationPlan = {
+  STARTER: 'STARTER',
+  PROFESSIONAL: 'PROFESSIONAL',
+  ENTERPRISE: 'ENTERPRISE',
+} as const;
+
+export type Capability = typeof Capability[keyof typeof Capability];
+
+
+export const Capability = {
+  workspacemanage: 'workspace.manage',
+  workspacetransfer: 'workspace.transfer',
+  membersmanage: 'members.manage',
+  clientswrite: 'clients.write',
+  scanswrite: 'scans.write',
+  tasksmanage: 'tasks.manage',
+  reportsgenerate: 'reports.generate',
+  reportsview: 'reports.view',
+  auditviewAll: 'audit.viewAll',
+  auditviewOwn: 'audit.viewOwn',
+} as const;
+
+export interface LoginInput {
+  email: string;
+  /** @minLength 1 */
+  password: string;
+}
+
+export interface SwitchOrganizationInput {
+  /** @minLength 1 */
+  organizationId: string;
+}
+
+export interface SessionAccount {
+  id: string;
+  name: string;
+  email: string;
+  /** Nullable in the database; the server derives it from the name so the contract always carries a value. */
+  avatarInitials: string;
+  preferredLocale: string;
+}
+
+export interface SessionOrganization {
+  id: string;
+  name: string;
+  plan: OrganizationPlan;
+}
+
+export interface SessionMembership {
+  organizationId: string;
+  organizationName: string;
+  role: MembershipRole;
+}
+
+/**
+ * Invariant: organization.id always appears in memberships, role is always that membership's role, and capabilities is always the derivation of role through the server's permission matrix.
+ */
+export interface Session {
+  user: SessionAccount;
+  organization: SessionOrganization;
+  role: MembershipRole;
+  capabilities: Capability[];
+  memberships: SessionMembership[];
+}
+
 export interface HealthStatus {
   status: string;
 }

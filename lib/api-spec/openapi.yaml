@@ -12,7 +12,93 @@ tags:
     description: Health operations
   - name: readiness
     description: Peppol readiness scoring and dashboard operations
+  - name: auth
+    description: Authentication, active organization, and session identity
 paths:
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Sign in
+      description: Verifies credentials and starts a session.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Session started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Sign out
+      description: Destroys the current session.
+      responses:
+        "204":
+          description: Session destroyed
+  /auth/session:
+    get:
+      operationId: getSession
+      tags: [auth]
+      summary: Get the current session
+      description: Returns the signed-in user, active organization, role, capabilities, and memberships.
+      responses:
+        "200":
+          description: Current session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+        "401":
+          description: Not signed in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /auth/organization:
+    post:
+      operationId: switchOrganization
+      tags: [auth]
+      summary: Switch the active organization
+      description: Moves the session to another organization the signed-in user is a member of.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SwitchOrganizationInput"
+      responses:
+        "200":
+          description: Session moved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+        "401":
+          description: Not signed in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Not a member of that organization
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
   /healthz:
     get:
       operationId: healthCheck
@@ -76,6 +162,118 @@ paths:
           description: Company not found
 components:
   schemas:
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              enum:
+                [
+                  bad_request,
+                  unauthorized,
+                  forbidden,
+                  not_found,
+                  internal_error,
+                ]
+            message:
+              type: string
+          required: [code, message]
+      required: [error]
+    MembershipRole:
+      type: string
+      enum: [OWNER, ADMIN, MEMBER, VIEWER]
+    OrganizationPlan:
+      type: string
+      enum: [STARTER, PROFESSIONAL, ENTERPRISE]
+    Capability:
+      type: string
+      enum:
+        - workspace.manage
+        - workspace.transfer
+        - members.manage
+        - clients.write
+        - scans.write
+        - tasks.manage
+        - reports.generate
+        - reports.view
+        - audit.viewAll
+        - audit.viewOwn
+    LoginInput:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+          minLength: 1
+      required: [email, password]
+    SwitchOrganizationInput:
+      type: object
+      properties:
+        organizationId:
+          type: string
+          minLength: 1
+      required: [organizationId]
+    SessionAccount:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        avatarInitials:
+          type: string
+          description: Nullable in the database; the server derives it from the name so the contract always carries a value.
+        preferredLocale:
+          type: string
+      required: [id, name, email, avatarInitials, preferredLocale]
+    SessionOrganization:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        plan:
+          $ref: "#/components/schemas/OrganizationPlan"
+      required: [id, name, plan]
+    SessionMembership:
+      type: object
+      properties:
+        organizationId:
+          type: string
+        organizationName:
+          type: string
+        role:
+          $ref: "#/components/schemas/MembershipRole"
+      required: [organizationId, organizationName, role]
+    Session:
+      type: object
+      description: >-
+        Invariant: organization.id always appears in memberships, role is
+        always that membership's role, and capabilities is always the
+        derivation of role through the server's permission matrix.
+      properties:
+        user:
+          $ref: "#/components/schemas/SessionAccount"
+        organization:
+          $ref: "#/components/schemas/SessionOrganization"
+        role:
+          $ref: "#/components/schemas/MembershipRole"
+        capabilities:
+          type: array
+          items:
+            $ref: "#/components/schemas/Capability"
+        memberships:
+          type: array
+          items:
+            $ref: "#/components/schemas/SessionMembership"
+      required: [user, organization, role, capabilities, memberships]
     HealthStatus:
       type: object
       properties:

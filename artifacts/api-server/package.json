@@ -14,9 +14,11 @@
   "dependencies": {
     "@prisma/client": "6.16.2",
     "@workspace/api-zod": "workspace:*",
+    "@workspace/password": "workspace:*",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "express": "^5.2.1",
+    "express-session": "^1.18.1",
     "pino": "^9.14.0",
     "pino-http": "^10.5.0"
   },
@@ -24,6 +26,7 @@
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+    "@types/express-session": "^1.18.1",
     "@types/node": "catalog:",
     "esbuild": "0.27.3",
     "esbuild-plugin-pino": "^2.3.3",

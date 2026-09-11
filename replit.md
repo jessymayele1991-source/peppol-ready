@@ -11,6 +11,9 @@ Peppol Ready helps accounting firms monitor and improve Peppol readiness, compli
 - `pnpm --filter @workspace/peppol-flow run db:migrate` — apply pending Prisma migrations
 - `pnpm --filter @workspace/peppol-flow run db:seed` — seed development data (idempotent)
 - Required env: `DATABASE_URL` — Postgres connection string
+- Required env in production: `SESSION_SECRET` — signs the session cookie; the server refuses to start without it
+- Optional env: `WEB_ORIGIN` — enables CORS with credentials for local development, where the web artifact and the API run on different ports. Unset in production, where both are served from one origin.
+- Optional env: `SEED_PASSWORD` — overrides the shared development password used by the seed
 
 ## Stack
 
@@ -37,6 +40,9 @@ Peppol Ready helps accounting firms monitor and improve Peppol readiness, compli
 - `artifacts/api-server/src/lib/readiness-engine.ts` — deterministic weighted scoring and explainable risk rules
 - `artifacts/api-server/src/lib/readiness-service.ts` — Prisma-backed assessments and dashboard aggregation
 - `artifacts/api-server/src/routes/readiness.ts` — readiness calculation and dashboard endpoints
+- `artifacts/api-server/src/lib/permissions.ts` — the capability matrix; the single source for both server enforcement and the capabilities shipped in the session
+- `artifacts/api-server/src/middlewares/require-auth.ts` — the only place tenant context is established
+- `artifacts/peppol-flow/src/auth/session-context.tsx` — session identity, sign-out, and workspace switching in the UI
 - `lib/api-spec/openapi.yaml` — typed readiness API contract
 - `docs/peppol-ready-architecture.md` — product boundaries, routes, permissions, domain model, wireframes, and implementation sequence
 
@@ -46,6 +52,9 @@ Peppol Ready helps accounting firms monitor and improve Peppol readiness, compli
 - Tenant ownership is represented at the persistence boundary through organizations and memberships; client records belong to an organization.
 - Operational records are organization-scoped, with companies owning readiness history and optional links from tasks and incidents.
 - Prisma is the single ORM. The schema, migrations, and seed live in `artifacts/peppol-flow/prisma/`; the API server consumes the generated client. Never introduce a second ORM against the same database.
+- Tenant context is derived from the session through the user's membership, never from a request parameter. `requireAuth` is the only place it is established; every organization-scoped query filters on `req.auth.organizationId`.
+- The capability matrix lives only in `permissions.ts`. Routes gate on a capability, and the session ships the same derivation to the client, so the interface hides exactly what the API refuses. Never restate role checks in a component.
+- Sessions are httpOnly cookies backed by a Prisma-modelled table. The web artifact and the API share an origin in production, so no token is ever stored in JavaScript.
 - Seed records use stable IDs and upserts so development seeding is safe to rerun.
 - Readiness is calculated from five explicit factors totaling 100 points; every failed factor produces an explainable remediation signal.
 - The target schema supports normalized client contacts, ten-check readiness scans, generated reports, per-user locale preferences, and audit activity.

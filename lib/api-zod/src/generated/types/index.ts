@@ -6,12 +6,19 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './apiError';
+export * from './apiErrorError';
+export * from './apiErrorErrorCode';
+export * from './capability';
 export * from './dashboardAction';
 export * from './dashboardCompany';
 export * from './dashboardIncident';
 export * from './dashboardKpis';
 export * from './getReadinessDashboardParams';
 export * from './healthStatus';
+export * from './loginInput';
+export * from './membershipRole';
+export * from './organizationPlan';
 export * from './peppolStatus';
 export * from './readinessAssessment';
 export * from './readinessAssessmentInput';
@@ -22,3 +29,8 @@ export * from './readinessFactor';
 export * from './readinessTrendPoint';
 export * from './riskIndicator';
 export * from './riskSeverity';
+export * from './session';
+export * from './sessionAccount';
+export * from './sessionMembership';
+export * from './sessionOrganization';
+export * from './switchOrganizationInput';

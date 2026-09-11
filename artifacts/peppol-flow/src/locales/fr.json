@@ -1,32 +1,214 @@
 {
-  "meta": { "code": "fr", "name": "Français" },
-  "common": { "workspace": "Espace de travail", "viewAll": "Tout voir", "retry": "Réessayer", "notConfigured": "Non configuré", "noBillingContact": "Aucun contact de facturation", "workspaceIncident": "Incident de l’espace", "professionalWorkspace": "Espace professionnel", "loading": "Chargement", "close": "Fermer", "more": "Plus", "previous": "Précédent", "next": "Suivant", "previousSlide": "Diapositive précédente", "nextSlide": "Diapositive suivante", "pagination": "Pagination", "previousPage": "Aller à la page précédente", "nextPage": "Aller à la page suivante", "morePages": "Plus de pages", "breadcrumb": "Fil d’Ariane", "sidebar": "Barre latérale", "sidebarDescription": "Affiche la barre latérale mobile.", "toggleSidebar": "Afficher ou masquer la barre latérale" },
-  "nav": { "monitor": "Surveiller", "operate": "Gérer", "workspace": "Espace de travail", "dashboard": "Tableau de bord", "clients": "Clients", "readiness": "Préparation", "actions": "Actions", "incidents": "Incidents", "reports": "Rapports", "users": "Utilisateurs", "settings": "Paramètres" },
-  "topbar": { "search": "Rechercher clients, incidents…", "notifications": "Notifications", "notificationMessage": "3 dossiers clients nécessitent votre attention aujourd’hui.", "profileSettings": "Paramètres du profil", "signOut": "Se déconnecter", "language": "Langue", "openMenu": "Ouvrir le menu", "closeMenu": "Fermer le menu" },
-  "workspace": { "switcherHint": "Le sélecteur est prêt pour d’autres espaces", "helpTitle": "Besoin d’aide ?", "helpDescription": "Nos spécialistes Peppol sont à votre disposition.", "contactSupport": "Contacter l’assistance" },
-  "roles": { "owner": "Propriétaire de l’espace" },
+  "meta": {
+    "code": "fr",
+    "name": "Français"
+  },
+  "common": {
+    "workspace": "Espace de travail",
+    "viewAll": "Tout voir",
+    "retry": "Réessayer",
+    "notConfigured": "Non configuré",
+    "noBillingContact": "Aucun contact de facturation",
+    "workspaceIncident": "Incident de l’espace",
+    "professionalWorkspace": "Espace professionnel",
+    "loading": "Chargement",
+    "close": "Fermer",
+    "more": "Plus",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "previousSlide": "Diapositive précédente",
+    "nextSlide": "Diapositive suivante",
+    "pagination": "Pagination",
+    "previousPage": "Aller à la page précédente",
+    "nextPage": "Aller à la page suivante",
+    "morePages": "Plus de pages",
+    "breadcrumb": "Fil d’Ariane",
+    "sidebar": "Barre latérale",
+    "sidebarDescription": "Affiche la barre latérale mobile.",
+    "toggleSidebar": "Afficher ou masquer la barre latérale"
+  },
+  "nav": {
+    "monitor": "Surveiller",
+    "operate": "Gérer",
+    "workspace": "Espace de travail",
+    "dashboard": "Tableau de bord",
+    "clients": "Clients",
+    "readiness": "Préparation",
+    "actions": "Actions",
+    "incidents": "Incidents",
+    "reports": "Rapports",
+    "users": "Utilisateurs",
+    "settings": "Paramètres"
+  },
+  "topbar": {
+    "search": "Rechercher clients, incidents…",
+    "notifications": "Notifications",
+    "notificationMessage": "3 dossiers clients nécessitent votre attention aujourd’hui.",
+    "profileSettings": "Paramètres du profil",
+    "signOut": "Se déconnecter",
+    "language": "Langue",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu"
+  },
+  "workspace": {
+    "switcherHint": "Le sélecteur est prêt pour d’autres espaces",
+    "helpTitle": "Besoin d’aide ?",
+    "helpDescription": "Nos spécialistes Peppol sont à votre disposition.",
+    "contactSupport": "Contacter l’assistance"
+  },
+  "roles": {
+    "OWNER": "Propriétaire",
+    "ADMIN": "Administrateur",
+    "MEMBER": "Collaborateur",
+    "VIEWER": "Lecteur"
+  },
   "dashboard": {
-    "pulse": "Vue de l’espace", "title": "La préparation Peppol en un coup d’œil", "subtitle": "Une préparation en direct et explicable pour {{organization}}.", "exportReport": "Exporter le rapport",
-    "kpi": { "totalClients": "Total clients", "totalClientsNote": "Entreprises dans cet espace", "ready": "Prêts pour Peppol", "networkShare": "{{percent}} % du réseau", "actionRequired": "Action requise", "actionRequiredNote": "Un ou plusieurs risques actifs", "highRisk": "Risque élevé", "highRiskNote": "Blocages critiques détectés", "notRegistered": "Non enregistrés", "notRegisteredNote": "Enregistrement Peppol manquant" },
-    "distribution": { "eyebrow": "Réseau actuel", "title": "Répartition de la préparation", "averageScore": "score moyen" },
-    "trend": { "eyebrow": "Score moyen", "title": "Évolution de la préparation", "lastSixMonths": "6 derniers mois", "storedAssessments": "Évaluations enregistrées", "calculatedFrom": "Calculé à partir des évaluations enregistrées", "points": "{{value}} pts" },
-    "actions": { "eyebrow": "Risques générés", "title": "Centre d’actions", "openQueue": "Ouvrir la file d’actions" },
-    "clients": { "eyebrow": "{{count}} comptes", "title": "Aperçu des clients", "filters": "Filtres", "all": "Tous les clients", "sorted": "Triés par risque de préparation", "search": "Rechercher des clients", "client": "Client", "package": "Logiciel", "status": "Statut", "score": "Score", "checked": "Vérifié", "action": "Action", "reviewRisks": "Voir les risques", "view": "Voir", "emptySearch": "Aucun client ne correspond à cette recherche.", "showing": "{{visible}} clients affichés sur {{total}}", "clearSearch": "Effacer la recherche" },
-    "incidents": { "eyebrow": "Dernière activité", "title": "Incidents récents", "openMonitor": "Ouvrir le suivi des incidents" },
-    "loading": "Calcul de la préparation de l’espace…", "errorTitle": "Les données de préparation sont temporairement indisponibles", "errorDescription": "Le moteur n’a pas pu calculer cet espace. Réessayez dans un instant."
+    "pulse": "Vue de l’espace",
+    "title": "La préparation Peppol en un coup d’œil",
+    "subtitle": "Une préparation en direct et explicable pour {{organization}}.",
+    "exportReport": "Exporter le rapport",
+    "kpi": {
+      "totalClients": "Total clients",
+      "totalClientsNote": "Entreprises dans cet espace",
+      "ready": "Prêts pour Peppol",
+      "networkShare": "{{percent}} % du réseau",
+      "actionRequired": "Action requise",
+      "actionRequiredNote": "Un ou plusieurs risques actifs",
+      "highRisk": "Risque élevé",
+      "highRiskNote": "Blocages critiques détectés",
+      "notRegistered": "Non enregistrés",
+      "notRegisteredNote": "Enregistrement Peppol manquant"
+    },
+    "distribution": {
+      "eyebrow": "Réseau actuel",
+      "title": "Répartition de la préparation",
+      "averageScore": "score moyen"
+    },
+    "trend": {
+      "eyebrow": "Score moyen",
+      "title": "Évolution de la préparation",
+      "lastSixMonths": "6 derniers mois",
+      "storedAssessments": "Évaluations enregistrées",
+      "calculatedFrom": "Calculé à partir des évaluations enregistrées",
+      "points": "{{value}} pts"
+    },
+    "actions": {
+      "eyebrow": "Risques générés",
+      "title": "Centre d’actions",
+      "openQueue": "Ouvrir la file d’actions"
+    },
+    "clients": {
+      "eyebrow": "{{count}} comptes",
+      "title": "Aperçu des clients",
+      "filters": "Filtres",
+      "all": "Tous les clients",
+      "sorted": "Triés par risque de préparation",
+      "search": "Rechercher des clients",
+      "client": "Client",
+      "package": "Logiciel",
+      "status": "Statut",
+      "score": "Score",
+      "checked": "Vérifié",
+      "action": "Action",
+      "reviewRisks": "Voir les risques",
+      "view": "Voir",
+      "emptySearch": "Aucun client ne correspond à cette recherche.",
+      "showing": "{{visible}} clients affichés sur {{total}}",
+      "clearSearch": "Effacer la recherche"
+    },
+    "incidents": {
+      "eyebrow": "Dernière activité",
+      "title": "Incidents récents",
+      "openMonitor": "Ouvrir le suivi des incidents"
+    },
+    "loading": "Calcul de la préparation de l’espace…",
+    "errorTitle": "Les données de préparation sont temporairement indisponibles",
+    "errorDescription": "Le moteur n’a pas pu calculer cet espace. Réessayez dans un instant."
   },
-  "status": { "READY": "Prêt", "CONFIGURING": "En configuration", "AT_RISK": "À risque", "NOT_REGISTERED": "Non enregistré" },
-  "risk": { "NOT_REGISTERED": "Non enregistré", "MISSING_RECEIVING_ADDRESS": "Adresse de réception manquante", "SOFTWARE_NOT_READY": "Logiciel non prêt", "INVALID_CERTIFICATE": "Certificat non valide", "TEST_INVOICE_MISSING": "Validation à vérifier", "ASSESSMENT_MISSING": "Évaluation manquante", "ASSESSMENT_STALE": "Évaluation obsolète", "OPEN_CRITICAL_INCIDENT": "Incident critique ouvert" },
-  "incident": { "incident_fjord_rejected": "Facture rejetée par le point d’accès", "incident_noma_certificate": "Le certificat du point d’accès expire bientôt", "incident_green_resolved": "Recherche du participant retardée" },
+  "status": {
+    "READY": "Prêt",
+    "CONFIGURING": "En configuration",
+    "AT_RISK": "À risque",
+    "NOT_REGISTERED": "Non enregistré"
+  },
+  "risk": {
+    "NOT_REGISTERED": "Non enregistré",
+    "MISSING_RECEIVING_ADDRESS": "Adresse de réception manquante",
+    "SOFTWARE_NOT_READY": "Logiciel non prêt",
+    "INVALID_CERTIFICATE": "Certificat non valide",
+    "TEST_INVOICE_MISSING": "Validation à vérifier",
+    "ASSESSMENT_MISSING": "Évaluation manquante",
+    "ASSESSMENT_STALE": "Évaluation obsolète",
+    "OPEN_CRITICAL_INCIDENT": "Incident critique ouvert"
+  },
+  "incident": {
+    "incident_fjord_rejected": "Facture rejetée par le point d’accès",
+    "incident_noma_certificate": "Le certificat du point d’accès expire bientôt",
+    "incident_green_resolved": "Recherche du participant retardée"
+  },
   "placeholder": {
-    "tagline": "Un espace ciblé pour les équipes qui travaillent avec certitude.", "prepare": "Préparer l’espace",
-    "clients": { "eyebrow": "Répertoire clients", "title": "Votre réseau de clients est prêt à être connecté", "description": "Après l’importation, recherchez, segmentez et consultez chaque profil Peppol." },
-    "readiness": { "eyebrow": "Intelligence de préparation", "title": "Une vision plus nette prend forme", "description": "Comparez les groupes de clients et identifiez ce qui freine les scores." },
-    "actions": { "eyebrow": "File d’actions", "title": "Faites avancer la file", "description": "Les actions prioritaires apparaissent ici avec leur responsable et la prochaine étape." },
-    "incidents": { "eyebrow": "Suivi des incidents", "title": "Une journée opérationnelle plus calme", "description": "Cet espace est prêt pour les échecs de livraison et les certificats expirants." },
-    "reports": { "eyebrow": "Studio de rapports", "title": "Des rapports sans prolifération de feuilles", "description": "Créez des instantanés récurrents pour vos clients et parties prenantes." },
-    "users": { "eyebrow": "Équipe de l’espace", "title": "Rassemblez vos collaborateurs", "description": "Invitez vos collègues, attribuez des rôles et rendez les responsabilités visibles." },
-    "settings": { "eyebrow": "Paramètres de l’espace", "title": "Personnalisez Peppol Ready", "description": "Préférences, intégrations, notifications et accès sont réunis ici." }
+    "tagline": "Un espace ciblé pour les équipes qui travaillent avec certitude.",
+    "prepare": "Préparer l’espace",
+    "clients": {
+      "eyebrow": "Répertoire clients",
+      "title": "Votre réseau de clients est prêt à être connecté",
+      "description": "Après l’importation, recherchez, segmentez et consultez chaque profil Peppol."
+    },
+    "readiness": {
+      "eyebrow": "Intelligence de préparation",
+      "title": "Une vision plus nette prend forme",
+      "description": "Comparez les groupes de clients et identifiez ce qui freine les scores."
+    },
+    "actions": {
+      "eyebrow": "File d’actions",
+      "title": "Faites avancer la file",
+      "description": "Les actions prioritaires apparaissent ici avec leur responsable et la prochaine étape."
+    },
+    "incidents": {
+      "eyebrow": "Suivi des incidents",
+      "title": "Une journée opérationnelle plus calme",
+      "description": "Cet espace est prêt pour les échecs de livraison et les certificats expirants."
+    },
+    "reports": {
+      "eyebrow": "Studio de rapports",
+      "title": "Des rapports sans prolifération de feuilles",
+      "description": "Créez des instantanés récurrents pour vos clients et parties prenantes."
+    },
+    "users": {
+      "eyebrow": "Équipe de l’espace",
+      "title": "Rassemblez vos collaborateurs",
+      "description": "Invitez vos collègues, attribuez des rôles et rendez les responsabilités visibles."
+    },
+    "settings": {
+      "eyebrow": "Paramètres de l’espace",
+      "title": "Personnalisez Peppol Ready",
+      "description": "Préférences, intégrations, notifications et accès sont réunis ici."
+    }
   },
-  "errors": { "unexpectedTitle": "Une erreur est survenue", "unexpectedDescription": "Cette partie a rencontré une erreur. Le reste de l’application continue de fonctionner.", "notFoundTitle": "404 Page introuvable", "notFoundDescription": "Cette page n’existe pas ou a été déplacée." }
+  "errors": {
+    "unexpectedTitle": "Une erreur est survenue",
+    "unexpectedDescription": "Cette partie a rencontré une erreur. Le reste de l’application continue de fonctionner.",
+    "notFoundTitle": "404 Page introuvable",
+    "notFoundDescription": "Cette page n’existe pas ou a été déplacée."
+  },
+  "plan": {
+    "STARTER": "Espace Starter",
+    "PROFESSIONAL": "Espace professionnel",
+    "ENTERPRISE": "Espace Enterprise"
+  },
+  "auth": {
+    "eyebrow": "Accès sécurisé",
+    "title": "Connectez-vous",
+    "subtitle": "Pilotez la conformité Peppol de votre portefeuille clients.",
+    "email": "Adresse e-mail",
+    "password": "Mot de passe",
+    "signIn": "Se connecter",
+    "signingIn": "Connexion en cours…",
+    "invalidCredentials": "Cette adresse e-mail et ce mot de passe ne correspondent pas.",
+    "unexpectedError": "La connexion a échoué. Réessayez dans un instant.",
+    "help": "Pas encore d’accès ? Demandez une invitation au propriétaire de l’espace.",
+    "signingOut": "Déconnexion en cours…",
+    "loading": "Chargement de votre espace…",
+    "switchWorkspace": "Changer d’espace"
+  }
 }
