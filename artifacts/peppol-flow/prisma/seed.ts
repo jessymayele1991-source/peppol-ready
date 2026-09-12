@@ -10,16 +10,17 @@ import {
   TaskStatus,
 } from "@prisma/client";
 import { hashPassword } from "@workspace/password";
+import { resolveSeedPassword } from "./seed-guard";
+
+/**
+ * Every seeded account shares this password. Resolved before the database
+ * client exists, so a refused run never opens a connection. See seed-guard.ts.
+ */
+const seedPassword = resolveSeedPassword(process.env);
 
 const prisma = new PrismaClient();
 
 const organizationId = "org_northstar_accounting";
-
-/**
- * Every seeded account shares this password. Override it with SEED_PASSWORD
- * for any database that is not a throwaway development one.
- */
-const seedPassword = process.env["SEED_PASSWORD"] ?? "peppol-ready-dev";
 
 const users = [
   {

@@ -158,8 +158,19 @@ overrides:
   "@esbuild-kit/esm-loader": "npm:tsx@^4.21.0"
   esbuild: "0.27.3"
 
+# Which dependencies may run install scripts.
+#
+# Two settings on purpose. pnpm 10 — the version Replit's nodejs-24 module
+# ships (10.26.1) — reads `onlyBuiltDependencies` above. pnpm 11 removed that
+# setting and reads only this map; a package it finds here without a boolean
+# fails `pnpm install` with ERR_PNPM_IGNORED_BUILDS. Keep both lists in step,
+# and never commit the "set this to true or false" placeholder pnpm writes for
+# undecided packages.
+#
+# prisma's own install scripts stay off: `prisma generate`, which the API build
+# runs, downloads the engines for the build platform itself.
 allowBuilds:
-  '@prisma/client': set this to true or false
-  '@prisma/engines': set this to true or false
-  esbuild: set this to true or false
-  prisma: set this to true or false
+  '@prisma/client': false
+  '@prisma/engines': false
+  esbuild: true
+  prisma: false

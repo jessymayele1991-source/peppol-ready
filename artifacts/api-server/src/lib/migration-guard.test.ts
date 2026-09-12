@@ -1,7 +1,12 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { evaluateMigrations, type AppliedMigration } from "./migration-guard";
+import {
+  REQUIRED_DATABASE_OBJECTS,
+  evaluateDatabaseObjects,
+  evaluateMigrations,
+  type AppliedMigration,
+} from "./migration-guard";
 
 const migrationsDir = join(import.meta.dirname, "../../../peppol-flow/prisma/migrations");
 
@@ -78,6 +83,49 @@ describe("evaluateMigrations", () => {
   });
 });
 
+describe("evaluateDatabaseObjects", () => {
+  const all = {
+    constraints: [...REQUIRED_DATABASE_OBJECTS.constraints, "unrelated_pkey"],
+    triggers: [...REQUIRED_DATABASE_OBJECTS.triggers],
+    functions: [...REQUIRED_DATABASE_OBJECTS.functions],
+  };
+
+  it("is satisfied when every enforcing object is present", () => {
+    expect(evaluateDatabaseObjects(REQUIRED_DATABASE_OBJECTS, all)).toEqual({ ok: true, missing: [] });
+  });
+
+  it("refuses a database whose schema diff dropped the membership triggers", () => {
+    const result = evaluateDatabaseObjects(REQUIRED_DATABASE_OBJECTS, { ...all, triggers: [], functions: [] });
+
+    expect(result.ok).toBe(false);
+    expect(result.missing).toEqual([
+      "trigger tasks_enforce_tenant_membership",
+      "trigger reports_enforce_tenant_membership",
+      "trigger readiness_scans_enforce_tenant_membership",
+      "function enforce_tenant_membership",
+    ]);
+  });
+
+  it("refuses a database whose foreign keys carry other names", () => {
+    const renamed = all.constraints.map((name) => name.replace("_fkey", "_fk"));
+    const result = evaluateDatabaseObjects(REQUIRED_DATABASE_OBJECTS, { ...all, constraints: renamed });
+
+    expect(result.ok).toBe(false);
+    expect(result.missing).toContain("constraint tasks_companyId_organizationId_fkey");
+  });
+
+  it("names exactly what the tenant integrity migration creates", () => {
+    const sql = readFileSync(join(migrationsDir, "20260912120000_tenant_integrity", "migration.sql"), "utf8");
+    for (const name of [
+      ...REQUIRED_DATABASE_OBJECTS.constraints,
+      ...REQUIRED_DATABASE_OBJECTS.triggers,
+      ...REQUIRED_DATABASE_OBJECTS.functions,
+    ]) {
+      expect(sql).toContain(`"${name}"`);
+    }
+  });
+});
+
 describe("shipped migrations", () => {
   const directories = readdirSync(migrationsDir).filter((entry) =>
     statSync(join(migrationsDir, entry)).isDirectory(),
@@ -128,9 +176,11 @@ describe("shipped migrations", () => {
     const entry = readFileSync(join(import.meta.dirname, "../index.ts"), "utf8");
 
     const guard = entry.indexOf("assertMigrationsApplied(");
+    const objects = entry.indexOf("assertDatabaseObjectsPresent(");
     const listen = entry.indexOf("app.listen(");
     expect(guard).toBeGreaterThan(-1);
-    expect(listen).toBeGreaterThan(guard);
+    expect(objects).toBeGreaterThan(guard);
+    expect(listen).toBeGreaterThan(objects);
   });
 
   it("production applies migrations before starting the server", () => {

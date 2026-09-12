@@ -12,9 +12,11 @@ Peppol Ready helps accounting firms monitor and improve Peppol readiness, compli
 - `pnpm --filter @workspace/peppol-flow run db:seed` — seed development data (idempotent)
 - `pnpm --filter @workspace/peppol-flow run db:deploy` — apply pending migrations without prompting; production runs this before every start
 - Required env: `DATABASE_URL` — Postgres connection string
-- Required env in production: `SESSION_SECRET` — signs the session cookie; the server refuses to start without it
+- Required env in production: `SESSION_SECRET` — signs session cookies and keys log pseudonyms. At least 32 characters from at least 10 distinct characters, never the development value; the server refuses to start otherwise. Generate with `openssl rand -base64 48`. Rotating it signs everyone out.
+- Optional env: `TRUST_PROXY_HOPS` — number of reverse proxies in front of the API (default 1). Must match the measured chain exactly: too high lets clients forge their address past the sign-in limit, too low makes all clients share one limit.
+- Optional env: `LOG_PROXY_CHAIN` — `true` adds X-Forwarded-For, `req.ip` and `req.ips` to request logs, for measuring the proxy chain. Client addresses are personal data; switch it off after measuring.
 - Optional env: `WEB_ORIGIN` — enables CORS with credentials for local development, where the web artifact and the API run on different ports. Unset in production, where both are served from one origin.
-- Optional env: `SEED_PASSWORD` — overrides the shared development password used by the seed
+- Optional env: `SEED_PASSWORD` — password for the seeded demo accounts. Required for any database that is not on localhost (including a Replit workspace database), at least 12 characters, and never the public development password there. The seed refuses to run at all under `NODE_ENV=production`.
 - Optional env: `TEST_DATABASE_URL` — a migrated Postgres database; enables the tenant integrity tests, which are skipped without it
 
 ## Stack
@@ -88,6 +90,9 @@ The current release provides a dashboard-first SaaS shell for client readiness m
 - In the OpenAPI contract, score/count fields use `type: number`; this workspace's generated Zod target does not support the emitted `z.int()` helper. For the same reason, avoid `format: email` — it emits a Zod v4 helper the pinned Zod 3 lacks.
 - Orval runs with `clean: true`, so a failed generation leaves `lib/api-client-react/src/generated/` empty until the spec is fixed and codegen rerun.
 - The workspace excludes non-linux esbuild and rollup binaries on purpose, so vitest and the build only run on the linux deployment target. Typecheck runs anywhere.
+- Replit's nodejs-24 module ships pnpm 10.26.1. Install scripts are configured twice in `pnpm-workspace.yaml`: `onlyBuiltDependencies` for pnpm 10 and `allowBuilds` for pnpm 11+, which fails the install on any package without a boolean. Keep them in step and never commit pnpm's "set this to true or false" placeholder. `packageManager` is deliberately not pinned: under corepack a pinned version makes every other pnpm refuse to run.
+- Prisma's own install scripts are disabled, so a fresh install has no generated client. `pnpm run typecheck` (and so `pnpm run build`) runs `db:generate` first, as the API build already does. Run `pnpm run db:generate` before invoking `tsc` or vitest directly on a fresh checkout.
+- Replit applies its own schema diff to the production database at publish time. The server therefore also verifies, at startup, that the tenant-integrity constraints, trigger and function exist, and refuses to start if a diff left them out. Never mark Prisma migrations as applied by hand to get past a failed start.
 - Login rate limits live in process memory. They reset on every restart or redeploy, and each instance counts separately, so with N instances the effective limit is N times the configured one. A shared store would only replace `FixedWindowLimiter`; the route would not change.
 - The per-address limit keys on `req.ip`, which relies on `trust proxy` matching the real number of proxy hops. If the API is reachable without passing the platform proxy, `X-Forwarded-For` can be forged and the per-address limit bypassed; the per-account limit and the verification cap still apply.
 - Dev startup also runs the migration guard: run `db:migrate` against a fresh database before `pnpm --filter @workspace/api-server run dev`.

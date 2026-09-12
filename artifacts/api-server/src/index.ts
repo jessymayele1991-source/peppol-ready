@@ -1,6 +1,9 @@
 import app from "./app";
 import { logger } from "./lib/logger";
-import { assertMigrationsApplied } from "./lib/migration-guard";
+import {
+  assertDatabaseObjectsPresent,
+  assertMigrationsApplied,
+} from "./lib/migration-guard";
 
 const rawPort = process.env["PORT"];
 
@@ -26,6 +29,9 @@ async function start() {
       "Database has migrations this build does not know about",
     );
   }
+  // The migration history can be complete while the objects it created are not
+  // (a platform schema diff, or migrations marked applied by hand).
+  await assertDatabaseObjectsPresent();
   logger.info(
     { migrations: __PRISMA_MIGRATIONS__.length },
     "Database schema is current",

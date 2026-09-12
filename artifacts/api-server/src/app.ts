@@ -3,7 +3,9 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
 import router from "./routes";
+import type { Request } from "express";
 import { logger } from "./lib/logger";
+import { LOG_PROXY_CHAIN, TRUST_PROXY_HOPS } from "./lib/proxy-config";
 import { sessionMiddleware } from "./lib/session";
 import { errorHandler, notFoundHandler } from "./middlewares/error-handler";
 
@@ -22,10 +24,24 @@ app.use(
     logger,
     serializers: {
       req(req) {
-        return {
+        const base = {
           id: req.id,
           method: req.method,
           url: req.url?.split("?")[0],
+        };
+        if (!LOG_PROXY_CHAIN) return base;
+
+        const raw = req.raw as Request;
+        return {
+          ...base,
+          proxyChain: {
+            xForwardedFor: raw.headers["x-forwarded-for"] ?? null,
+            xForwardedProto: raw.headers["x-forwarded-proto"] ?? null,
+            socketAddress: raw.socket?.remoteAddress ?? null,
+            ip: raw.ip,
+            ips: raw.ips,
+            trustProxyHops: TRUST_PROXY_HOPS,
+          },
         };
       },
       res(res) {
@@ -41,8 +57,9 @@ if (devOrigin) {
 }
 
 // Sessions are signed cookies, so express-session needs a trustworthy
-// protocol behind the platform proxy.
-app.set("trust proxy", 1);
+// protocol behind the platform proxy, and the per-address sign-in limit needs
+// the real client address. See lib/proxy-config.ts before changing the count.
+app.set("trust proxy", TRUST_PROXY_HOPS);
 
 app.use(cookieParser());
 // JSON only. A urlencoded parser would let a cross-site HTML form post
