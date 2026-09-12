@@ -20,7 +20,10 @@ paths:
       operationId: login
       tags: [auth]
       summary: Sign in
-      description: Verifies credentials and starts a session.
+      description: >-
+        Verifies credentials and starts a session. Accepts JSON only; form
+        bodies are rejected so a cross-site form cannot sign a visitor in.
+        Attempts are limited per client address and per email address.
       requestBody:
         required: true
         content:
@@ -34,12 +37,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Session"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           description: Invalid credentials
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
   /auth/logout:
     post:
       operationId: logout
@@ -87,6 +96,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Session"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           description: Not signed in
           content:
@@ -99,6 +110,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
   /healthz:
     get:
       operationId: healthCheck
@@ -161,6 +174,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ReadinessAssessment"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           description: Not signed in
           content:
@@ -179,7 +194,33 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
 components:
+  responses:
+    BadRequest:
+      description: The request body is missing, malformed, or fails validation
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+    PayloadTooLarge:
+      description: The request body exceeds the size limit
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+    TooManyRequests:
+      description: Too many attempts; retry after the number of seconds in Retry-After
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying
+          schema:
+            type: number
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
   schemas:
     ApiError:
       type: object
@@ -195,6 +236,8 @@ components:
                   unauthorized,
                   forbidden,
                   not_found,
+                  payload_too_large,
+                  too_many_requests,
                   internal_error,
                 ]
             message:

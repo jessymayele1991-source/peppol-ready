@@ -14,5 +14,7 @@ export const ApiErrorErrorCode = {
   unauthorized: 'unauthorized',
   forbidden: 'forbidden',
   not_found: 'not_found',
+  payload_too_large: 'payload_too_large',
+  too_many_requests: 'too_many_requests',
   internal_error: 'internal_error',
 } as const;

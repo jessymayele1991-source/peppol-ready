@@ -3,16 +3,38 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { build as esbuild } from "esbuild";
 import esbuildPluginPino from "esbuild-plugin-pino";
-import { rm } from "node:fs/promises";
+import { readdir, rm, stat } from "node:fs/promises";
 
 // Plugins (e.g. 'esbuild-plugin-pino') may use `require` to resolve dependencies
 globalThis.require = createRequire(import.meta.url);
 
 const artifactDir = path.dirname(fileURLToPath(import.meta.url));
+const migrationsDir = path.resolve(artifactDir, "../peppol-flow/prisma/migrations");
+
+/**
+ * The migrations this build requires, baked into the bundle so the server can
+ * refuse to start against a database that is behind. Read from disk at build
+ * time because the migrations directory is not shipped next to dist/.
+ */
+async function listMigrations() {
+  const entries = await readdir(migrationsDir, { withFileTypes: true });
+  const names = [];
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    const script = path.join(migrationsDir, entry.name, "migration.sql");
+    const found = await stat(script).then(() => true, () => false);
+    if (found) names.push(entry.name);
+  }
+  if (names.length === 0) {
+    throw new Error(`No Prisma migrations found in ${migrationsDir}`);
+  }
+  return names.sort();
+}
 
 async function buildAll() {
   const distDir = path.resolve(artifactDir, "dist");
   await rm(distDir, { recursive: true, force: true });
+  const migrations = await listMigrations();
 
   await esbuild({
     entryPoints: [path.resolve(artifactDir, "src/index.ts")],
@@ -102,6 +124,9 @@ async function buildAll() {
       "electron",
     ],
     sourcemap: "linked",
+    define: {
+      __PRISMA_MIGRATIONS__: JSON.stringify(migrations),
+    },
     plugins: [
       // pino relies on workers to handle logging, instead of externalizing it we use a plugin to handle it
       esbuildPluginPino({ transports: ["pino-pretty"] })

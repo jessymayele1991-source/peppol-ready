@@ -9,7 +9,7 @@ import * as zod from 'zod';
 
 
 /**
- * Verifies credentials and starts a session.
+ * Verifies credentials and starts a session. Accepts JSON only; form bodies are rejected so a cross-site form cannot sign a visitor in. Attempts are limited per client address and per email address.
  * @summary Sign in
  */
 

@@ -21,13 +21,16 @@ import type {
 
 import type {
   ApiError,
+  BadRequestResponse,
   HealthStatus,
   LoginInput,
+  PayloadTooLargeResponse,
   ReadinessAssessment,
   ReadinessAssessmentInput,
   ReadinessDashboard,
   Session,
-  SwitchOrganizationInput
+  SwitchOrganizationInput,
+  TooManyRequestsResponse
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -66,7 +69,7 @@ export const getLoginUrl = () => {
 }
 
 /**
- * Verifies credentials and starts a session.
+ * Verifies credentials and starts a session. Accepts JSON only; form bodies are rejected so a cross-site form cannot sign a visitor in. Attempts are limited per client address and per email address.
  * @summary Sign in
  */
 export const login = async (loginInput: LoginInput, options?: Parameters<typeof customFetch>[1]): Promise<Session> => {
@@ -84,7 +87,7 @@ export const login = async (loginInput: LoginInput, options?: Parameters<typeof 
 
 
 
-export const getLoginMutationOptions = <TError = ErrorType<ApiError>,
+export const getLoginMutationOptions = <TError = ErrorType<BadRequestResponse | ApiError | PayloadTooLargeResponse | TooManyRequestsResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof login>>, TError,{data: BodyType<LoginInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof login>>, TError,{data: BodyType<LoginInput>}, TContext> => {
 
@@ -113,12 +116,12 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type LoginMutationResult = NonNullable<Awaited<ReturnType<typeof login>>>
     export type LoginMutationBody = BodyType<LoginInput>
-    export type LoginMutationError = ErrorType<ApiError>
+    export type LoginMutationError = ErrorType<BadRequestResponse | ApiError | PayloadTooLargeResponse | TooManyRequestsResponse>
 
     /**
  * @summary Sign in
  */
-export const useLogin = <TError = ErrorType<ApiError>,
+export const useLogin = <TError = ErrorType<BadRequestResponse | ApiError | PayloadTooLargeResponse | TooManyRequestsResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof login>>, TError,{data: BodyType<LoginInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof login>>,
@@ -306,7 +309,7 @@ export const switchOrganization = async (switchOrganizationInput: SwitchOrganiza
 
 
 
-export const getSwitchOrganizationMutationOptions = <TError = ErrorType<ApiError>,
+export const getSwitchOrganizationMutationOptions = <TError = ErrorType<BadRequestResponse | ApiError | PayloadTooLargeResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof switchOrganization>>, TError,{data: BodyType<SwitchOrganizationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof switchOrganization>>, TError,{data: BodyType<SwitchOrganizationInput>}, TContext> => {
 
@@ -335,12 +338,12 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type SwitchOrganizationMutationResult = NonNullable<Awaited<ReturnType<typeof switchOrganization>>>
     export type SwitchOrganizationMutationBody = BodyType<SwitchOrganizationInput>
-    export type SwitchOrganizationMutationError = ErrorType<ApiError>
+    export type SwitchOrganizationMutationError = ErrorType<BadRequestResponse | ApiError | PayloadTooLargeResponse>
 
     /**
  * @summary Switch the active organization
  */
-export const useSwitchOrganization = <TError = ErrorType<ApiError>,
+export const useSwitchOrganization = <TError = ErrorType<BadRequestResponse | ApiError | PayloadTooLargeResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof switchOrganization>>, TError,{data: BodyType<SwitchOrganizationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof switchOrganization>>,
@@ -535,7 +538,7 @@ export const calculateCompanyReadiness = async (companyId: string,
 
 
 
-export const getCalculateCompanyReadinessMutationOptions = <TError = ErrorType<ApiError>,
+export const getCalculateCompanyReadinessMutationOptions = <TError = ErrorType<BadRequestResponse | ApiError | PayloadTooLargeResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof calculateCompanyReadiness>>, TError,{companyId: string;data: BodyType<ReadinessAssessmentInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof calculateCompanyReadiness>>, TError,{companyId: string;data: BodyType<ReadinessAssessmentInput>}, TContext> => {
 
@@ -564,12 +567,12 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type CalculateCompanyReadinessMutationResult = NonNullable<Awaited<ReturnType<typeof calculateCompanyReadiness>>>
     export type CalculateCompanyReadinessMutationBody = BodyType<ReadinessAssessmentInput>
-    export type CalculateCompanyReadinessMutationError = ErrorType<ApiError>
+    export type CalculateCompanyReadinessMutationError = ErrorType<BadRequestResponse | ApiError | PayloadTooLargeResponse>
 
     /**
  * @summary Calculate company readiness
  */
-export const useCalculateCompanyReadiness = <TError = ErrorType<ApiError>,
+export const useCalculateCompanyReadiness = <TError = ErrorType<BadRequestResponse | ApiError | PayloadTooLargeResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof calculateCompanyReadiness>>, TError,{companyId: string;data: BodyType<ReadinessAssessmentInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof calculateCompanyReadiness>>,

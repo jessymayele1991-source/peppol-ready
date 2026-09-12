@@ -9,11 +9,20 @@ import {
 import {
   canAccessOrganization,
   loadSession,
+  normalizeEmail,
   verifyCredentials,
 } from "../lib/auth-service";
-import { badRequest, forbidden, unauthorized } from "../lib/errors";
+import {
+  badRequest,
+  forbidden,
+  tooManyRequests,
+  unauthorized,
+} from "../lib/errors";
+import { loginProtection } from "../lib/login-rate-limit";
 
 const router: IRouter = Router();
+
+const TOO_MANY_ATTEMPTS = "Too many sign-in attempts. Try again later.";
 
 /** express-session regenerates the id on privilege change, which needs a promise. */
 function regenerate(req: Request): Promise<void> {
@@ -29,19 +38,49 @@ function save(req: Request): Promise<void> {
 }
 
 router.post("/auth/login", async (req, res) => {
+  // Only failed and invalid attempts count against a client address. Spraying
+  // consists entirely of failures, while an office signing in behind one NAT
+  // address at the start of the day consists of successes and must not be
+  // locked out.
+  const clientKey = req.ip ?? "unknown";
+  const client = loginProtection.client.peek(clientKey);
+  if (!client.allowed) {
+    throw tooManyRequests(client.retryAfterSeconds, TOO_MANY_ATTEMPTS);
+  }
+
   const body = LoginBody.safeParse(req.body);
   if (!body.success) {
+    loginProtection.client.consume(clientKey);
     throw badRequest("An email address and password are required.");
   }
 
-  const credentials = await verifyCredentials(
-    body.data.email,
-    body.data.password,
-  );
+  // Keyed on every submitted email, existing or not, so a 429 cannot be used
+  // to learn which addresses have accounts.
+  const account = normalizeEmail(body.data.email);
+  const accountState = loginProtection.account.peek(account);
+  if (!accountState.allowed) {
+    throw tooManyRequests(accountState.retryAfterSeconds, TOO_MANY_ATTEMPTS);
+  }
+
+  const release = loginProtection.verifications.tryAcquire();
+  if (!release) {
+    throw tooManyRequests(1, "Too many sign-in attempts are being processed. Try again shortly.");
+  }
+
+  let credentials: Awaited<ReturnType<typeof verifyCredentials>>;
+  try {
+    credentials = await verifyCredentials(body.data.email, body.data.password);
+  } finally {
+    release();
+  }
+
   // Deliberately identical for an unknown account and a wrong password.
   if (!credentials) {
+    loginProtection.client.consume(clientKey);
+    loginProtection.account.consume(account);
     throw unauthorized("That email address and password do not match.");
   }
+  loginProtection.account.reset(account);
 
   const session = await loadSession(
     credentials.userId,

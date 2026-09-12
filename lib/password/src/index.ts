@@ -64,19 +64,19 @@ export async function hashPassword(password: string): Promise<string> {
   ].join("$");
 }
 
-/**
- * Always compares in constant time, and returns false rather than throwing on
- * a malformed or absent hash, so callers cannot distinguish "no such user"
- * from "wrong password" by timing or by error type.
- */
-export async function verifyPassword(
-  password: string,
-  storedHash: string | null | undefined,
-): Promise<boolean> {
-  if (!storedHash) return false;
+type ParsedHash = {
+  N: number;
+  r: number;
+  p: number;
+  salt: Buffer;
+  expected: Buffer;
+};
+
+function parseHash(storedHash: string | null | undefined): ParsedHash | null {
+  if (!storedHash) return null;
 
   const parts = storedHash.split("$");
-  if (parts.length !== 6 || parts[0] !== ALGORITHM) return false;
+  if (parts.length !== 6 || parts[0] !== ALGORITHM) return null;
 
   const [, cost, blockSize, parallelism, saltPart, hashPart] = parts as [
     string,
@@ -91,19 +91,55 @@ export async function verifyPassword(
   const r = Number(blockSize);
   const p = Number(parallelism);
   if (!Number.isInteger(N) || !Number.isInteger(r) || !Number.isInteger(p)) {
-    return false;
+    return null;
   }
 
   const salt = Buffer.from(saltPart, "base64");
   const expected = Buffer.from(hashPart, "base64");
-  if (salt.length === 0 || expected.length === 0) return false;
+  if (salt.length === 0 || expected.length === 0) return null;
 
-  const actual = await scryptAsync(password.normalize("NFKC"), salt, expected.length, {
-    N,
-    r,
-    p,
-    maxmem: 128 * N * r * 2,
-  });
+  return { N, r, p, salt, expected };
+}
 
-  return actual.length === expected.length && timingSafeEqual(actual, expected);
+/**
+ * Stand-in used whenever there is no usable stored hash: an unknown account,
+ * an account without a password, or a malformed value. It carries the current
+ * cost parameters and key length, so verifying against it performs exactly
+ * the work a real verification does. Its expected bytes are random and never
+ * derived from any password, so it cannot match.
+ */
+const DUMMY_HASH: ParsedHash = {
+  N: COST,
+  r: BLOCK_SIZE,
+  p: PARALLELISM,
+  salt: randomBytes(SALT_LENGTH),
+  expected: randomBytes(KEY_LENGTH),
+};
+
+/**
+ * Runs the full scrypt derivation on every call, including when the stored
+ * hash is absent or malformed, so the response time does not reveal whether
+ * an account exists. Returns false rather than throwing for unusable hashes.
+ */
+export async function verifyPassword(
+  password: string,
+  storedHash: string | null | undefined,
+): Promise<boolean> {
+  const parsed = parseHash(storedHash);
+  const target = parsed ?? DUMMY_HASH;
+
+  const actual = await scryptAsync(
+    password.normalize("NFKC"),
+    target.salt,
+    target.expected.length,
+    { N: target.N, r: target.r, p: target.p, maxmem: 128 * target.N * target.r * 2 },
+  );
+
+  const matches =
+    actual.length === target.expected.length &&
+    timingSafeEqual(actual, target.expected);
+
+  // The dummy never authenticates, even in the astronomically unlikely case
+  // its random bytes collide with a derived key.
+  return parsed !== null && matches;
 }

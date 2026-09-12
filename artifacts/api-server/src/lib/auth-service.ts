@@ -37,6 +37,15 @@ export function deriveInitials(name: string): string {
   return initials || "?";
 }
 
+/**
+ * The one normalization for sign-in emails. The credential lookup and the
+ * per-account rate limit both key on it, so casing or padding cannot be used
+ * to spread attempts across separate counters.
+ */
+export function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
 const membershipSelect = {
   organizationId: true,
   role: true,
@@ -60,16 +69,18 @@ const userSelect = {
 } as const;
 
 /**
- * Verifies credentials in constant time with respect to whether the account
- * exists: an unknown email still runs a hash comparison against null, which
- * verifyPassword answers with false rather than an early return upstream.
+ * Response time does not depend on whether the account exists: the user lookup
+ * runs for every email, and verifyPassword performs the full scrypt derivation
+ * against a stand-in hash when there is no user or no stored hash. Membership
+ * is only inspected after verification, so an account without a workspace
+ * costs the same as a wrong password.
  */
 export async function verifyCredentials(
   email: string,
   password: string,
 ): Promise<{ userId: string; organizationId: string } | null> {
   const user = await prisma.user.findUnique({
-    where: { email: email.trim().toLowerCase() },
+    where: { email: normalizeEmail(email) },
     select: { id: true, passwordHash: true, memberships: { select: membershipSelect, orderBy: { organization: { name: "asc" } } } },
   });
 

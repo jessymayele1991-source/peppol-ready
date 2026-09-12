@@ -1,5 +1,5 @@
 import type { ErrorRequestHandler, RequestHandler } from "express";
-import { AppError, notFound } from "../lib/errors";
+import { AppError, fromBodyParserError, notFound } from "../lib/errors";
 
 /**
  * Terminal 404 for unmatched API paths. Mount after every router so unknown
@@ -20,14 +20,21 @@ export const errorHandler: ErrorRequestHandler = (error, req, res, next) => {
     return;
   }
 
-  if (error instanceof AppError) {
-    // Expected outcomes: log at info so they stay visible without paging anyone.
+  const appError =
+    error instanceof AppError ? error : fromBodyParserError(error);
+
+  if (appError) {
+    // Client mistakes and expected refusals: info, never error, so a stream of
+    // malformed requests cannot flood error alerting.
     req.log?.info(
-      { code: error.code, statusCode: error.statusCode },
-      error.message,
+      { code: appError.code, statusCode: appError.statusCode },
+      appError.message,
     );
-    res.status(error.statusCode).json({
-      error: { code: error.code, message: error.message },
+    if (appError.retryAfterSeconds !== undefined) {
+      res.setHeader("Retry-After", String(appError.retryAfterSeconds));
+    }
+    res.status(appError.statusCode).json({
+      error: { code: appError.code, message: appError.message },
     });
     return;
   }

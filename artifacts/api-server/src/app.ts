@@ -45,8 +45,11 @@ if (devOrigin) {
 app.set("trust proxy", 1);
 
 app.use(cookieParser());
+// JSON only. A urlencoded parser would let a cross-site HTML form post
+// credentials to /auth/login and sign the visitor into another account: forms
+// need no CORS preflight and login needs no existing cookie, so SameSite does
+// not help. application/json from another origin always triggers a preflight.
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 app.use(sessionMiddleware);
 
 app.use("/api", router);

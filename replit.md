@@ -10,6 +10,7 @@ Peppol Ready helps accounting firms monitor and improve Peppol readiness, compli
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/peppol-flow run db:migrate` — apply pending Prisma migrations
 - `pnpm --filter @workspace/peppol-flow run db:seed` — seed development data (idempotent)
+- `pnpm --filter @workspace/peppol-flow run db:deploy` — apply pending migrations without prompting; production runs this before every start
 - Required env: `DATABASE_URL` — Postgres connection string
 - Required env in production: `SESSION_SECRET` — signs the session cookie; the server refuses to start without it
 - Optional env: `WEB_ORIGIN` — enables CORS with credentials for local development, where the web artifact and the API run on different ports. Unset in production, where both are served from one origin.
@@ -53,6 +54,10 @@ Peppol Ready helps accounting firms monitor and improve Peppol readiness, compli
 - Tenant context is derived from the session through the user's membership, never from a request parameter. `requireAuth` is the only place it is established; every organization-scoped query filters on `req.auth.organizationId`.
 - The capability matrix lives only in `permissions.ts`. Routes gate on a capability, and the session ships the same derivation to the client, so the interface hides exactly what the API refuses. Never restate role checks in a component.
 - Sessions are httpOnly cookies backed by a Prisma-modelled table. The web artifact and the API share an origin in production, so no token is ever stored in JavaScript.
+- The API accepts JSON bodies only. There is deliberately no urlencoded parser: it would let a cross-site HTML form sign a visitor into another account.
+- Password verification always runs the full scrypt derivation, against a stand-in hash when the account or its hash is missing, so response time does not reveal which emails have accounts.
+- Sign-in is limited per client address (failed or invalid attempts only, so an office behind one NAT address is never locked out by successes), per email address (failures, keyed on the normalized email whether or not an account exists), and by a cap on concurrent password verifications. See `artifacts/api-server/src/lib/login-rate-limit.ts`.
+- The server refuses to start when the database is behind the migrations it was built with. `build.mjs` bakes the migration list into the bundle and `index.ts` compares it with `_prisma_migrations` before listening, so a skipped migration fails the startup health check instead of serving 500s.
 - Seed records use stable IDs and upserts so development seeding is safe to rerun.
 - Readiness is calculated from five explicit factors totaling 100 points; every failed factor produces an explainable remediation signal.
 - The target schema supports normalized client contacts, ten-check readiness scans, generated reports, per-user locale preferences, and audit activity.
@@ -78,6 +83,9 @@ The current release provides a dashboard-first SaaS shell for client readiness m
 - In the OpenAPI contract, score/count fields use `type: number`; this workspace's generated Zod target does not support the emitted `z.int()` helper. For the same reason, avoid `format: email` — it emits a Zod v4 helper the pinned Zod 3 lacks.
 - Orval runs with `clean: true`, so a failed generation leaves `lib/api-client-react/src/generated/` empty until the spec is fixed and codegen rerun.
 - The workspace excludes non-linux esbuild and rollup binaries on purpose, so vitest and the build only run on the linux deployment target. Typecheck runs anywhere.
+- Login rate limits live in process memory. They reset on every restart or redeploy, and each instance counts separately, so with N instances the effective limit is N times the configured one. A shared store would only replace `FixedWindowLimiter`; the route would not change.
+- The per-address limit keys on `req.ip`, which relies on `trust proxy` matching the real number of proxy hops. If the API is reachable without passing the platform proxy, `X-Forwarded-For` can be forged and the per-address limit bypassed; the per-account limit and the verification cap still apply.
+- Dev startup also runs the migration guard: run `db:migrate` against a fresh database before `pnpm --filter @workspace/api-server run dev`.
 
 ## Pointers
 

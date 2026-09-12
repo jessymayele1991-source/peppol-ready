@@ -13,6 +13,8 @@ export const ApiErrorErrorCode = {
   unauthorized: 'unauthorized',
   forbidden: 'forbidden',
   not_found: 'not_found',
+  payload_too_large: 'payload_too_large',
+  too_many_requests: 'too_many_requests',
   internal_error: 'internal_error',
 } as const;
 
@@ -238,4 +240,19 @@ export interface ReadinessDashboard {
   incidents: DashboardIncident[];
   companies: DashboardCompany[];
 }
+
+/**
+ * The request body is missing, malformed, or fails validation
+ */
+export type BadRequestResponse = ApiError;
+
+/**
+ * The request body exceeds the size limit
+ */
+export type PayloadTooLargeResponse = ApiError;
+
+/**
+ * Too many attempts; retry after the number of seconds in Retry-After
+ */
+export type TooManyRequestsResponse = ApiError;
 
