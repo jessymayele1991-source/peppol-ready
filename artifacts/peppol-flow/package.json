@@ -11,7 +11,9 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
-    "db:seed": "prisma db seed"
+    "db:seed": "prisma db seed",
+    "db:bootstrap": "tsx prisma/seed-if-empty.ts",
+    "db:studio": "prisma studio --port 5555"
   },
   "dependencies": {
     "@prisma/client": "6.16.2",

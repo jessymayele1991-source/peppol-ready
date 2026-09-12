@@ -1,0 +1,15 @@
+# Installed inside the image for the container's own platform.
+**/node_modules
+**/dist
+**/*.tsbuildinfo
+
+# Local secrets never enter an image; docker-compose.yml sets its own values.
+.env
+.env.*
+!.env.example
+
+.git
+.local
+.cache
+attached_assets
+screenshots

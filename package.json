@@ -4,8 +4,14 @@
   "license": "MIT",
   "scripts": {
     "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
+    "dev": "pnpm run db:deploy && pnpm run db:bootstrap && pnpm -r --parallel --filter @workspace/api-server --filter @workspace/peppol-flow run dev",
     "build": "pnpm run typecheck && pnpm -r --if-present run build",
+    "db:up": "docker compose up --detach --wait db",
     "db:generate": "pnpm --filter @workspace/peppol-flow run db:generate",
+    "db:deploy": "pnpm --filter @workspace/peppol-flow run db:deploy",
+    "db:bootstrap": "pnpm --filter @workspace/peppol-flow run db:bootstrap",
+    "db:seed": "pnpm --filter @workspace/peppol-flow run db:seed",
+    "db:studio": "pnpm --filter @workspace/peppol-flow run db:studio",
     "typecheck:libs": "tsc --build",
     "typecheck": "pnpm run db:generate && pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
   },

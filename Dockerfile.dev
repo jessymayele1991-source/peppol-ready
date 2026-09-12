@@ -1,0 +1,21 @@
+# Development image for docker-compose.yml. Not a production image: the API
+# runs in development mode and the web app runs on Vite's dev server.
+#
+# node:24-bookworm (not -slim) ships OpenSSL, which the Prisma engines need.
+FROM node:24-bookworm
+
+# The pnpm version Replit's nodejs-24 module ships, so local and Replit
+# installs resolve the lockfile identically.
+RUN corepack enable && corepack prepare pnpm@10.26.1 --activate
+
+WORKDIR /app
+
+# CI=true makes the install non-interactive and frozen to pnpm-lock.yaml.
+ENV CI=true
+
+COPY . .
+RUN pnpm install --frozen-lockfile
+
+# Generate the Prisma client once at build time; the API build does it again,
+# which is fast once the engines are present.
+RUN pnpm run db:generate

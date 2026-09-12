@@ -11,6 +11,11 @@ out-tsc
 # dependencies
 node_modules
 
+# local environment — copy .env.example to .env; never commit secrets
+.env
+.env.*
+!.env.example
+
 # IDEs and editors
 /.idea
 .project

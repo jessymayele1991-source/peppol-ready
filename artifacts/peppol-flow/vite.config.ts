@@ -3,38 +3,41 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 
-import runtimeErrorOverlay from '@replit/vite-plugin-runtime-error-modal';
+// Replit sets PORT and BASE_PATH for every artifact (see .replit-artifact).
+// Locally they are optional and default to Vite's usual port and the root path.
+const onReplit = process.env.REPL_ID !== undefined;
 
-const rawPort = process.env.PORT;
-
-if (!rawPort) {
-  throw new Error(
-    'PORT environment variable is required but was not provided.',
-  );
-}
-
+const rawPort = process.env.PORT ?? '5173';
 const port = Number(rawPort);
 
-if (Number.isNaN(port) || port <= 0) {
+if (!Number.isInteger(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-const basePath = process.env.BASE_PATH;
+const basePath = process.env.BASE_PATH ?? '/';
 
-if (!basePath) {
-  throw new Error(
-    'BASE_PATH environment variable is required but was not provided.',
-  );
-}
+/**
+ * Where the dev server forwards `/api`. The client calls `/api/...` on its own
+ * origin, as it does in production where the platform routes that path to the
+ * API; the proxy keeps the session cookie same-origin locally without CORS.
+ * Docker Compose points this at the api service.
+ */
+const apiProxyTarget = process.env.API_PROXY_TARGET ?? 'http://localhost:8080';
 
 export default defineConfig({
   base: basePath,
   plugins: [
     react(),
     tailwindcss(),
-    runtimeErrorOverlay(),
-    ...(process.env.NODE_ENV !== 'production' &&
-    process.env.REPL_ID !== undefined
+    ...(onReplit
+      ? [
+          // Dev-server only (it applies to `serve`, never to a build).
+          await import('@replit/vite-plugin-runtime-error-modal').then((m) =>
+            m.default(),
+          ),
+        ]
+      : []),
+    ...(process.env.NODE_ENV !== 'production' && onReplit
       ? [
           await import('@replit/vite-plugin-cartographer').then((m) =>
             m.cartographer({
@@ -71,6 +74,12 @@ export default defineConfig({
     allowedHosts: true,
     fs: {
       strict: true,
+    },
+    proxy: {
+      '/api': {
+        target: apiProxyTarget,
+        changeOrigin: false,
+      },
     },
   },
   preview: {

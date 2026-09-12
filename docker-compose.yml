@@ -1,0 +1,90 @@
+# Full local environment:  docker compose up
+#
+#   http://localhost:5173              the application (sign in here)
+#   http://localhost:8080/api/healthz  the API directly
+#   http://localhost:5555              Prisma Studio
+#   localhost:5432                     PostgreSQL (user/password: peppol)
+#
+# Development only. Nothing here is used by the Replit deployment.
+
+name: peppol-ready
+
+x-app: &app
+  build:
+    context: .
+    dockerfile: Dockerfile.dev
+  image: peppol-ready-dev
+
+x-database-env: &database-env
+  DATABASE_URL: postgresql://peppol:peppol@db:5432/peppol_ready
+  NODE_ENV: development
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: peppol
+      POSTGRES_PASSWORD: peppol
+      POSTGRES_DB: peppol_ready
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U peppol -d peppol_ready"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  # One-shot: applies migrations exactly as production does, then seeds demo
+  # data only if the database has no users yet.
+  setup:
+    <<: *app
+    environment:
+      <<: *database-env
+      # The database host is `db`, not localhost, so the seed guard requires an
+      # explicit password. It is deliberately not the public development one.
+      SEED_PASSWORD: ${SEED_PASSWORD:-local-demo-password}
+    command: sh -c "pnpm run db:deploy && pnpm run db:bootstrap"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    <<: *app
+    environment:
+      <<: *database-env
+      PORT: "8080"
+    command: pnpm --filter @workspace/api-server run dev
+    ports:
+      - "8080:8080"
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+
+  web:
+    <<: *app
+    environment:
+      PORT: "5173"
+      BASE_PATH: /
+      API_PROXY_TARGET: http://api:8080
+    command: pnpm --filter @workspace/peppol-flow run dev
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+
+  studio:
+    <<: *app
+    environment:
+      <<: *database-env
+    command: pnpm --filter @workspace/peppol-flow exec prisma studio --port 5555 --hostname 0.0.0.0 --browser none
+    ports:
+      - "5555:5555"
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+
+volumes:
+  pgdata:
