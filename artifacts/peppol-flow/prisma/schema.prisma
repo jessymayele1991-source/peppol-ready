@@ -94,6 +94,13 @@ model Company {
   readinessScans     ReadinessScan[]
   reports            Report[]
 
+  // Tenant integrity: the relations below reference (id, organizationId), so a
+  // task, incident or report can only point at a company in its own organization.
+  tenantTasks        Task[]           @relation("TaskCompanyTenant")
+  tenantIncidents    Incident[]       @relation("IncidentCompanyTenant")
+  tenantReports      Report[]         @relation("ReportCompanyTenant")
+
+  @@unique([id, organizationId])
   @@index([organizationId, peppolStatus])
   @@index([organizationId, name])
   @@map("companies")
@@ -177,6 +184,11 @@ model Task {
   updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   company        Company?     @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  /// Database-enforced tenant boundary: (companyId, organizationId) must match a
+  /// company in the same organization. Kept alongside `company`, which still
+  /// clears companyId when a company is deleted; this relation only rejects
+  /// cross-organization references. Never query through it — use `company`.
+  companyTenant  Company?     @relation("TaskCompanyTenant", fields: [companyId, organizationId], references: [id, organizationId], onDelete: NoAction, onUpdate: NoAction)
   assignedTo     User?        @relation("TaskAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
   createdBy      User?        @relation("TaskCreator", fields: [createdById], references: [id], onDelete: SetNull)
 
@@ -199,6 +211,11 @@ model Incident {
   updatedAt      DateTime         @updatedAt @db.Timestamptz(3)
   organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   company        Company?         @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  /// Database-enforced tenant boundary: (companyId, organizationId) must match a
+  /// company in the same organization. Kept alongside `company`, which still
+  /// clears companyId when a company is deleted; this relation only rejects
+  /// cross-organization references. Never query through it — use `company`.
+  companyTenant  Company?         @relation("IncidentCompanyTenant", fields: [companyId, organizationId], references: [id, organizationId], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([organizationId, status, severity])
   @@index([companyId, occurredAt])
@@ -238,6 +255,11 @@ model Report {
   updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   company        Company?     @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  /// Database-enforced tenant boundary: (companyId, organizationId) must match a
+  /// company in the same organization. Kept alongside `company`, which still
+  /// clears companyId when a company is deleted; this relation only rejects
+  /// cross-organization references. Never query through it — use `company`.
+  companyTenant  Company?     @relation("ReportCompanyTenant", fields: [companyId, organizationId], references: [id, organizationId], onDelete: NoAction, onUpdate: NoAction)
   generatedBy    User?        @relation("ReportGenerator", fields: [generatedById], references: [id], onDelete: SetNull)
 
   @@index([organizationId, type, createdAt])

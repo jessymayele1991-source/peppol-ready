@@ -100,6 +100,23 @@ describe("shipped migrations", () => {
     expect(directories).toContain("20260911120000_auth_foundation");
   });
 
+  it("includes the tenant integrity migration, after the auth foundation", () => {
+    const sorted = [...directories].sort();
+    expect(sorted.indexOf("20260912120000_tenant_integrity")).toBeGreaterThan(
+      sorted.indexOf("20260911120000_auth_foundation"),
+    );
+  });
+
+  it("the tenant integrity migration checks existing data before any DDL", () => {
+    const sql = readFileSync(join(migrationsDir, "20260912120000_tenant_integrity", "migration.sql"), "utf8");
+    const preflight = sql.indexOf("DO $$");
+    const firstDdl = sql.search(/^(CREATE|ALTER)\s/m);
+
+    expect(preflight).toBeGreaterThan(-1);
+    expect(firstDdl).toBeGreaterThan(preflight);
+    expect(sql).not.toMatch(/^\s*DROP\s/im);
+  });
+
   it("build.mjs bakes the migration list into the bundle", () => {
     const build = readFileSync(join(import.meta.dirname, "../../build.mjs"), "utf8");
 

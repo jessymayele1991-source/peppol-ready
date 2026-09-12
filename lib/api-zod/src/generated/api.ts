@@ -15,7 +15,7 @@ import * as zod from 'zod';
 
 
 
-export const LoginBody = zod.object({
+export const LoginBody = zod.strictObject({
   "email": zod.string(),
   "password": zod.string().min(1)
 })
@@ -84,7 +84,7 @@ export const GetSessionResponse = zod.object({
 
 
 
-export const SwitchOrganizationBody = zod.object({
+export const SwitchOrganizationBody = zod.strictObject({
   "organizationId": zod.string().min(1)
 })
 
@@ -191,18 +191,13 @@ export const CalculateCompanyReadinessParams = zod.object({
   "companyId": zod.coerce.string()
 })
 
-
-
-
-export const CalculateCompanyReadinessBody = zod.object({
+export const CalculateCompanyReadinessBody = zod.strictObject({
   "participantRegistered": zod.boolean(),
   "receivingAddressConfigured": zod.boolean(),
   "peppolCapableSoftware": zod.boolean(),
   "certificateValid": zod.boolean(),
-  "successfulTestInvoice": zod.boolean(),
-  "checkedAt": zod.coerce.date().optional(),
-  "source": zod.string().min(1).optional()
-})
+  "successfulTestInvoice": zod.boolean()
+}).describe('Assessment answers only. The assessment time and its source are set by the server; requests that carry them, or any other field, are rejected.')
 
 export const calculateCompanyReadinessResponseScoreMin = 0;
 export const calculateCompanyReadinessResponseScoreMax = 100;

@@ -362,12 +362,10 @@ components:
           type: boolean
         successfulTestInvoice:
           type: boolean
-        checkedAt:
-          type: string
-          format: date-time
-        source:
-          type: string
-          minLength: 1
+      additionalProperties: false
+      description: >-
+        Assessment answers only. The assessment time and its source are set by
+        the server; requests that carry them, or any other field, are rejected.
       required:
         - participantRegistered
         - receivingAddressConfigured

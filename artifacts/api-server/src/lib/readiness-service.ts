@@ -267,10 +267,30 @@ export async function getReadinessDashboard(organizationId: string) {
   };
 }
 
+/**
+ * Where an assessment came from. Set by the server for each code path that
+ * records one, never taken from a request: a client-chosen source let a manual
+ * entry pass for an automated synchronisation in the audit trail.
+ */
+export const ASSESSMENT_SOURCE = {
+  manual: "manual_assessment",
+} as const;
+
+export type AssessmentSource =
+  (typeof ASSESSMENT_SOURCE)[keyof typeof ASSESSMENT_SOURCE];
+
+/**
+ * The assessment time is always the moment the server records it. A
+ * client-supplied time let a member date an assessment in the future, which then
+ * stayed the "latest" score forever and silenced the stale-assessment warning.
+ * The database also rejects future timestamps (see the tenant integrity
+ * migration), so no other write path can reintroduce this.
+ */
 export async function calculateAndPersistCompanyReadiness(
   companyId: string,
-  input: ReadinessInput & { checkedAt?: Date; source?: string },
+  input: ReadinessInput,
   actor: { userId: string; organizationId: string },
+  source: AssessmentSource = ASSESSMENT_SOURCE.manual,
 ) {
   // Scoped to the caller's organization: looking a company up by id alone
   // would accept any company id in the database.
@@ -280,7 +300,7 @@ export async function calculateAndPersistCompanyReadiness(
   });
   if (!company) return null;
 
-  const checkedAt = input.checkedAt ?? new Date();
+  const checkedAt = new Date();
   const assessment = calculateReadiness(input);
   const details: Prisma.InputJsonValue = {
     participantRegistered: input.participantRegistered,
@@ -299,7 +319,7 @@ export async function calculateAndPersistCompanyReadiness(
         score: assessment.score,
         status: assessment.status as PeppolStatus,
         checkedAt,
-        source: input.source ?? "manual_assessment",
+        source,
         details,
       },
     }),
@@ -321,7 +341,8 @@ export async function calculateAndPersistCompanyReadiness(
         metadata: {
           score: assessment.score,
           status: assessment.status,
-          source: input.source ?? "manual_assessment",
+          source,
+          checkedAt: checkedAt.toISOString(),
         },
       },
     }),

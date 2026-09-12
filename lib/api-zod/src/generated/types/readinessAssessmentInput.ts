@@ -6,13 +6,13 @@
  * OpenAPI spec version: 0.1.0
  */
 
+/**
+ * Assessment answers only. The assessment time and its source are set by the server; requests that carry them, or any other field, are rejected.
+ */
 export interface ReadinessAssessmentInput {
   participantRegistered: boolean;
   receivingAddressConfigured: boolean;
   peppolCapableSoftware: boolean;
   certificateValid: boolean;
   successfulTestInvoice: boolean;
-  checkedAt?: Date;
-  /** @minLength 1 */
-  source?: string;
 }

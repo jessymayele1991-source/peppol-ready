@@ -37,6 +37,8 @@ vi.mock("../lib/prisma", () => {
         updateMany: vi.fn(async () => ({ count: 0 })),
       },
       membership: { findUnique: vi.fn(async () => null) },
+      auditEvent: { create: vi.fn(async () => ({})) },
+      $transaction: vi.fn(async (operations: Promise<unknown>[]) => Promise.all(operations)),
     },
   };
 });

@@ -18,7 +18,16 @@ import {
   tooManyRequests,
   unauthorized,
 } from "../lib/errors";
+import {
+  AUTH_EVENTS,
+  authEvent,
+  logFailedLogin,
+  queueAuditOnDestroy,
+  queueAuditOnSave,
+  requestContext,
+} from "../lib/auth-audit";
 import { loginProtection } from "../lib/login-rate-limit";
+import { SESSION_COOKIE_NAME } from "../lib/session";
 
 const router: IRouter = Router();
 
@@ -45,12 +54,14 @@ router.post("/auth/login", async (req, res) => {
   const clientKey = req.ip ?? "unknown";
   const client = loginProtection.client.peek(clientKey);
   if (!client.allowed) {
+    logFailedLogin(req, "rate_limited_client");
     throw tooManyRequests(client.retryAfterSeconds, TOO_MANY_ATTEMPTS);
   }
 
   const body = LoginBody.safeParse(req.body);
   if (!body.success) {
     loginProtection.client.consume(clientKey);
+    logFailedLogin(req, "invalid_request");
     throw badRequest("An email address and password are required.");
   }
 
@@ -59,11 +70,13 @@ router.post("/auth/login", async (req, res) => {
   const account = normalizeEmail(body.data.email);
   const accountState = loginProtection.account.peek(account);
   if (!accountState.allowed) {
+    logFailedLogin(req, "rate_limited_account", account);
     throw tooManyRequests(accountState.retryAfterSeconds, TOO_MANY_ATTEMPTS);
   }
 
   const release = loginProtection.verifications.tryAcquire();
   if (!release) {
+    logFailedLogin(req, "verification_capacity", account);
     throw tooManyRequests(1, "Too many sign-in attempts are being processed. Try again shortly.");
   }
 
@@ -78,6 +91,7 @@ router.post("/auth/login", async (req, res) => {
   if (!credentials) {
     loginProtection.client.consume(clientKey);
     loginProtection.account.consume(account);
+    logFailedLogin(req, "invalid_credentials", account);
     throw unauthorized("That email address and password do not match.");
   }
   loginProtection.account.reset(account);
@@ -87,6 +101,7 @@ router.post("/auth/login", async (req, res) => {
     credentials.organizationId,
   );
   if (!session) {
+    logFailedLogin(req, "invalid_credentials", account);
     throw unauthorized("That email address and password do not match.");
   }
 
@@ -94,19 +109,43 @@ router.post("/auth/login", async (req, res) => {
   await regenerate(req);
   req.session.userId = credentials.userId;
   req.session.organizationId = credentials.organizationId;
+  // Committed by the session store in the same transaction as the new session.
+  queueAuditOnSave(
+    req.session,
+    authEvent({
+      eventType: AUTH_EVENTS.loginSucceeded,
+      organizationId: credentials.organizationId,
+      userId: credentials.userId,
+      metadata: { method: "password", ...requestContext(req) },
+    }),
+  );
   await save(req);
 
   res.json(LoginResponse.parse(session));
 });
 
 router.post("/auth/logout", (req, res, next) => {
+  const { userId, organizationId } = req.session ?? {};
+  // An anonymous request has nothing to sign out of, so nothing to record.
+  if (userId && organizationId) {
+    queueAuditOnDestroy(
+      req.sessionID,
+      authEvent({
+        eventType: AUTH_EVENTS.logout,
+        organizationId,
+        userId,
+        metadata: requestContext(req),
+      }),
+    );
+  }
+
   req.session.destroy((error) => {
     if (error) {
       next(error);
       return;
     }
 
-    res.clearCookie("peppol_ready_sid", { path: "/" });
+    res.clearCookie(SESSION_COOKIE_NAME, { path: "/" });
     res.status(204).end();
   });
 });
@@ -136,7 +175,30 @@ router.post("/auth/organization", async (req, res) => {
   const session = await loadSession(userId, body.data.organizationId);
   if (!session) throw forbidden("You are not a member of that workspace.");
 
+  const previousOrganizationId = req.session.organizationId;
   req.session.organizationId = body.data.organizationId;
+
+  if (previousOrganizationId && previousOrganizationId !== body.data.organizationId) {
+    // One event in each organization's trail. Neither names the other
+    // organization: that would tell one firm's administrators which other firms
+    // their colleague also belongs to.
+    const context = requestContext(req);
+    queueAuditOnSave(
+      req.session,
+      authEvent({
+        eventType: AUTH_EVENTS.organizationSwitched,
+        organizationId: previousOrganizationId,
+        userId,
+        metadata: { direction: "left", ...context },
+      }),
+      authEvent({
+        eventType: AUTH_EVENTS.organizationSwitched,
+        organizationId: body.data.organizationId,
+        userId,
+        metadata: { direction: "entered", ...context },
+      }),
+    );
+  }
   await save(req);
 
   res.json(SwitchOrganizationResponse.parse(session));

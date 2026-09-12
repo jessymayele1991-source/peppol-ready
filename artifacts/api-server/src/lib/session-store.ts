@@ -1,6 +1,19 @@
 import { Store, type SessionData } from "express-session";
-import type { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import {
+  clearAuditOnSave,
+  pendingAuditOnSave,
+  takeAuditOnDestroy,
+} from "./auth-audit";
+import { logger } from "./logger";
 import { prisma } from "./prisma";
+
+function isForeignKeyViolation(error: unknown): boolean {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2003"
+  );
+}
 
 /**
  * Session storage on Prisma rather than connect-pg-simple. Keeping the table
@@ -31,6 +44,11 @@ export class PrismaSessionStore extends Store {
       .catch((error: unknown) => callback(error));
   }
 
+  /**
+   * Writes the session together with any audit events queued against it, in one
+   * transaction. The queue is cleared only after the commit, so a failed write
+   * that express-session retries at the end of the response still carries them.
+   */
   override set(
     sid: string,
     session: SessionData,
@@ -38,22 +56,67 @@ export class PrismaSessionStore extends Store {
   ): void {
     const data = session as unknown as Prisma.InputJsonValue;
     const expiresAt = resolveExpiry(session);
+    const events = pendingAuditOnSave(session);
 
-    void prisma.userSession
-      .upsert({
-        where: { sid },
-        update: { data, expiresAt },
-        create: { sid, data, expiresAt },
+    const write = prisma.userSession.upsert({
+      where: { sid },
+      update: { data, expiresAt },
+      create: { sid, data, expiresAt },
+    });
+
+    const committed =
+      events.length === 0
+        ? write
+        : prisma.$transaction([
+            write,
+            ...events.map((event) => prisma.auditEvent.create({ data: event })),
+          ]);
+
+    void committed
+      .then(() => {
+        clearAuditOnSave(session);
+        callback?.();
       })
-      .then(() => callback?.())
       .catch((error: unknown) => callback?.(error));
   }
 
+  /**
+   * Deletes the session together with its queued sign-out event. Sign-out must
+   * never be refused: if the event cannot be written because its organization no
+   * longer exists, the session is still deleted and the gap is logged.
+   */
   override destroy(sid: string, callback?: (error?: unknown) => void): void {
-    void prisma.userSession
-      .deleteMany({ where: { sid } })
+    const events = takeAuditOnDestroy(sid);
+    const remove = prisma.userSession.deleteMany({ where: { sid } });
+
+    if (events.length === 0) {
+      void remove
+        .then(() => callback?.())
+        .catch((error: unknown) => callback?.(error));
+      return;
+    }
+
+    void prisma
+      .$transaction([
+        remove,
+        ...events.map((event) => prisma.auditEvent.create({ data: event })),
+      ])
       .then(() => callback?.())
-      .catch((error: unknown) => callback?.(error));
+      .catch((error: unknown) => {
+        if (!isForeignKeyViolation(error)) {
+          callback?.(error);
+          return;
+        }
+
+        logger.error(
+          { event: events[0]?.eventType, organizationId: events[0]?.organizationId },
+          "Sign-out audit event could not be written; its organization no longer exists",
+        );
+        void prisma.userSession
+          .deleteMany({ where: { sid } })
+          .then(() => callback?.())
+          .catch((retryError: unknown) => callback?.(retryError));
+      });
   }
 
   override touch(

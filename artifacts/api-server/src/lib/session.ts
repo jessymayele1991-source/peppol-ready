@@ -1,28 +1,17 @@
 import session, { type SessionOptions } from "express-session";
 import type { RequestHandler } from "express";
+import { SESSION_SECRET } from "./session-secret";
 import { PrismaSessionStore, SESSION_TTL_MS } from "./session-store";
 
 const isProduction = process.env["NODE_ENV"] === "production";
 
+export const SESSION_COOKIE_NAME = "peppol_ready_sid";
+
 export const sessionStore = new PrismaSessionStore();
 
-function resolveSecret(): string {
-  const secret = process.env["SESSION_SECRET"];
-  if (secret) return secret;
-
-  if (isProduction) {
-    throw new Error(
-      "SESSION_SECRET environment variable is required in production.",
-    );
-  }
-
-  // Development only: a fixed value keeps sessions alive across restarts.
-  return "peppol-ready-development-secret";
-}
-
 const options: SessionOptions = {
-  name: "peppol_ready_sid",
-  secret: resolveSecret(),
+  name: SESSION_COOKIE_NAME,
+  secret: SESSION_SECRET,
   store: sessionStore,
   resave: false,
   saveUninitialized: false,

@@ -57,6 +57,12 @@ export default defineConfig({
       prettier: true,
       override: {
         zod: {
+          // Request bodies reject fields the contract does not declare. Without
+          // this, a client that still sends a field removed from the contract —
+          // such as a readiness assessment's checkedAt — succeeds silently.
+          strict: {
+            body: true,
+          },
           coerce: {
             query: ['boolean', 'number', 'string'],
             param: ['boolean', 'number', 'string'],

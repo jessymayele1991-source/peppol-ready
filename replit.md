@@ -15,6 +15,7 @@ Peppol Ready helps accounting firms monitor and improve Peppol readiness, compli
 - Required env in production: `SESSION_SECRET` — signs the session cookie; the server refuses to start without it
 - Optional env: `WEB_ORIGIN` — enables CORS with credentials for local development, where the web artifact and the API run on different ports. Unset in production, where both are served from one origin.
 - Optional env: `SEED_PASSWORD` — overrides the shared development password used by the seed
+- Optional env: `TEST_DATABASE_URL` — a migrated Postgres database; enables the tenant integrity tests, which are skipped without it
 
 ## Stack
 
@@ -58,6 +59,10 @@ Peppol Ready helps accounting firms monitor and improve Peppol readiness, compli
 - Password verification always runs the full scrypt derivation, against a stand-in hash when the account or its hash is missing, so response time does not reveal which emails have accounts.
 - Sign-in is limited per client address (failed or invalid attempts only, so an office behind one NAT address is never locked out by successes), per email address (failures, keyed on the normalized email whether or not an account exists), and by a cap on concurrent password verifications. See `artifacts/api-server/src/lib/login-rate-limit.ts`.
 - The server refuses to start when the database is behind the migrations it was built with. `build.mjs` bakes the migration list into the bundle and `index.ts` compares it with `_prisma_migrations` before listening, so a skipped migration fails the startup health check instead of serving 500s.
+- Readiness assessment time and source are owned by the server. The contract rejects them (request bodies are strict: undeclared fields fail validation), the service sets them, and PostgreSQL CHECK constraints refuse future assessment timestamps from any write path.
+- Sign-in, sign-out and organization switches are audited in `audit_events`, committed by `PrismaSessionStore` in the same transaction as the session write. Audit events are queued with `queueAuditOnSave` / `queueAuditOnDestroy`; never write them from a route directly. A switch writes one event in each organization and names neither to the other.
+- Failed sign-ins go to structured warn logs (`auth.login.failed`), never to `audit_events`: an unknown account has no organization, and a database write only for real accounts would reopen account enumeration. The email is logged only as an HMAC pseudonym.
+- Tenant boundaries are enforced by PostgreSQL, not only by API code. Task, Incident and Report reference companies through composite foreign keys on (companyId, organizationId). User references on tasks, reports and readiness scans pass the `enforce_tenant_membership` trigger, which checks membership at write time only, so history survives a member leaving. `AuditEvent.actorId` is deliberately exempt: a membership check there could block a sign-out audit.
 - Seed records use stable IDs and upserts so development seeding is safe to rerun.
 - Readiness is calculated from five explicit factors totaling 100 points; every failed factor produces an explainable remediation signal.
 - The target schema supports normalized client contacts, ten-check readiness scans, generated reports, per-user locale preferences, and audit activity.
@@ -86,6 +91,9 @@ The current release provides a dashboard-first SaaS shell for client readiness m
 - Login rate limits live in process memory. They reset on every restart or redeploy, and each instance counts separately, so with N instances the effective limit is N times the configured one. A shared store would only replace `FixedWindowLimiter`; the route would not change.
 - The per-address limit keys on `req.ip`, which relies on `trust proxy` matching the real number of proxy hops. If the API is reachable without passing the platform proxy, `X-Forwarded-For` can be forged and the per-address limit bypassed; the per-account limit and the verification cap still apply.
 - Dev startup also runs the migration guard: run `db:migrate` against a fresh database before `pnpm --filter @workspace/api-server run dev`.
+- The `companyTenant` relations on Task, Incident and Report exist only to create the composite foreign keys. Query through `company`, never through `companyTenant`.
+- The membership trigger raises `foreign_key_violation`. Prisma reports it as P2003 with no constraint name and without the trigger's message; map P2003 to a client error when adding write endpoints for tasks, reports or scans.
+- The tenant integrity migration refuses to run if existing data already crosses a tenant boundary or holds a future assessment timestamp, and changes nothing. Resolve the rows, run `prisma migrate resolve --rolled-back 20260912120000_tenant_integrity`, then deploy again.
 
 ## Pointers
 
