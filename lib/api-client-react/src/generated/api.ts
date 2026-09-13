@@ -22,8 +22,19 @@ import type {
 import type {
   ApiError,
   BadRequestResponse,
+  ClientContact,
+  ClientContactInput,
+  ClientContactUpdateInput,
+  CompanyDetail,
+  CompanyInput,
+  CompanyPage,
+  CompanyUpdateInput,
+  ConflictResponse,
+  ForbiddenResponse,
   HealthStatus,
+  ListCompaniesParams,
   LoginInput,
+  NotFoundResponse,
   PayloadTooLargeResponse,
   ReadinessAssessment,
   ReadinessAssessmentInput,
@@ -31,7 +42,8 @@ import type {
   RegisterInput,
   Session,
   SwitchOrganizationInput,
-  TooManyRequestsResponse
+  TooManyRequestsResponse,
+  UnauthorizedResponse
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -539,7 +551,7 @@ export const getGetReadinessDashboardQueryKey = () => {
     }
 
 
-export const getGetReadinessDashboardQueryOptions = <TData = Awaited<ReturnType<typeof getReadinessDashboard>>, TError = ErrorType<ApiError>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getReadinessDashboard>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetReadinessDashboardQueryOptions = <TData = Awaited<ReturnType<typeof getReadinessDashboard>>, TError = ErrorType<ApiError | ForbiddenResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getReadinessDashboard>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -558,14 +570,14 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetReadinessDashboardQueryResult = NonNullable<Awaited<ReturnType<typeof getReadinessDashboard>>>
-export type GetReadinessDashboardQueryError = ErrorType<ApiError>
+export type GetReadinessDashboardQueryError = ErrorType<ApiError | ForbiddenResponse>
 
 
 /**
  * @summary Get readiness dashboard data
  */
 
-export function useGetReadinessDashboard<TData = Awaited<ReturnType<typeof getReadinessDashboard>>, TError = ErrorType<ApiError>>(
+export function useGetReadinessDashboard<TData = Awaited<ReturnType<typeof getReadinessDashboard>>, TError = ErrorType<ApiError | ForbiddenResponse>>(
   options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getReadinessDashboard>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
@@ -654,5 +666,752 @@ export const useCalculateCompanyReadiness = <TError = ErrorType<BadRequestRespon
         TContext
       > => {
       return useMutation(getCalculateCompanyReadinessMutationOptions(options));
+    }
+
+export const getListCompaniesUrl = (params?: ListCompaniesParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/companies?${stringifiedParams}` : `/api/companies`
+}
+
+/**
+ * Clients of the session's organization, filtered, searched, sorted and paginated on the server. Archived clients are excluded unless status asks for them.
+ * @summary List clients
+ */
+export const listCompanies = async (params?: ListCompaniesParams, options?: Parameters<typeof customFetch>[1]): Promise<CompanyPage> => {
+
+  return customFetch<CompanyPage>(getListCompaniesUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListCompaniesQueryKey = (params?: ListCompaniesParams,) => {
+    return [
+    `/api/companies`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListCompaniesQueryOptions = <TData = Awaited<ReturnType<typeof listCompanies>>, TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse>>(params?: ListCompaniesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCompanies>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListCompaniesQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCompanies>>> = ({ signal }) => listCompanies(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCompanies>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListCompaniesQueryResult = NonNullable<Awaited<ReturnType<typeof listCompanies>>>
+export type ListCompaniesQueryError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse>
+
+
+/**
+ * @summary List clients
+ */
+
+export function useListCompanies<TData = Awaited<ReturnType<typeof listCompanies>>, TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse>>(
+ params?: ListCompaniesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCompanies>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListCompaniesQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateCompanyUrl = () => {
+
+
+
+
+  return `/api/companies`
+}
+
+/**
+ * @summary Create a client
+ */
+export const createCompany = async (companyInput: CompanyInput, options?: Parameters<typeof customFetch>[1]): Promise<CompanyDetail> => {
+
+  return customFetch<CompanyDetail>(getCreateCompanyUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(companyInput)
+  }
+);}
+
+
+
+
+
+export const getCreateCompanyMutationOptions = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | ConflictResponse | PayloadTooLargeResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCompany>>, TError,{data: BodyType<CompanyInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createCompany>>, TError,{data: BodyType<CompanyInput>}, TContext> => {
+
+const mutationKey = ['createCompany'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCompany>>, {data: BodyType<CompanyInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createCompany(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateCompanyMutationResult = NonNullable<Awaited<ReturnType<typeof createCompany>>>
+    export type CreateCompanyMutationBody = BodyType<CompanyInput>
+    export type CreateCompanyMutationError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | ConflictResponse | PayloadTooLargeResponse>
+
+    /**
+ * @summary Create a client
+ */
+export const useCreateCompany = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | ConflictResponse | PayloadTooLargeResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCompany>>, TError,{data: BodyType<CompanyInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createCompany>>,
+        TError,
+        {data: BodyType<CompanyInput>},
+        TContext
+      > => {
+      return useMutation(getCreateCompanyMutationOptions(options));
+    }
+
+export const getGetCompanyUrl = (companyId: string,) => {
+
+
+
+
+  return `/api/companies/${companyId}`
+}
+
+/**
+ * @summary Get a client with its contacts
+ */
+export const getCompany = async (companyId: string, options?: Parameters<typeof customFetch>[1]): Promise<CompanyDetail> => {
+
+  return customFetch<CompanyDetail>(getGetCompanyUrl(companyId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetCompanyQueryKey = (companyId: string,) => {
+    return [
+    `/api/companies/${companyId}`
+    ] as const;
+    }
+
+
+export const getGetCompanyQueryOptions = <TData = Awaited<ReturnType<typeof getCompany>>, TError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>>(companyId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCompany>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCompanyQueryKey(companyId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCompany>>> = ({ signal }) => getCompany(companyId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: companyId !== null && companyId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCompany>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetCompanyQueryResult = NonNullable<Awaited<ReturnType<typeof getCompany>>>
+export type GetCompanyQueryError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>
+
+
+/**
+ * @summary Get a client with its contacts
+ */
+
+export function useGetCompany<TData = Awaited<ReturnType<typeof getCompany>>, TError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>>(
+ companyId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCompany>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetCompanyQueryOptions(companyId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateCompanyUrl = (companyId: string,) => {
+
+
+
+
+  return `/api/companies/${companyId}`
+}
+
+/**
+ * Only the fields present are changed; null clears an optional field.
+ * @summary Update a client
+ */
+export const updateCompany = async (companyId: string,
+    companyUpdateInput: CompanyUpdateInput, options?: Parameters<typeof customFetch>[1]): Promise<CompanyDetail> => {
+
+  return customFetch<CompanyDetail>(getUpdateCompanyUrl(companyId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(companyUpdateInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateCompanyMutationOptions = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | PayloadTooLargeResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCompany>>, TError,{companyId: string;data: BodyType<CompanyUpdateInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateCompany>>, TError,{companyId: string;data: BodyType<CompanyUpdateInput>}, TContext> => {
+
+const mutationKey = ['updateCompany'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCompany>>, {companyId: string;data: BodyType<CompanyUpdateInput>}> = (props) => {
+          const {companyId,data} = props ?? {};
+
+          return  updateCompany(companyId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateCompanyMutationResult = NonNullable<Awaited<ReturnType<typeof updateCompany>>>
+    export type UpdateCompanyMutationBody = BodyType<CompanyUpdateInput>
+    export type UpdateCompanyMutationError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | PayloadTooLargeResponse>
+
+    /**
+ * @summary Update a client
+ */
+export const useUpdateCompany = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | PayloadTooLargeResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCompany>>, TError,{companyId: string;data: BodyType<CompanyUpdateInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateCompany>>,
+        TError,
+        {companyId: string;data: BodyType<CompanyUpdateInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateCompanyMutationOptions(options));
+    }
+
+export const getArchiveCompanyUrl = (companyId: string,) => {
+
+
+
+
+  return `/api/companies/${companyId}/archive`
+}
+
+/**
+ * Idempotent. An archived client keeps its history but leaves lists, the dashboard and assessments.
+ * @summary Archive a client
+ */
+export const archiveCompany = async (companyId: string, options?: Parameters<typeof customFetch>[1]): Promise<CompanyDetail> => {
+
+  return customFetch<CompanyDetail>(getArchiveCompanyUrl(companyId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getArchiveCompanyMutationOptions = <TError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof archiveCompany>>, TError,{companyId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof archiveCompany>>, TError,{companyId: string}, TContext> => {
+
+const mutationKey = ['archiveCompany'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof archiveCompany>>, {companyId: string}> = (props) => {
+          const {companyId} = props ?? {};
+
+          return  archiveCompany(companyId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ArchiveCompanyMutationResult = NonNullable<Awaited<ReturnType<typeof archiveCompany>>>
+
+    export type ArchiveCompanyMutationError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>
+
+    /**
+ * @summary Archive a client
+ */
+export const useArchiveCompany = <TError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof archiveCompany>>, TError,{companyId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof archiveCompany>>,
+        TError,
+        {companyId: string},
+        TContext
+      > => {
+      return useMutation(getArchiveCompanyMutationOptions(options));
+    }
+
+export const getRestoreCompanyUrl = (companyId: string,) => {
+
+
+
+
+  return `/api/companies/${companyId}/restore`
+}
+
+/**
+ * Idempotent.
+ * @summary Restore an archived client
+ */
+export const restoreCompany = async (companyId: string, options?: Parameters<typeof customFetch>[1]): Promise<CompanyDetail> => {
+
+  return customFetch<CompanyDetail>(getRestoreCompanyUrl(companyId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getRestoreCompanyMutationOptions = <TError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof restoreCompany>>, TError,{companyId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof restoreCompany>>, TError,{companyId: string}, TContext> => {
+
+const mutationKey = ['restoreCompany'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof restoreCompany>>, {companyId: string}> = (props) => {
+          const {companyId} = props ?? {};
+
+          return  restoreCompany(companyId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RestoreCompanyMutationResult = NonNullable<Awaited<ReturnType<typeof restoreCompany>>>
+
+    export type RestoreCompanyMutationError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>
+
+    /**
+ * @summary Restore an archived client
+ */
+export const useRestoreCompany = <TError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof restoreCompany>>, TError,{companyId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof restoreCompany>>,
+        TError,
+        {companyId: string},
+        TContext
+      > => {
+      return useMutation(getRestoreCompanyMutationOptions(options));
+    }
+
+export const getListCompanyContactsUrl = (companyId: string,) => {
+
+
+
+
+  return `/api/companies/${companyId}/contacts`
+}
+
+/**
+ * @summary List a client's contacts
+ */
+export const listCompanyContacts = async (companyId: string, options?: Parameters<typeof customFetch>[1]): Promise<ClientContact[]> => {
+
+  return customFetch<ClientContact[]>(getListCompanyContactsUrl(companyId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListCompanyContactsQueryKey = (companyId: string,) => {
+    return [
+    `/api/companies/${companyId}/contacts`
+    ] as const;
+    }
+
+
+export const getListCompanyContactsQueryOptions = <TData = Awaited<ReturnType<typeof listCompanyContacts>>, TError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>>(companyId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCompanyContacts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListCompanyContactsQueryKey(companyId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCompanyContacts>>> = ({ signal }) => listCompanyContacts(companyId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: companyId !== null && companyId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCompanyContacts>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListCompanyContactsQueryResult = NonNullable<Awaited<ReturnType<typeof listCompanyContacts>>>
+export type ListCompanyContactsQueryError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>
+
+
+/**
+ * @summary List a client's contacts
+ */
+
+export function useListCompanyContacts<TData = Awaited<ReturnType<typeof listCompanyContacts>>, TError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>>(
+ companyId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCompanyContacts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListCompanyContactsQueryOptions(companyId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateCompanyContactUrl = (companyId: string,) => {
+
+
+
+
+  return `/api/companies/${companyId}/contacts`
+}
+
+/**
+ * @summary Add a contact to a client
+ */
+export const createCompanyContact = async (companyId: string,
+    clientContactInput: ClientContactInput, options?: Parameters<typeof customFetch>[1]): Promise<ClientContact> => {
+
+  return customFetch<ClientContact>(getCreateCompanyContactUrl(companyId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(clientContactInput)
+  }
+);}
+
+
+
+
+
+export const getCreateCompanyContactMutationOptions = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | PayloadTooLargeResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCompanyContact>>, TError,{companyId: string;data: BodyType<ClientContactInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createCompanyContact>>, TError,{companyId: string;data: BodyType<ClientContactInput>}, TContext> => {
+
+const mutationKey = ['createCompanyContact'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCompanyContact>>, {companyId: string;data: BodyType<ClientContactInput>}> = (props) => {
+          const {companyId,data} = props ?? {};
+
+          return  createCompanyContact(companyId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateCompanyContactMutationResult = NonNullable<Awaited<ReturnType<typeof createCompanyContact>>>
+    export type CreateCompanyContactMutationBody = BodyType<ClientContactInput>
+    export type CreateCompanyContactMutationError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | PayloadTooLargeResponse>
+
+    /**
+ * @summary Add a contact to a client
+ */
+export const useCreateCompanyContact = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | PayloadTooLargeResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCompanyContact>>, TError,{companyId: string;data: BodyType<ClientContactInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createCompanyContact>>,
+        TError,
+        {companyId: string;data: BodyType<ClientContactInput>},
+        TContext
+      > => {
+      return useMutation(getCreateCompanyContactMutationOptions(options));
+    }
+
+export const getUpdateCompanyContactUrl = (companyId: string,
+    contactId: string,) => {
+
+
+
+
+  return `/api/companies/${companyId}/contacts/${contactId}`
+}
+
+/**
+ * @summary Update a contact
+ */
+export const updateCompanyContact = async (companyId: string,
+    contactId: string,
+    clientContactUpdateInput: ClientContactUpdateInput, options?: Parameters<typeof customFetch>[1]): Promise<ClientContact> => {
+
+  return customFetch<ClientContact>(getUpdateCompanyContactUrl(companyId,contactId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(clientContactUpdateInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateCompanyContactMutationOptions = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | PayloadTooLargeResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCompanyContact>>, TError,{companyId: string;contactId: string;data: BodyType<ClientContactUpdateInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateCompanyContact>>, TError,{companyId: string;contactId: string;data: BodyType<ClientContactUpdateInput>}, TContext> => {
+
+const mutationKey = ['updateCompanyContact'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCompanyContact>>, {companyId: string;contactId: string;data: BodyType<ClientContactUpdateInput>}> = (props) => {
+          const {companyId,contactId,data} = props ?? {};
+
+          return  updateCompanyContact(companyId,contactId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateCompanyContactMutationResult = NonNullable<Awaited<ReturnType<typeof updateCompanyContact>>>
+    export type UpdateCompanyContactMutationBody = BodyType<ClientContactUpdateInput>
+    export type UpdateCompanyContactMutationError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | PayloadTooLargeResponse>
+
+    /**
+ * @summary Update a contact
+ */
+export const useUpdateCompanyContact = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | PayloadTooLargeResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCompanyContact>>, TError,{companyId: string;contactId: string;data: BodyType<ClientContactUpdateInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateCompanyContact>>,
+        TError,
+        {companyId: string;contactId: string;data: BodyType<ClientContactUpdateInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateCompanyContactMutationOptions(options));
+    }
+
+export const getDeleteCompanyContactUrl = (companyId: string,
+    contactId: string,) => {
+
+
+
+
+  return `/api/companies/${companyId}/contacts/${contactId}`
+}
+
+/**
+ * Removes the contact's personal data permanently; the audit trail keeps only ids.
+ * @summary Delete a contact
+ */
+export const deleteCompanyContact = async (companyId: string,
+    contactId: string, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteCompanyContactUrl(companyId,contactId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteCompanyContactMutationOptions = <TError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCompanyContact>>, TError,{companyId: string;contactId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteCompanyContact>>, TError,{companyId: string;contactId: string}, TContext> => {
+
+const mutationKey = ['deleteCompanyContact'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteCompanyContact>>, {companyId: string;contactId: string}> = (props) => {
+          const {companyId,contactId} = props ?? {};
+
+          return  deleteCompanyContact(companyId,contactId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteCompanyContactMutationResult = NonNullable<Awaited<ReturnType<typeof deleteCompanyContact>>>
+
+    export type DeleteCompanyContactMutationError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse>
+
+    /**
+ * @summary Delete a contact
+ */
+export const useDeleteCompanyContact = <TError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCompanyContact>>, TError,{companyId: string;contactId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteCompanyContact>>,
+        TError,
+        {companyId: string;contactId: string},
+        TContext
+      > => {
+      return useMutation(getDeleteCompanyContactMutationOptions(options));
     }
 

@@ -146,14 +146,147 @@
     "incident_noma_certificate": "Endpoint certificate expires soon",
     "incident_green_resolved": "Participant lookup delayed"
   },
+  "clients": {
+    "eyebrow": "Client base",
+    "title": "Clients",
+    "subtitle": "Manage your firm's client records and their contacts.",
+    "create": "New client",
+    "archived": "Archived",
+    "neverChecked": "Not checked yet",
+    "loadError": "Clients could not be loaded",
+    "filters": {
+      "search": "Search by name, email, VAT or registration number",
+      "status": "View",
+      "statusOptions": {
+        "active": "Active",
+        "archived": "Archived",
+        "all": "All"
+      },
+      "peppolStatus": "Peppol",
+      "any": "All",
+      "industry": "Industry",
+      "sort": "Sort",
+      "clear": "Clear filters"
+    },
+    "sort": {
+      "name": "Name A–Z",
+      "-name": "Name Z–A",
+      "readinessScore": "Score low–high",
+      "-readinessScore": "Score high–low",
+      "lastCheckedAt": "Oldest check",
+      "-lastCheckedAt": "Latest check",
+      "createdAt": "First added",
+      "-createdAt": "Last added"
+    },
+    "table": {
+      "client": "Client",
+      "vatNumber": "VAT number",
+      "status": "Peppol status",
+      "score": "Readiness score",
+      "industry": "Industry",
+      "checked": "Last check"
+    },
+    "empty": {
+      "title": "No clients yet",
+      "description": "Add your first client to follow the Peppol readiness of your client base.",
+      "readOnly": "No clients have been added to this workspace yet.",
+      "filtered": "No clients match these filters."
+    },
+    "pagination": {
+      "summary": "{{from}}–{{to}} of {{total}} clients",
+      "page": "Page {{page}} of {{pages}}"
+    },
+    "fields": {
+      "name": "Name",
+      "legalName": "Legal name",
+      "vatNumber": "VAT number",
+      "registrationNumber": "Company registration number",
+      "email": "Email",
+      "phone": "Phone",
+      "industry": "Industry",
+      "accountingPackage": "Accounting software",
+      "addressLine": "Address",
+      "postalCode": "Postal code",
+      "city": "City",
+      "country": "Country",
+      "countryHint": "Two-letter country code, e.g. BE or NL."
+    },
+    "form": {
+      "createTitle": "New client",
+      "editTitle": "Edit client",
+      "description": "VAT and registration numbers are stored without spaces or dots and are unique within your firm.",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "toast": {
+      "created": "Client added",
+      "updated": "Client updated",
+      "archived": "Client archived",
+      "restored": "Client restored",
+      "contactCreated": "Contact added",
+      "contactUpdated": "Contact updated",
+      "contactDeleted": "Contact deleted"
+    },
+    "errors": {
+      "unexpected": "Something went wrong. Please try again.",
+      "invalid": "Please check the details you entered.",
+      "forbidden": "Your role does not allow this action.",
+      "notFound": "This client or contact no longer exists.",
+      "duplicateVat": "A client with this VAT number already exists in your firm. If it is archived, restore it instead.",
+      "duplicateRegistration": "A client with this registration number already exists in your firm. If it is archived, restore it instead.",
+      "archived": "This client is archived. Restore it first.",
+      "conflict": "This change conflicts with existing data."
+    },
+    "validation": {
+      "required": "Required field.",
+      "tooLong": "This value is too long.",
+      "format": "Invalid value."
+    },
+    "detail": {
+      "back": "Back to clients",
+      "notFoundTitle": "Client not found",
+      "notFoundDescription": "This client does not exist or does not belong to your current workspace.",
+      "retryDescription": "Please try again.",
+      "edit": "Edit",
+      "archive": "Archive",
+      "restore": "Restore",
+      "archivedNotice": "Archived on {{date}}. The client is left out of the dashboard and can only be changed after restoring it.",
+      "overview": "Overview",
+      "contacts": "Contacts",
+      "details": "Details",
+      "address": "Address",
+      "readiness": "Peppol readiness",
+      "createdAt": "Added on",
+      "archiveTitle": "Archive {{name}}?",
+      "archiveDescription": "The client leaves the active list and the dashboard. All data is kept and you can restore the client later.",
+      "restoreTitle": "Restore {{name}}?",
+      "restoreDescription": "The client becomes active again and counts in the dashboard."
+    },
+    "contacts": {
+      "add": "Add contact",
+      "empty": "No contacts yet.",
+      "primary": "Primary",
+      "edit": "Edit {{name}}",
+      "delete": "Delete {{name}}",
+      "deleteTitle": "Delete {{name}}?",
+      "deleteDescription": "This contact will be deleted permanently.",
+      "deleteConfirm": "Delete",
+      "createTitle": "Add contact",
+      "editTitle": "Edit contact",
+      "formDescription": "A client has at most one primary contact.",
+      "fields": {
+        "name": "Name",
+        "role": "Role",
+        "email": "Email",
+        "phone": "Phone",
+        "isPrimary": "Primary contact",
+        "isPrimaryHint": "Replaces this client's current primary contact."
+      }
+    }
+  },
   "placeholder": {
     "tagline": "A focused workspace for teams that work with certainty.",
     "prepare": "Prepare workspace",
-    "clients": {
-      "eyebrow": "Client directory",
-      "title": "Your client network is ready to connect",
-      "description": "Once client records are imported, your team can search, segment, and inspect every Peppol profile here."
-    },
     "readiness": {
       "eyebrow": "Readiness intelligence",
       "title": "A sharper view is coming together",

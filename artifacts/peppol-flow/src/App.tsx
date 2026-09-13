@@ -11,6 +11,8 @@ import { initials } from '@/lib/initials';
 import NotFound from '@/pages/not-found';
 import { Dashboard } from '@/pages/dashboard';
 import { Login } from '@/pages/login';
+import { ClientDetail } from '@/pages/client-detail';
+import { Clients } from '@/pages/clients';
 import { Placeholder, type PlaceholderPage } from '@/pages/placeholder';
 import { Register } from '@/pages/register';
 
@@ -33,6 +35,11 @@ const navGroups = [
   ] },
 ] as const;
 
+/** A section stays highlighted on its sub-pages, such as a client's detail. */
+function isActive(href: string, location: string) {
+  return href === '/' ? location === '/' : location === href || location.startsWith(`${href}/`);
+}
+
 function Shell({ children }: { children: ReactNode }) {
   const { language, languages, setLanguage, t } = useI18n();
   const { session, signOut, switchOrganization } = useSession();
@@ -42,7 +49,7 @@ function Shell({ children }: { children: ReactNode }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const current = navGroups.reduce<string | undefined>(
-    (match, group) => match ?? group.items.find((item) => item.href === location)?.key,
+    (match, group) => match ?? group.items.find((item) => isActive(item.href, location))?.key,
     undefined,
   ) ?? 'dashboard';
 
@@ -84,7 +91,7 @@ function Shell({ children }: { children: ReactNode }) {
           </div>
         )}
         <nav className="mt-8 flex-1 space-y-6 overflow-y-auto">
-          {navGroups.map((group) => <div key={group.key}><p className="mono mb-2 px-3 text-[9px] font-bold uppercase tracking-[.16em] text-[hsl(var(--sidebar-foreground)/.48)]">{t(`nav.${group.key}`)}</p><div className="space-y-1">{group.items.map((item) => { const Icon = item.icon; const active = item.href === location; return <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)} data-testid={`link-nav-${item.key}`} className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-semibold transition-all duration-200 ${active ? 'bg-[hsl(var(--sidebar-primary))] text-white shadow-[0_5px_14px_hsl(221_83%_53%/.18)]' : 'text-[hsl(var(--sidebar-foreground)/.72)] hover:bg-[hsl(var(--sidebar-accent))] hover:text-white'}`}><Icon size={16} strokeWidth={active ? 2.4 : 1.9} /><span>{t(`nav.${item.key}`)}</span></Link>; })}</div></div>)}
+          {navGroups.map((group) => <div key={group.key}><p className="mono mb-2 px-3 text-[9px] font-bold uppercase tracking-[.16em] text-[hsl(var(--sidebar-foreground)/.48)]">{t(`nav.${group.key}`)}</p><div className="space-y-1">{group.items.map((item) => { const Icon = item.icon; const active = isActive(item.href, location); return <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)} data-testid={`link-nav-${item.key}`} className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-semibold transition-all duration-200 ${active ? 'bg-[hsl(var(--sidebar-primary))] text-white shadow-[0_5px_14px_hsl(221_83%_53%/.18)]' : 'text-[hsl(var(--sidebar-foreground)/.72)] hover:bg-[hsl(var(--sidebar-accent))] hover:text-white'}`}><Icon size={16} strokeWidth={active ? 2.4 : 1.9} /><span>{t(`nav.${item.key}`)}</span></Link>; })}</div></div>)}
         </nav>
         <div className="mt-5 rounded-xl border border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar-accent)/.65)] p-3.5"><div className="flex items-start gap-2.5"><CircleHelp size={16} className="mt-0.5 shrink-0 text-[hsl(var(--sidebar-primary))]" /><div><p className="text-xs font-bold text-white">{t('workspace.helpTitle')}</p><p className="mt-1 text-[10px] leading-4 text-[hsl(var(--sidebar-foreground)/.62)]">{t('workspace.helpDescription')}</p><button data-testid="button-contact-support" className="mt-2 text-[10px] font-bold text-[hsl(var(--sidebar-primary))] hover:underline">{t('workspace.contactSupport')} <span aria-hidden>→</span></button></div></div></div>
       </aside>
@@ -132,12 +139,12 @@ function Router() {
   }
 
   const placeholderRoutes: Array<{ path: string; page: PlaceholderPage }> = [
-    { path: '/clients', page: 'clients' }, { path: '/readiness', page: 'readiness' },
+    { path: '/readiness', page: 'readiness' },
     { path: '/actions', page: 'actions' }, { path: '/incidents', page: 'incidents' },
     { path: '/reports', page: 'reports' }, { path: '/users', page: 'users' },
     { path: '/settings', page: 'settings' },
   ];
-  return <RoutedErrorBoundary><Shell><Switch><Route path="/" component={Dashboard} /><Route path="/register"><Redirect to="/" replace /></Route>{placeholderRoutes.map(({ path, page }) => <Route key={path} path={path}><Placeholder page={page} /></Route>)}<Route component={NotFound} /></Switch></Shell></RoutedErrorBoundary>;
+  return <RoutedErrorBoundary><Shell><Switch><Route path="/" component={Dashboard} /><Route path="/clients" component={Clients} /><Route path="/clients/:companyId" component={ClientDetail} /><Route path="/register"><Redirect to="/" replace /></Route>{placeholderRoutes.map(({ path, page }) => <Route key={path} path={path}><Placeholder page={page} /></Route>)}<Route component={NotFound} /></Switch></Shell></RoutedErrorBoundary>;
 }
 
 function RoutedErrorBoundary({ children }: { children: ReactNode }) {

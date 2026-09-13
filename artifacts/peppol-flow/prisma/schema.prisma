@@ -81,6 +81,15 @@ model Company {
   vatNumber          String?
   industry           String?
   accountingPackage  String?
+  phone              String?
+  addressLine        String?
+  postalCode         String?
+  city               String?
+  /// ISO 3166-1 alpha-2, upper case (CHECK constraint in the migration).
+  country            String?
+  /// Archived clients keep their history but leave lists, the dashboard and
+  /// assessments. Clients are never hard-deleted through the API.
+  archivedAt         DateTime?        @db.Timestamptz(3)
   peppolStatus       PeppolStatus     @default(NOT_REGISTERED)
   readinessScore     Int              @default(0)
   lastCheckedAt      DateTime?        @db.Timestamptz(3)
@@ -101,6 +110,12 @@ model Company {
   tenantReports      Report[]         @relation("ReportCompanyTenant")
 
   @@unique([id, organizationId])
+  /// Stored normalized (upper case, no spaces or dots; CHECK constraints in the
+  /// migration), so a unique index is enough to prevent duplicate clients.
+  /// Archived clients keep their numbers reserved: restore instead of recreate.
+  @@unique([organizationId, vatNumber])
+  @@unique([organizationId, registrationNumber])
+  @@index([organizationId, archivedAt, name])
   @@index([organizationId, peppolStatus])
   @@index([organizationId, name])
   @@map("companies")

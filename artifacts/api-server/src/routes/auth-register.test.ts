@@ -81,7 +81,9 @@ describe("POST /auth/register", () => {
     const session = (await response.json()) as SessionBody;
     expect(session.user).toMatchObject({ name: "Nieuwe Eigenaar", email, avatarInitials: "NE" });
     expect(session.role).toBe("OWNER");
-    expect(session.capabilities).toHaveLength(10);
+    // An owner holds every capability in the matrix.
+    const { CAPABILITIES } = await import("../lib/permissions");
+    expect([...session.capabilities].sort()).toEqual([...CAPABILITIES].sort());
     expect(session.organization.name).toBe("Nieuwe Eigenaar");
     expect(session.memberships).toEqual([
       { organizationId: session.organization.id, organizationName: "Nieuwe Eigenaar", role: "OWNER" },

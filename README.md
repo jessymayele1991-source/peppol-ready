@@ -113,6 +113,8 @@ wachtwoord: `pnpm db:seed` (overschrijft de demogegevens).
 
 Je kunt ook zelf een account aanmaken via **Nog geen account? Registreren** onder het aanmeldformulier (http://localhost:5173/register). Je krijgt dan een eigen, lege werkruimte waarin je eigenaar bent.
 
+In een nieuwe werkruimte voeg je klanten toe via **Klanten → Nieuwe klant** (http://localhost:5173/clients). Eigenaars en beheerders kunnen klanten ook archiveren en herstellen; medewerkers kunnen klanten en contactpersonen toevoegen en wijzigen; lezers zien alleen.
+
 ## Veelgebruikte commando's
 
 | Commando | Doet |
@@ -171,7 +173,7 @@ Gebruik WSL 2. De scripts gaan uit van een POSIX-shell.
 
 ```
 artifacts/
-  api-server/     Express API — auth, sessies, readiness
+  api-server/     Express API — auth, sessies, klanten, readiness
   peppol-flow/    React-webapplicatie; bevat ook prisma/ (schema, migraties, seed)
   mockup-sandbox/ Replit-designcanvas (lokaal niet nodig)
 lib/

@@ -34,7 +34,7 @@ export const LoginResponse = zod.object({
   "plan": zod.enum(['STARTER', 'PROFESSIONAL', 'ENTERPRISE'])
 }),
   "role": zod.enum(['OWNER', 'ADMIN', 'MEMBER', 'VIEWER']),
-  "capabilities": zod.array(zod.enum(['workspace.manage', 'workspace.transfer', 'members.manage', 'clients.write', 'scans.write', 'tasks.manage', 'reports.generate', 'reports.view', 'audit.viewAll', 'audit.viewOwn'])),
+  "capabilities": zod.array(zod.enum(['workspace.manage', 'workspace.transfer', 'members.manage', 'clients.view', 'clients.write', 'clients.archive', 'scans.write', 'tasks.manage', 'reports.generate', 'reports.view', 'audit.viewAll', 'audit.viewOwn'])),
   "memberships": zod.array(zod.object({
   "organizationId": zod.string(),
   "organizationName": zod.string(),
@@ -77,7 +77,7 @@ export const RegisterResponse = zod.object({
   "plan": zod.enum(['STARTER', 'PROFESSIONAL', 'ENTERPRISE'])
 }),
   "role": zod.enum(['OWNER', 'ADMIN', 'MEMBER', 'VIEWER']),
-  "capabilities": zod.array(zod.enum(['workspace.manage', 'workspace.transfer', 'members.manage', 'clients.write', 'scans.write', 'tasks.manage', 'reports.generate', 'reports.view', 'audit.viewAll', 'audit.viewOwn'])),
+  "capabilities": zod.array(zod.enum(['workspace.manage', 'workspace.transfer', 'members.manage', 'clients.view', 'clients.write', 'clients.archive', 'scans.write', 'tasks.manage', 'reports.generate', 'reports.view', 'audit.viewAll', 'audit.viewOwn'])),
   "memberships": zod.array(zod.object({
   "organizationId": zod.string(),
   "organizationName": zod.string(),
@@ -111,7 +111,7 @@ export const GetSessionResponse = zod.object({
   "plan": zod.enum(['STARTER', 'PROFESSIONAL', 'ENTERPRISE'])
 }),
   "role": zod.enum(['OWNER', 'ADMIN', 'MEMBER', 'VIEWER']),
-  "capabilities": zod.array(zod.enum(['workspace.manage', 'workspace.transfer', 'members.manage', 'clients.write', 'scans.write', 'tasks.manage', 'reports.generate', 'reports.view', 'audit.viewAll', 'audit.viewOwn'])),
+  "capabilities": zod.array(zod.enum(['workspace.manage', 'workspace.transfer', 'members.manage', 'clients.view', 'clients.write', 'clients.archive', 'scans.write', 'tasks.manage', 'reports.generate', 'reports.view', 'audit.viewAll', 'audit.viewOwn'])),
   "memberships": zod.array(zod.object({
   "organizationId": zod.string(),
   "organizationName": zod.string(),
@@ -145,7 +145,7 @@ export const SwitchOrganizationResponse = zod.object({
   "plan": zod.enum(['STARTER', 'PROFESSIONAL', 'ENTERPRISE'])
 }),
   "role": zod.enum(['OWNER', 'ADMIN', 'MEMBER', 'VIEWER']),
-  "capabilities": zod.array(zod.enum(['workspace.manage', 'workspace.transfer', 'members.manage', 'clients.write', 'scans.write', 'tasks.manage', 'reports.generate', 'reports.view', 'audit.viewAll', 'audit.viewOwn'])),
+  "capabilities": zod.array(zod.enum(['workspace.manage', 'workspace.transfer', 'members.manage', 'clients.view', 'clients.write', 'clients.archive', 'scans.write', 'tasks.manage', 'reports.generate', 'reports.view', 'audit.viewAll', 'audit.viewOwn'])),
   "memberships": zod.array(zod.object({
   "organizationId": zod.string(),
   "organizationName": zod.string(),
@@ -269,5 +269,483 @@ export const CalculateCompanyReadinessResponse = zod.object({
 })),
   "calculatedAt": zod.coerce.date()
 })
+
+
+/**
+ * Clients of the session's organization, filtered, searched, sorted and paginated on the server. Archived clients are excluded unless status asks for them.
+ * @summary List clients
+ */
+export const listCompaniesQuerySearchMax = 100;
+
+export const listCompaniesQueryIndustryMax = 100;
+
+
+export const listCompaniesQueryPageSizeMax = 100;
+
+
+
+export const ListCompaniesQueryParams = zod.object({
+  "search": zod.coerce.string().max(listCompaniesQuerySearchMax).optional().describe('Matches name, legal name, email, VAT number or registration number.'),
+  "status": zod.enum(['active', 'archived', 'all']).optional(),
+  "peppolStatus": zod.enum(['READY', 'CONFIGURING', 'AT_RISK', 'NOT_REGISTERED']).optional(),
+  "industry": zod.coerce.string().max(listCompaniesQueryIndustryMax).optional(),
+  "sort": zod.enum(['name', '-name', 'readinessScore', '-readinessScore', 'lastCheckedAt', '-lastCheckedAt', 'createdAt', '-createdAt']).optional(),
+  "page": zod.coerce.number().min(1).optional(),
+  "pageSize": zod.coerce.number().min(1).max(listCompaniesQueryPageSizeMax).optional()
+})
+
+export const ListCompaniesResponse = zod.object({
+  "items": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "legalName": zod.string().nullable(),
+  "email": zod.string().nullable(),
+  "phone": zod.string().nullable(),
+  "registrationNumber": zod.string().nullable(),
+  "vatNumber": zod.string().nullable(),
+  "industry": zod.string().nullable(),
+  "accountingPackage": zod.string().nullable(),
+  "addressLine": zod.string().nullable(),
+  "postalCode": zod.string().nullable(),
+  "city": zod.string().nullable(),
+  "country": zod.string().nullable(),
+  "peppolStatus": zod.enum(['READY', 'CONFIGURING', 'AT_RISK', 'NOT_REGISTERED']),
+  "readinessScore": zod.number(),
+  "lastCheckedAt": zod.coerce.date().nullable(),
+  "archivedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})),
+  "page": zod.number(),
+  "pageSize": zod.number(),
+  "total": zod.number()
+})
+
+
+/**
+ * @summary Create a client
+ */
+export const createCompanyBodyNameMax = 200;
+
+export const createCompanyBodyLegalNameMax = 200;
+
+export const createCompanyBodyEmailMax = 254;
+
+export const createCompanyBodyPhoneMax = 50;
+
+export const createCompanyBodyRegistrationNumberMax = 32;
+
+export const createCompanyBodyVatNumberMax = 32;
+
+export const createCompanyBodyIndustryMax = 100;
+
+export const createCompanyBodyAccountingPackageMax = 100;
+
+export const createCompanyBodyAddressLineMax = 200;
+
+export const createCompanyBodyPostalCodeMax = 20;
+
+export const createCompanyBodyCityMax = 100;
+
+export const createCompanyBodyCountryRegExp = new RegExp('^[A-Za-z]{2}$');
+
+
+export const CreateCompanyBody = zod.strictObject({
+  "name": zod.string().min(1).max(createCompanyBodyNameMax),
+  "legalName": zod.string().max(createCompanyBodyLegalNameMax).nullish(),
+  "email": zod.string().max(createCompanyBodyEmailMax).nullish(),
+  "phone": zod.string().max(createCompanyBodyPhoneMax).nullish(),
+  "registrationNumber": zod.string().max(createCompanyBodyRegistrationNumberMax).nullish(),
+  "vatNumber": zod.string().max(createCompanyBodyVatNumberMax).nullish(),
+  "industry": zod.string().max(createCompanyBodyIndustryMax).nullish(),
+  "accountingPackage": zod.string().max(createCompanyBodyAccountingPackageMax).nullish(),
+  "addressLine": zod.string().max(createCompanyBodyAddressLineMax).nullish(),
+  "postalCode": zod.string().max(createCompanyBodyPostalCodeMax).nullish(),
+  "city": zod.string().max(createCompanyBodyCityMax).nullish(),
+  "country": zod.string().regex(createCompanyBodyCountryRegExp).nullish().describe('ISO 3166-1 alpha-2 code, stored in upper case.')
+}).describe('Client details a user may set. Readiness score, Peppol status, last check, organization and archive state are owned by the server and are rejected here. VAT and registration numbers are stored in upper case without spaces or dots and must be unique within the organization.')
+
+export const CreateCompanyResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "legalName": zod.string().nullable(),
+  "email": zod.string().nullable(),
+  "phone": zod.string().nullable(),
+  "registrationNumber": zod.string().nullable(),
+  "vatNumber": zod.string().nullable(),
+  "industry": zod.string().nullable(),
+  "accountingPackage": zod.string().nullable(),
+  "addressLine": zod.string().nullable(),
+  "postalCode": zod.string().nullable(),
+  "city": zod.string().nullable(),
+  "country": zod.string().nullable(),
+  "peppolStatus": zod.enum(['READY', 'CONFIGURING', 'AT_RISK', 'NOT_REGISTERED']),
+  "readinessScore": zod.number(),
+  "lastCheckedAt": zod.coerce.date().nullable(),
+  "archivedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}).and(zod.object({
+  "contacts": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string().nullable(),
+  "phone": zod.string().nullable(),
+  "role": zod.string().nullable(),
+  "isPrimary": zod.boolean(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}))
+}))
+
+
+/**
+ * @summary Get a client with its contacts
+ */
+export const getCompanyPathCompanyIdMax = 64;
+
+
+
+export const GetCompanyParams = zod.object({
+  "companyId": zod.coerce.string().min(1).max(getCompanyPathCompanyIdMax)
+})
+
+export const GetCompanyResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "legalName": zod.string().nullable(),
+  "email": zod.string().nullable(),
+  "phone": zod.string().nullable(),
+  "registrationNumber": zod.string().nullable(),
+  "vatNumber": zod.string().nullable(),
+  "industry": zod.string().nullable(),
+  "accountingPackage": zod.string().nullable(),
+  "addressLine": zod.string().nullable(),
+  "postalCode": zod.string().nullable(),
+  "city": zod.string().nullable(),
+  "country": zod.string().nullable(),
+  "peppolStatus": zod.enum(['READY', 'CONFIGURING', 'AT_RISK', 'NOT_REGISTERED']),
+  "readinessScore": zod.number(),
+  "lastCheckedAt": zod.coerce.date().nullable(),
+  "archivedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}).and(zod.object({
+  "contacts": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string().nullable(),
+  "phone": zod.string().nullable(),
+  "role": zod.string().nullable(),
+  "isPrimary": zod.boolean(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}))
+}))
+
+
+/**
+ * Only the fields present are changed; null clears an optional field.
+ * @summary Update a client
+ */
+export const updateCompanyPathCompanyIdMax = 64;
+
+
+
+export const UpdateCompanyParams = zod.object({
+  "companyId": zod.coerce.string().min(1).max(updateCompanyPathCompanyIdMax)
+})
+
+export const updateCompanyBodyNameMax = 200;
+
+export const updateCompanyBodyLegalNameMax = 200;
+
+export const updateCompanyBodyEmailMax = 254;
+
+export const updateCompanyBodyPhoneMax = 50;
+
+export const updateCompanyBodyRegistrationNumberMax = 32;
+
+export const updateCompanyBodyVatNumberMax = 32;
+
+export const updateCompanyBodyIndustryMax = 100;
+
+export const updateCompanyBodyAccountingPackageMax = 100;
+
+export const updateCompanyBodyAddressLineMax = 200;
+
+export const updateCompanyBodyPostalCodeMax = 20;
+
+export const updateCompanyBodyCityMax = 100;
+
+export const updateCompanyBodyCountryRegExp = new RegExp('^[A-Za-z]{2}$');
+
+
+export const UpdateCompanyBody = zod.strictObject({
+  "name": zod.string().min(1).max(updateCompanyBodyNameMax).optional(),
+  "legalName": zod.string().max(updateCompanyBodyLegalNameMax).nullish(),
+  "email": zod.string().max(updateCompanyBodyEmailMax).nullish(),
+  "phone": zod.string().max(updateCompanyBodyPhoneMax).nullish(),
+  "registrationNumber": zod.string().max(updateCompanyBodyRegistrationNumberMax).nullish(),
+  "vatNumber": zod.string().max(updateCompanyBodyVatNumberMax).nullish(),
+  "industry": zod.string().max(updateCompanyBodyIndustryMax).nullish(),
+  "accountingPackage": zod.string().max(updateCompanyBodyAccountingPackageMax).nullish(),
+  "addressLine": zod.string().max(updateCompanyBodyAddressLineMax).nullish(),
+  "postalCode": zod.string().max(updateCompanyBodyPostalCodeMax).nullish(),
+  "city": zod.string().max(updateCompanyBodyCityMax).nullish(),
+  "country": zod.string().regex(updateCompanyBodyCountryRegExp).nullish().describe('ISO 3166-1 alpha-2 code, stored in upper case.')
+}).describe('Same fields as CompanyInput, all optional; null clears an optional field.')
+
+export const UpdateCompanyResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "legalName": zod.string().nullable(),
+  "email": zod.string().nullable(),
+  "phone": zod.string().nullable(),
+  "registrationNumber": zod.string().nullable(),
+  "vatNumber": zod.string().nullable(),
+  "industry": zod.string().nullable(),
+  "accountingPackage": zod.string().nullable(),
+  "addressLine": zod.string().nullable(),
+  "postalCode": zod.string().nullable(),
+  "city": zod.string().nullable(),
+  "country": zod.string().nullable(),
+  "peppolStatus": zod.enum(['READY', 'CONFIGURING', 'AT_RISK', 'NOT_REGISTERED']),
+  "readinessScore": zod.number(),
+  "lastCheckedAt": zod.coerce.date().nullable(),
+  "archivedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}).and(zod.object({
+  "contacts": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string().nullable(),
+  "phone": zod.string().nullable(),
+  "role": zod.string().nullable(),
+  "isPrimary": zod.boolean(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}))
+}))
+
+
+/**
+ * Idempotent. An archived client keeps its history but leaves lists, the dashboard and assessments.
+ * @summary Archive a client
+ */
+export const archiveCompanyPathCompanyIdMax = 64;
+
+
+
+export const ArchiveCompanyParams = zod.object({
+  "companyId": zod.coerce.string().min(1).max(archiveCompanyPathCompanyIdMax)
+})
+
+export const ArchiveCompanyResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "legalName": zod.string().nullable(),
+  "email": zod.string().nullable(),
+  "phone": zod.string().nullable(),
+  "registrationNumber": zod.string().nullable(),
+  "vatNumber": zod.string().nullable(),
+  "industry": zod.string().nullable(),
+  "accountingPackage": zod.string().nullable(),
+  "addressLine": zod.string().nullable(),
+  "postalCode": zod.string().nullable(),
+  "city": zod.string().nullable(),
+  "country": zod.string().nullable(),
+  "peppolStatus": zod.enum(['READY', 'CONFIGURING', 'AT_RISK', 'NOT_REGISTERED']),
+  "readinessScore": zod.number(),
+  "lastCheckedAt": zod.coerce.date().nullable(),
+  "archivedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}).and(zod.object({
+  "contacts": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string().nullable(),
+  "phone": zod.string().nullable(),
+  "role": zod.string().nullable(),
+  "isPrimary": zod.boolean(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}))
+}))
+
+
+/**
+ * Idempotent.
+ * @summary Restore an archived client
+ */
+export const restoreCompanyPathCompanyIdMax = 64;
+
+
+
+export const RestoreCompanyParams = zod.object({
+  "companyId": zod.coerce.string().min(1).max(restoreCompanyPathCompanyIdMax)
+})
+
+export const RestoreCompanyResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "legalName": zod.string().nullable(),
+  "email": zod.string().nullable(),
+  "phone": zod.string().nullable(),
+  "registrationNumber": zod.string().nullable(),
+  "vatNumber": zod.string().nullable(),
+  "industry": zod.string().nullable(),
+  "accountingPackage": zod.string().nullable(),
+  "addressLine": zod.string().nullable(),
+  "postalCode": zod.string().nullable(),
+  "city": zod.string().nullable(),
+  "country": zod.string().nullable(),
+  "peppolStatus": zod.enum(['READY', 'CONFIGURING', 'AT_RISK', 'NOT_REGISTERED']),
+  "readinessScore": zod.number(),
+  "lastCheckedAt": zod.coerce.date().nullable(),
+  "archivedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}).and(zod.object({
+  "contacts": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string().nullable(),
+  "phone": zod.string().nullable(),
+  "role": zod.string().nullable(),
+  "isPrimary": zod.boolean(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}))
+}))
+
+
+/**
+ * @summary List a client's contacts
+ */
+export const listCompanyContactsPathCompanyIdMax = 64;
+
+
+
+export const ListCompanyContactsParams = zod.object({
+  "companyId": zod.coerce.string().min(1).max(listCompanyContactsPathCompanyIdMax)
+})
+
+export const ListCompanyContactsResponseItem = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string().nullable(),
+  "phone": zod.string().nullable(),
+  "role": zod.string().nullable(),
+  "isPrimary": zod.boolean(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListCompanyContactsResponse = zod.array(ListCompanyContactsResponseItem)
+
+
+/**
+ * @summary Add a contact to a client
+ */
+export const createCompanyContactPathCompanyIdMax = 64;
+
+
+
+export const CreateCompanyContactParams = zod.object({
+  "companyId": zod.coerce.string().min(1).max(createCompanyContactPathCompanyIdMax)
+})
+
+export const createCompanyContactBodyNameMax = 200;
+
+export const createCompanyContactBodyEmailMax = 254;
+
+export const createCompanyContactBodyPhoneMax = 50;
+
+export const createCompanyContactBodyRoleMax = 100;
+
+
+
+export const CreateCompanyContactBody = zod.strictObject({
+  "name": zod.string().min(1).max(createCompanyContactBodyNameMax),
+  "email": zod.string().max(createCompanyContactBodyEmailMax).nullish(),
+  "phone": zod.string().max(createCompanyContactBodyPhoneMax).nullish(),
+  "role": zod.string().max(createCompanyContactBodyRoleMax).nullish(),
+  "isPrimary": zod.boolean().optional().describe('Marking a contact primary unmarks the client\'s previous primary contact.')
+})
+
+export const CreateCompanyContactResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string().nullable(),
+  "phone": zod.string().nullable(),
+  "role": zod.string().nullable(),
+  "isPrimary": zod.boolean(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update a contact
+ */
+export const updateCompanyContactPathCompanyIdMax = 64;
+
+export const updateCompanyContactPathContactIdMax = 64;
+
+
+
+export const UpdateCompanyContactParams = zod.object({
+  "companyId": zod.coerce.string().min(1).max(updateCompanyContactPathCompanyIdMax),
+  "contactId": zod.coerce.string().min(1).max(updateCompanyContactPathContactIdMax)
+})
+
+export const updateCompanyContactBodyNameMax = 200;
+
+export const updateCompanyContactBodyEmailMax = 254;
+
+export const updateCompanyContactBodyPhoneMax = 50;
+
+export const updateCompanyContactBodyRoleMax = 100;
+
+
+
+export const UpdateCompanyContactBody = zod.strictObject({
+  "name": zod.string().min(1).max(updateCompanyContactBodyNameMax).optional(),
+  "email": zod.string().max(updateCompanyContactBodyEmailMax).nullish(),
+  "phone": zod.string().max(updateCompanyContactBodyPhoneMax).nullish(),
+  "role": zod.string().max(updateCompanyContactBodyRoleMax).nullish(),
+  "isPrimary": zod.boolean().optional()
+})
+
+export const UpdateCompanyContactResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string().nullable(),
+  "phone": zod.string().nullable(),
+  "role": zod.string().nullable(),
+  "isPrimary": zod.boolean(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * Removes the contact's personal data permanently; the audit trail keeps only ids.
+ * @summary Delete a contact
+ */
+export const deleteCompanyContactPathCompanyIdMax = 64;
+
+export const deleteCompanyContactPathContactIdMax = 64;
+
+
+
+export const DeleteCompanyContactParams = zod.object({
+  "companyId": zod.coerce.string().min(1).max(deleteCompanyContactPathCompanyIdMax),
+  "contactId": zod.coerce.string().min(1).max(deleteCompanyContactPathContactIdMax)
+})
+
+export const DeleteCompanyContactResponse = zod.void()
 
 

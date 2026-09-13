@@ -15,7 +15,12 @@ export const CAPABILITIES = [
   "workspace.manage",
   "workspace.transfer",
   "members.manage",
+  // Reading clients, including the readiness dashboard built from them.
+  "clients.view",
   "clients.write",
+  // Archiving stops monitoring a client for the whole firm, so it is kept to
+  // the roles that manage the workspace.
+  "clients.archive",
   "scans.write",
   "tasks.manage",
   "reports.generate",
@@ -31,7 +36,9 @@ const ROLE_CAPABILITIES: Record<MembershipRole, readonly Capability[]> = {
   [MembershipRole.ADMIN]: [
     "workspace.manage",
     "members.manage",
+    "clients.view",
     "clients.write",
+    "clients.archive",
     "scans.write",
     "tasks.manage",
     "reports.generate",
@@ -40,6 +47,7 @@ const ROLE_CAPABILITIES: Record<MembershipRole, readonly Capability[]> = {
     "audit.viewOwn",
   ],
   [MembershipRole.MEMBER]: [
+    "clients.view",
     "clients.write",
     "scans.write",
     "tasks.manage",
@@ -47,7 +55,7 @@ const ROLE_CAPABILITIES: Record<MembershipRole, readonly Capability[]> = {
     "reports.view",
     "audit.viewOwn",
   ],
-  [MembershipRole.VIEWER]: ["reports.view"],
+  [MembershipRole.VIEWER]: ["clients.view", "reports.view"],
 };
 
 export function capabilitiesForRole(role: MembershipRole): Capability[] {

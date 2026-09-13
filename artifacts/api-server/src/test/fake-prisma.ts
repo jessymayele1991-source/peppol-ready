@@ -157,6 +157,16 @@ export function createFakePrisma() {
           if (company) Object.assign(company, data);
           return company;
         }),
+      updateMany: ({ where, data }: { where: { id: string; organizationId: string; archivedAt?: null }; data: Row }) =>
+        lazy(() => {
+          const company = state.companies.get(where.id);
+          const matches =
+            company !== undefined &&
+            company["organizationId"] === where.organizationId &&
+            (where.archivedAt === undefined || (company["archivedAt"] ?? null) === null);
+          if (matches) Object.assign(company, data);
+          return { count: matches ? 1 : 0 };
+        }),
     },
     readinessScore: {
       create: ({ data }: { data: Row }) =>

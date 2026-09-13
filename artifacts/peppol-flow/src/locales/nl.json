@@ -146,14 +146,147 @@
     "incident_noma_certificate": "Certificaat van endpoint verloopt binnenkort",
     "incident_green_resolved": "Opzoeken van deelnemer vertraagd"
   },
+  "clients": {
+    "eyebrow": "Klantenbestand",
+    "title": "Klanten",
+    "subtitle": "Beheer de klantdossiers van je kantoor en hun contactpersonen.",
+    "create": "Nieuwe klant",
+    "archived": "Gearchiveerd",
+    "neverChecked": "Nog niet gecontroleerd",
+    "loadError": "Klanten konden niet worden geladen",
+    "filters": {
+      "search": "Zoek op naam, e-mail, btw- of ondernemingsnummer",
+      "status": "Weergave",
+      "statusOptions": {
+        "active": "Actief",
+        "archived": "Gearchiveerd",
+        "all": "Alle"
+      },
+      "peppolStatus": "Peppol",
+      "any": "Alle",
+      "industry": "Sector",
+      "sort": "Sorteren",
+      "clear": "Filters wissen"
+    },
+    "sort": {
+      "name": "Naam A–Z",
+      "-name": "Naam Z–A",
+      "readinessScore": "Score laag–hoog",
+      "-readinessScore": "Score hoog–laag",
+      "lastCheckedAt": "Oudste controle",
+      "-lastCheckedAt": "Recentste controle",
+      "createdAt": "Oudst toegevoegd",
+      "-createdAt": "Laatst toegevoegd"
+    },
+    "table": {
+      "client": "Klant",
+      "vatNumber": "Btw-nummer",
+      "status": "Peppol-status",
+      "score": "Gereedheidsscore",
+      "industry": "Sector",
+      "checked": "Laatste controle"
+    },
+    "empty": {
+      "title": "Nog geen klanten",
+      "description": "Voeg je eerste klant toe om de Peppol-gereedheid van je klantenbestand op te volgen.",
+      "readOnly": "Er zijn nog geen klanten toegevoegd aan deze werkruimte.",
+      "filtered": "Geen klanten gevonden voor deze filters."
+    },
+    "pagination": {
+      "summary": "{{from}}–{{to}} van {{total}} klanten",
+      "page": "Pagina {{page}} van {{pages}}"
+    },
+    "fields": {
+      "name": "Naam",
+      "legalName": "Juridische naam",
+      "vatNumber": "Btw-nummer",
+      "registrationNumber": "Ondernemingsnummer (KBO/KvK)",
+      "email": "E-mail",
+      "phone": "Telefoon",
+      "industry": "Sector",
+      "accountingPackage": "Boekhoudpakket",
+      "addressLine": "Adres",
+      "postalCode": "Postcode",
+      "city": "Gemeente",
+      "country": "Land",
+      "countryHint": "Tweeletterige landcode, bv. BE of NL."
+    },
+    "form": {
+      "createTitle": "Nieuwe klant",
+      "editTitle": "Klant bewerken",
+      "description": "Btw- en ondernemingsnummers worden opgeslagen zonder spaties of punten en zijn uniek binnen je kantoor.",
+      "cancel": "Annuleren",
+      "save": "Opslaan"
+    },
+    "toast": {
+      "created": "Klant toegevoegd",
+      "updated": "Klant bijgewerkt",
+      "archived": "Klant gearchiveerd",
+      "restored": "Klant hersteld",
+      "contactCreated": "Contactpersoon toegevoegd",
+      "contactUpdated": "Contactpersoon bijgewerkt",
+      "contactDeleted": "Contactpersoon verwijderd"
+    },
+    "errors": {
+      "unexpected": "Er ging iets mis. Probeer het opnieuw.",
+      "invalid": "Controleer de ingevulde gegevens.",
+      "forbidden": "Je rol laat deze actie niet toe.",
+      "notFound": "Deze klant of contactpersoon bestaat niet meer.",
+      "duplicateVat": "Een klant met dit btw-nummer bestaat al in je kantoor. Is die gearchiveerd, herstel hem dan.",
+      "duplicateRegistration": "Een klant met dit ondernemingsnummer bestaat al in je kantoor. Is die gearchiveerd, herstel hem dan.",
+      "archived": "Deze klant is gearchiveerd. Herstel hem eerst.",
+      "conflict": "Deze wijziging botst met bestaande gegevens."
+    },
+    "validation": {
+      "required": "Verplicht veld.",
+      "tooLong": "Deze waarde is te lang.",
+      "format": "Ongeldige waarde."
+    },
+    "detail": {
+      "back": "Terug naar klanten",
+      "notFoundTitle": "Klant niet gevonden",
+      "notFoundDescription": "Deze klant bestaat niet of hoort niet bij je huidige werkruimte.",
+      "retryDescription": "Probeer het opnieuw.",
+      "edit": "Bewerken",
+      "archive": "Archiveren",
+      "restore": "Herstellen",
+      "archivedNotice": "Gearchiveerd op {{date}}. De klant telt niet mee in het dashboard en kan pas na herstel worden gewijzigd.",
+      "overview": "Overzicht",
+      "contacts": "Contactpersonen",
+      "details": "Gegevens",
+      "address": "Adres",
+      "readiness": "Peppol-gereedheid",
+      "createdAt": "Toegevoegd op",
+      "archiveTitle": "{{name}} archiveren?",
+      "archiveDescription": "De klant verdwijnt uit de actieve lijst en het dashboard. Alle gegevens blijven bewaard en je kunt de klant later herstellen.",
+      "restoreTitle": "{{name}} herstellen?",
+      "restoreDescription": "De klant wordt opnieuw actief en telt weer mee in het dashboard."
+    },
+    "contacts": {
+      "add": "Contactpersoon toevoegen",
+      "empty": "Nog geen contactpersonen.",
+      "primary": "Primair",
+      "edit": "{{name}} bewerken",
+      "delete": "{{name}} verwijderen",
+      "deleteTitle": "{{name}} verwijderen?",
+      "deleteDescription": "Deze contactpersoon wordt definitief verwijderd.",
+      "deleteConfirm": "Verwijderen",
+      "createTitle": "Contactpersoon toevoegen",
+      "editTitle": "Contactpersoon bewerken",
+      "formDescription": "Een klant heeft hoogstens één primaire contactpersoon.",
+      "fields": {
+        "name": "Naam",
+        "role": "Functie",
+        "email": "E-mail",
+        "phone": "Telefoon",
+        "isPrimary": "Primaire contactpersoon",
+        "isPrimaryHint": "Vervangt de huidige primaire contactpersoon van deze klant."
+      }
+    }
+  },
   "placeholder": {
     "tagline": "Een gerichte werkruimte voor teams die met zekerheid werken.",
     "prepare": "Werkruimte voorbereiden",
-    "clients": {
-      "eyebrow": "Klantenbestand",
-      "title": "Je klantennetwerk is klaar om te verbinden",
-      "description": "Na het importeren van klantendossiers kan je team hier elk Peppol-profiel zoeken, segmenteren en bekijken."
-    },
     "readiness": {
       "eyebrow": "Gereedheidsinzichten",
       "title": "Een scherper beeld krijgt vorm",

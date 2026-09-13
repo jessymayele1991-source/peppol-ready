@@ -146,14 +146,147 @@
     "incident_noma_certificate": "Le certificat du point d’accès expire bientôt",
     "incident_green_resolved": "Recherche du participant retardée"
   },
+  "clients": {
+    "eyebrow": "Portefeuille clients",
+    "title": "Clients",
+    "subtitle": "Gérez les dossiers clients de votre cabinet et leurs contacts.",
+    "create": "Nouveau client",
+    "archived": "Archivé",
+    "neverChecked": "Pas encore contrôlé",
+    "loadError": "Impossible de charger les clients",
+    "filters": {
+      "search": "Rechercher par nom, e-mail, numéro de TVA ou d’entreprise",
+      "status": "Affichage",
+      "statusOptions": {
+        "active": "Actifs",
+        "archived": "Archivés",
+        "all": "Tous"
+      },
+      "peppolStatus": "Peppol",
+      "any": "Tous",
+      "industry": "Secteur",
+      "sort": "Trier",
+      "clear": "Effacer les filtres"
+    },
+    "sort": {
+      "name": "Nom A–Z",
+      "-name": "Nom Z–A",
+      "readinessScore": "Score croissant",
+      "-readinessScore": "Score décroissant",
+      "lastCheckedAt": "Contrôle le plus ancien",
+      "-lastCheckedAt": "Contrôle le plus récent",
+      "createdAt": "Ajout le plus ancien",
+      "-createdAt": "Ajout le plus récent"
+    },
+    "table": {
+      "client": "Client",
+      "vatNumber": "Numéro de TVA",
+      "status": "Statut Peppol",
+      "score": "Score de préparation",
+      "industry": "Secteur",
+      "checked": "Dernier contrôle"
+    },
+    "empty": {
+      "title": "Aucun client pour l’instant",
+      "description": "Ajoutez votre premier client pour suivre la préparation Peppol de votre portefeuille.",
+      "readOnly": "Aucun client n’a encore été ajouté à cet espace de travail.",
+      "filtered": "Aucun client ne correspond à ces filtres."
+    },
+    "pagination": {
+      "summary": "{{from}}–{{to}} sur {{total}} clients",
+      "page": "Page {{page}} sur {{pages}}"
+    },
+    "fields": {
+      "name": "Nom",
+      "legalName": "Dénomination légale",
+      "vatNumber": "Numéro de TVA",
+      "registrationNumber": "Numéro d’entreprise (BCE/KvK)",
+      "email": "E-mail",
+      "phone": "Téléphone",
+      "industry": "Secteur",
+      "accountingPackage": "Logiciel comptable",
+      "addressLine": "Adresse",
+      "postalCode": "Code postal",
+      "city": "Commune",
+      "country": "Pays",
+      "countryHint": "Code pays à deux lettres, par ex. BE ou NL."
+    },
+    "form": {
+      "createTitle": "Nouveau client",
+      "editTitle": "Modifier le client",
+      "description": "Les numéros de TVA et d’entreprise sont enregistrés sans espaces ni points et sont uniques au sein de votre cabinet.",
+      "cancel": "Annuler",
+      "save": "Enregistrer"
+    },
+    "toast": {
+      "created": "Client ajouté",
+      "updated": "Client mis à jour",
+      "archived": "Client archivé",
+      "restored": "Client restauré",
+      "contactCreated": "Contact ajouté",
+      "contactUpdated": "Contact mis à jour",
+      "contactDeleted": "Contact supprimé"
+    },
+    "errors": {
+      "unexpected": "Une erreur s’est produite. Veuillez réessayer.",
+      "invalid": "Vérifiez les informations saisies.",
+      "forbidden": "Votre rôle ne permet pas cette action.",
+      "notFound": "Ce client ou ce contact n’existe plus.",
+      "duplicateVat": "Un client avec ce numéro de TVA existe déjà dans votre cabinet. S’il est archivé, restaurez-le.",
+      "duplicateRegistration": "Un client avec ce numéro d’entreprise existe déjà dans votre cabinet. S’il est archivé, restaurez-le.",
+      "archived": "Ce client est archivé. Restaurez-le d’abord.",
+      "conflict": "Cette modification entre en conflit avec des données existantes."
+    },
+    "validation": {
+      "required": "Champ obligatoire.",
+      "tooLong": "Cette valeur est trop longue.",
+      "format": "Valeur non valide."
+    },
+    "detail": {
+      "back": "Retour aux clients",
+      "notFoundTitle": "Client introuvable",
+      "notFoundDescription": "Ce client n’existe pas ou n’appartient pas à votre espace de travail actuel.",
+      "retryDescription": "Veuillez réessayer.",
+      "edit": "Modifier",
+      "archive": "Archiver",
+      "restore": "Restaurer",
+      "archivedNotice": "Archivé le {{date}}. Le client n’est pas repris dans le tableau de bord et ne peut être modifié qu’après restauration.",
+      "overview": "Aperçu",
+      "contacts": "Contacts",
+      "details": "Informations",
+      "address": "Adresse",
+      "readiness": "Préparation Peppol",
+      "createdAt": "Ajouté le",
+      "archiveTitle": "Archiver {{name}} ?",
+      "archiveDescription": "Le client disparaît de la liste active et du tableau de bord. Toutes les données sont conservées et vous pouvez le restaurer plus tard.",
+      "restoreTitle": "Restaurer {{name}} ?",
+      "restoreDescription": "Le client redevient actif et compte à nouveau dans le tableau de bord."
+    },
+    "contacts": {
+      "add": "Ajouter un contact",
+      "empty": "Aucun contact pour l’instant.",
+      "primary": "Principal",
+      "edit": "Modifier {{name}}",
+      "delete": "Supprimer {{name}}",
+      "deleteTitle": "Supprimer {{name}} ?",
+      "deleteDescription": "Ce contact sera supprimé définitivement.",
+      "deleteConfirm": "Supprimer",
+      "createTitle": "Ajouter un contact",
+      "editTitle": "Modifier le contact",
+      "formDescription": "Un client a au maximum un contact principal.",
+      "fields": {
+        "name": "Nom",
+        "role": "Fonction",
+        "email": "E-mail",
+        "phone": "Téléphone",
+        "isPrimary": "Contact principal",
+        "isPrimaryHint": "Remplace le contact principal actuel de ce client."
+      }
+    }
+  },
   "placeholder": {
     "tagline": "Un espace ciblé pour les équipes qui travaillent avec certitude.",
     "prepare": "Préparer l’espace",
-    "clients": {
-      "eyebrow": "Répertoire clients",
-      "title": "Votre réseau de clients est prêt à être connecté",
-      "description": "Après l’importation, recherchez, segmentez et consultez chaque profil Peppol."
-    },
     "readiness": {
       "eyebrow": "Intelligence de préparation",
       "title": "Une vision plus nette prend forme",

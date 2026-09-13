@@ -165,6 +165,36 @@ describe("shipped migrations", () => {
     expect(sql).not.toMatch(/^\s*DROP\s/im);
   });
 
+  it("includes the client management migration, after tenant integrity", () => {
+    const sorted = [...directories].sort();
+    expect(sorted.indexOf("20260914120000_company_management")).toBeGreaterThan(
+      sorted.indexOf("20260912120000_tenant_integrity"),
+    );
+  });
+
+  it("the client management migration refuses duplicate identifiers before normalizing or any DDL", () => {
+    const sql = readFileSync(join(migrationsDir, "20260914120000_company_management", "migration.sql"), "utf8");
+    const preflight = sql.indexOf("DO $$");
+    const normalize = sql.search(/^UPDATE\s+"public"\."companies"/m);
+    const firstDdl = sql.search(/^(CREATE|ALTER)\s/m);
+
+    expect(preflight).toBeGreaterThan(-1);
+    expect(normalize).toBeGreaterThan(preflight);
+    expect(firstDdl).toBeGreaterThan(normalize);
+    expect(sql).toMatch(/RAISE EXCEPTION/);
+    expect(sql).not.toMatch(/^\s*DROP\s/im);
+    for (const name of [
+      "companies_organizationId_vatNumber_key",
+      "companies_organizationId_registrationNumber_key",
+      "companies_vatNumber_normalized",
+      "companies_registrationNumber_normalized",
+      "companies_country_iso_alpha2",
+      "companies_archivedAt_not_future",
+    ]) {
+      expect(sql).toContain(`"${name}"`);
+    }
+  });
+
   it("build.mjs bakes the migration list into the bundle", () => {
     const build = readFileSync(join(import.meta.dirname, "../../build.mjs"), "utf8");
 

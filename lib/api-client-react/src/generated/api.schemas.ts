@@ -54,7 +54,9 @@ export const Capability = {
   workspacemanage: 'workspace.manage',
   workspacetransfer: 'workspace.transfer',
   membersmanage: 'members.manage',
+  clientsview: 'clients.view',
   clientswrite: 'clients.write',
+  clientsarchive: 'clients.archive',
   scanswrite: 'scans.write',
   tasksmanage: 'tasks.manage',
   reportsgenerate: 'reports.generate',
@@ -124,8 +126,161 @@ export interface Session {
   memberships: SessionMembership[];
 }
 
-export interface HealthStatus {
-  status: string;
+export type CompanyListStatus = typeof CompanyListStatus[keyof typeof CompanyListStatus];
+
+
+export const CompanyListStatus = {
+  active: 'active',
+  archived: 'archived',
+  all: 'all',
+} as const;
+
+export type CompanySort = typeof CompanySort[keyof typeof CompanySort];
+
+
+export const CompanySort = {
+  name: 'name',
+  '-name': '-name',
+  readinessScore: 'readinessScore',
+  '-readinessScore': '-readinessScore',
+  lastCheckedAt: 'lastCheckedAt',
+  '-lastCheckedAt': '-lastCheckedAt',
+  createdAt: 'createdAt',
+  '-createdAt': '-createdAt',
+} as const;
+
+/**
+ * Client details a user may set. Readiness score, Peppol status, last check, organization and archive state are owned by the server and are rejected here. VAT and registration numbers are stored in upper case without spaces or dots and must be unique within the organization.
+ */
+export interface CompanyInput {
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  name: string;
+  /**
+     * @maxLength 200
+     * @nullable
+     */
+  legalName?: string | null;
+  /**
+     * @maxLength 254
+     * @nullable
+     */
+  email?: string | null;
+  /**
+     * @maxLength 50
+     * @nullable
+     */
+  phone?: string | null;
+  /**
+     * @maxLength 32
+     * @nullable
+     */
+  registrationNumber?: string | null;
+  /**
+     * @maxLength 32
+     * @nullable
+     */
+  vatNumber?: string | null;
+  /**
+     * @maxLength 100
+     * @nullable
+     */
+  industry?: string | null;
+  /**
+     * @maxLength 100
+     * @nullable
+     */
+  accountingPackage?: string | null;
+  /**
+     * @maxLength 200
+     * @nullable
+     */
+  addressLine?: string | null;
+  /**
+     * @maxLength 20
+     * @nullable
+     */
+  postalCode?: string | null;
+  /**
+     * @maxLength 100
+     * @nullable
+     */
+  city?: string | null;
+  /**
+     * ISO 3166-1 alpha-2 code, stored in upper case.
+     * @nullable
+     * @pattern ^[A-Za-z]{2}$
+     */
+  country?: string | null;
+}
+
+/**
+ * Same fields as CompanyInput, all optional; null clears an optional field.
+ */
+export interface CompanyUpdateInput {
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  name?: string;
+  /**
+     * @maxLength 200
+     * @nullable
+     */
+  legalName?: string | null;
+  /**
+     * @maxLength 254
+     * @nullable
+     */
+  email?: string | null;
+  /**
+     * @maxLength 50
+     * @nullable
+     */
+  phone?: string | null;
+  /**
+     * @maxLength 32
+     * @nullable
+     */
+  registrationNumber?: string | null;
+  /**
+     * @maxLength 32
+     * @nullable
+     */
+  vatNumber?: string | null;
+  /**
+     * @maxLength 100
+     * @nullable
+     */
+  industry?: string | null;
+  /**
+     * @maxLength 100
+     * @nullable
+     */
+  accountingPackage?: string | null;
+  /**
+     * @maxLength 200
+     * @nullable
+     */
+  addressLine?: string | null;
+  /**
+     * @maxLength 20
+     * @nullable
+     */
+  postalCode?: string | null;
+  /**
+     * @maxLength 100
+     * @nullable
+     */
+  city?: string | null;
+  /**
+     * ISO 3166-1 alpha-2 code, stored in upper case.
+     * @nullable
+     * @pattern ^[A-Za-z]{2}$
+     */
+  country?: string | null;
 }
 
 export type PeppolStatus = typeof PeppolStatus[keyof typeof PeppolStatus];
@@ -137,6 +292,119 @@ export const PeppolStatus = {
   AT_RISK: 'AT_RISK',
   NOT_REGISTERED: 'NOT_REGISTERED',
 } as const;
+
+export interface Company {
+  id: string;
+  name: string;
+  /** @nullable */
+  legalName: string | null;
+  /** @nullable */
+  email: string | null;
+  /** @nullable */
+  phone: string | null;
+  /** @nullable */
+  registrationNumber: string | null;
+  /** @nullable */
+  vatNumber: string | null;
+  /** @nullable */
+  industry: string | null;
+  /** @nullable */
+  accountingPackage: string | null;
+  /** @nullable */
+  addressLine: string | null;
+  /** @nullable */
+  postalCode: string | null;
+  /** @nullable */
+  city: string | null;
+  /** @nullable */
+  country: string | null;
+  peppolStatus: PeppolStatus;
+  readinessScore: number;
+  /** @nullable */
+  lastCheckedAt: string | null;
+  /** @nullable */
+  archivedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ClientContact {
+  id: string;
+  name: string;
+  /** @nullable */
+  email: string | null;
+  /** @nullable */
+  phone: string | null;
+  /** @nullable */
+  role: string | null;
+  isPrimary: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type CompanyDetail = Company & {
+  contacts: ClientContact[];
+};
+
+export interface CompanyPage {
+  items: Company[];
+  page: number;
+  pageSize: number;
+  total: number;
+}
+
+export interface ClientContactInput {
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  name: string;
+  /**
+     * @maxLength 254
+     * @nullable
+     */
+  email?: string | null;
+  /**
+     * @maxLength 50
+     * @nullable
+     */
+  phone?: string | null;
+  /**
+     * @maxLength 100
+     * @nullable
+     */
+  role?: string | null;
+  /** Marking a contact primary unmarks the client's previous primary contact. */
+  isPrimary?: boolean;
+}
+
+export interface ClientContactUpdateInput {
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  name?: string;
+  /**
+     * @maxLength 254
+     * @nullable
+     */
+  email?: string | null;
+  /**
+     * @maxLength 50
+     * @nullable
+     */
+  phone?: string | null;
+  /**
+     * @maxLength 100
+     * @nullable
+     */
+  role?: string | null;
+  isPrimary?: boolean;
+}
+
+export interface HealthStatus {
+  status: string;
+}
 
 export type RiskSeverity = typeof RiskSeverity[keyof typeof RiskSeverity];
 
@@ -261,6 +529,26 @@ export interface ReadinessDashboard {
 }
 
 /**
+ * Not signed in
+ */
+export type UnauthorizedResponse = ApiError;
+
+/**
+ * The signed-in role lacks the required capability
+ */
+export type ForbiddenResponse = ApiError;
+
+/**
+ * Not found in the session's organization
+ */
+export type NotFoundResponse = ApiError;
+
+/**
+ * Conflicts with existing data, such as a duplicate identifier or an archived client
+ */
+export type ConflictResponse = ApiError;
+
+/**
  * The request body is missing, malformed, or fails validation
  */
 export type BadRequestResponse = ApiError;
@@ -274,4 +562,28 @@ export type PayloadTooLargeResponse = ApiError;
  * Too many attempts; retry after the number of seconds in Retry-After
  */
 export type TooManyRequestsResponse = ApiError;
+
+export type ListCompaniesParams = {
+/**
+ * Matches name, legal name, email, VAT number or registration number.
+ * @maxLength 100
+ */
+search?: string;
+status?: CompanyListStatus;
+peppolStatus?: PeppolStatus;
+/**
+ * @maxLength 100
+ */
+industry?: string;
+sort?: CompanySort;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+pageSize?: number;
+};
 

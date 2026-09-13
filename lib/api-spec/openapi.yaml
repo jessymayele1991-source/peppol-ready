@@ -14,6 +14,8 @@ tags:
     description: Peppol readiness scoring and dashboard operations
   - name: auth
     description: Authentication, active organization, and session identity
+  - name: companies
+    description: Client management within the session's organization
 paths:
   /auth/login:
     post:
@@ -181,6 +183,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
+        "403":
+          $ref: "#/components/responses/Forbidden"
   /companies/{companyId}/readiness/calculate:
     post:
       operationId: calculateCompanyReadiness
@@ -228,10 +232,341 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
+        "409":
+          description: The company is archived; restore it before assessing it
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
         "413":
           $ref: "#/components/responses/PayloadTooLarge"
+  /companies:
+    get:
+      operationId: listCompanies
+      tags: [companies]
+      summary: List clients
+      description: >-
+        Clients of the session's organization, filtered, searched, sorted and
+        paginated on the server. Archived clients are excluded unless status
+        asks for them.
+      parameters:
+        - in: query
+          name: search
+          required: false
+          description: Matches name, legal name, email, VAT number or registration number.
+          schema:
+            type: string
+            maxLength: 100
+        - in: query
+          name: status
+          required: false
+          schema:
+            $ref: "#/components/schemas/CompanyListStatus"
+        - in: query
+          name: peppolStatus
+          required: false
+          schema:
+            $ref: "#/components/schemas/PeppolStatus"
+        - in: query
+          name: industry
+          required: false
+          schema:
+            type: string
+            maxLength: 100
+        - in: query
+          name: sort
+          required: false
+          schema:
+            $ref: "#/components/schemas/CompanySort"
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: number
+            minimum: 1
+        - in: query
+          name: pageSize
+          required: false
+          schema:
+            type: number
+            minimum: 1
+            maximum: 100
+      responses:
+        "200":
+          description: One page of clients
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompanyPage"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: createCompany
+      tags: [companies]
+      summary: Create a client
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompanyInput"
+      responses:
+        "201":
+          description: Client created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompanyDetail"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+  /companies/{companyId}:
+    parameters:
+      - $ref: "#/components/parameters/CompanyId"
+    get:
+      operationId: getCompany
+      tags: [companies]
+      summary: Get a client with its contacts
+      responses:
+        "200":
+          description: The client
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompanyDetail"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      operationId: updateCompany
+      tags: [companies]
+      summary: Update a client
+      description: Only the fields present are changed; null clears an optional field.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompanyUpdateInput"
+      responses:
+        "200":
+          description: The updated client
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompanyDetail"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+  /companies/{companyId}/archive:
+    parameters:
+      - $ref: "#/components/parameters/CompanyId"
+    post:
+      operationId: archiveCompany
+      tags: [companies]
+      summary: Archive a client
+      description: Idempotent. An archived client keeps its history but leaves lists, the dashboard and assessments.
+      responses:
+        "200":
+          description: The archived client
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompanyDetail"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /companies/{companyId}/restore:
+    parameters:
+      - $ref: "#/components/parameters/CompanyId"
+    post:
+      operationId: restoreCompany
+      tags: [companies]
+      summary: Restore an archived client
+      description: Idempotent.
+      responses:
+        "200":
+          description: The restored client
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompanyDetail"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /companies/{companyId}/contacts:
+    parameters:
+      - $ref: "#/components/parameters/CompanyId"
+    get:
+      operationId: listCompanyContacts
+      tags: [companies]
+      summary: List a client's contacts
+      responses:
+        "200":
+          description: Contacts, primary first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ClientContact"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      operationId: createCompanyContact
+      tags: [companies]
+      summary: Add a contact to a client
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientContactInput"
+      responses:
+        "201":
+          description: Contact created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientContact"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+  /companies/{companyId}/contacts/{contactId}:
+    parameters:
+      - $ref: "#/components/parameters/CompanyId"
+      - $ref: "#/components/parameters/ContactId"
+    patch:
+      operationId: updateCompanyContact
+      tags: [companies]
+      summary: Update a contact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientContactUpdateInput"
+      responses:
+        "200":
+          description: The updated contact
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientContact"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+    delete:
+      operationId: deleteCompanyContact
+      tags: [companies]
+      summary: Delete a contact
+      description: Removes the contact's personal data permanently; the audit trail keeps only ids.
+      responses:
+        "204":
+          description: Contact deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
 components:
+  parameters:
+    CompanyId:
+      in: path
+      name: companyId
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 64
+    ContactId:
+      in: path
+      name: contactId
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 64
+
   responses:
+    Unauthorized:
+      description: Not signed in
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+    Forbidden:
+      description: The signed-in role lacks the required capability
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+    NotFound:
+      description: Not found in the session's organization
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+    Conflict:
+      description: Conflicts with existing data, such as a duplicate identifier or an archived client
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
     BadRequest:
       description: The request body is missing, malformed, or fails validation
       content:
@@ -291,7 +626,9 @@ components:
         - workspace.manage
         - workspace.transfer
         - members.manage
+        - clients.view
         - clients.write
+        - clients.archive
         - scans.write
         - tasks.manage
         - reports.generate
@@ -387,6 +724,235 @@ components:
           items:
             $ref: "#/components/schemas/SessionMembership"
       required: [user, organization, role, capabilities, memberships]
+    CompanyListStatus:
+      type: string
+      enum: [active, archived, all]
+    CompanySort:
+      type: string
+      enum: [name, -name, readinessScore, -readinessScore, lastCheckedAt, -lastCheckedAt, createdAt, -createdAt]
+    CompanyInput:
+      type: object
+      additionalProperties: false
+      description: >-
+        Client details a user may set. Readiness score, Peppol status, last
+        check, organization and archive state are owned by the server and are
+        rejected here. VAT and registration numbers are stored in upper case
+        without spaces or dots and must be unique within the organization.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        legalName:
+          type: [string, "null"]
+          maxLength: 200
+        email:
+          type: [string, "null"]
+          maxLength: 254
+        phone:
+          type: [string, "null"]
+          maxLength: 50
+        registrationNumber:
+          type: [string, "null"]
+          maxLength: 32
+        vatNumber:
+          type: [string, "null"]
+          maxLength: 32
+        industry:
+          type: [string, "null"]
+          maxLength: 100
+        accountingPackage:
+          type: [string, "null"]
+          maxLength: 100
+        addressLine:
+          type: [string, "null"]
+          maxLength: 200
+        postalCode:
+          type: [string, "null"]
+          maxLength: 20
+        city:
+          type: [string, "null"]
+          maxLength: 100
+        country:
+          type: [string, "null"]
+          pattern: "^[A-Za-z]{2}$"
+          description: ISO 3166-1 alpha-2 code, stored in upper case.
+      required: [name]
+    CompanyUpdateInput:
+      type: object
+      additionalProperties: false
+      description: Same fields as CompanyInput, all optional; null clears an optional field.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        legalName:
+          type: [string, "null"]
+          maxLength: 200
+        email:
+          type: [string, "null"]
+          maxLength: 254
+        phone:
+          type: [string, "null"]
+          maxLength: 50
+        registrationNumber:
+          type: [string, "null"]
+          maxLength: 32
+        vatNumber:
+          type: [string, "null"]
+          maxLength: 32
+        industry:
+          type: [string, "null"]
+          maxLength: 100
+        accountingPackage:
+          type: [string, "null"]
+          maxLength: 100
+        addressLine:
+          type: [string, "null"]
+          maxLength: 200
+        postalCode:
+          type: [string, "null"]
+          maxLength: 20
+        city:
+          type: [string, "null"]
+          maxLength: 100
+        country:
+          type: [string, "null"]
+          pattern: "^[A-Za-z]{2}$"
+          description: ISO 3166-1 alpha-2 code, stored in upper case.
+    Company:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        legalName:
+          type: [string, "null"]
+        email:
+          type: [string, "null"]
+        phone:
+          type: [string, "null"]
+        registrationNumber:
+          type: [string, "null"]
+        vatNumber:
+          type: [string, "null"]
+        industry:
+          type: [string, "null"]
+        accountingPackage:
+          type: [string, "null"]
+        addressLine:
+          type: [string, "null"]
+        postalCode:
+          type: [string, "null"]
+        city:
+          type: [string, "null"]
+        country:
+          type: [string, "null"]
+        peppolStatus:
+          $ref: "#/components/schemas/PeppolStatus"
+        readinessScore:
+          type: number
+        lastCheckedAt:
+          type: [string, "null"]
+          format: date-time
+        archivedAt:
+          type: [string, "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, name, legalName, email, phone, registrationNumber, vatNumber, industry, accountingPackage, addressLine, postalCode, city, country, peppolStatus, readinessScore, lastCheckedAt, archivedAt, createdAt, updatedAt]
+    CompanyDetail:
+      allOf:
+        - $ref: "#/components/schemas/Company"
+        - type: object
+          properties:
+            contacts:
+              type: array
+              items:
+                $ref: "#/components/schemas/ClientContact"
+          required: [contacts]
+    CompanyPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Company"
+        page:
+          type: number
+        pageSize:
+          type: number
+        total:
+          type: number
+      required: [items, page, pageSize, total]
+    ClientContactInput:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        email:
+          type: [string, "null"]
+          maxLength: 254
+        phone:
+          type: [string, "null"]
+          maxLength: 50
+        role:
+          type: [string, "null"]
+          maxLength: 100
+        isPrimary:
+          type: boolean
+          description: Marking a contact primary unmarks the client's previous primary contact.
+      required: [name]
+    ClientContactUpdateInput:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        email:
+          type: [string, "null"]
+          maxLength: 254
+        phone:
+          type: [string, "null"]
+          maxLength: 50
+        role:
+          type: [string, "null"]
+          maxLength: 100
+        isPrimary:
+          type: boolean
+    ClientContact:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: [string, "null"]
+        phone:
+          type: [string, "null"]
+        role:
+          type: [string, "null"]
+        isPrimary:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, name, email, phone, role, isPrimary, createdAt, updatedAt]
     HealthStatus:
       type: object
       properties:

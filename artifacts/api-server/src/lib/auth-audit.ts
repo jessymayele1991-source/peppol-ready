@@ -2,6 +2,7 @@ import { createHmac } from "node:crypto";
 import type { Request } from "express";
 import type { Prisma } from "@prisma/client";
 import type { SessionData } from "express-session";
+import { auditEvent, type AuditEventInput } from "./audit-event";
 import { SESSION_SECRET } from "./session-secret";
 
 /**
@@ -24,7 +25,7 @@ export const AUTH_EVENTS = {
   organizationSwitched: "auth.organization_switched",
 } as const;
 
-export type AuthAuditEvent = Prisma.AuditEventUncheckedCreateInput;
+export type AuthAuditEvent = AuditEventInput;
 
 const USER_AGENT_LIMIT = 200;
 
@@ -43,14 +44,14 @@ export function authEvent(input: {
   userId: string;
   metadata: Prisma.InputJsonObject;
 }): AuthAuditEvent {
-  return {
+  return auditEvent({
+    eventType: input.eventType,
     organizationId: input.organizationId,
     actorId: input.userId,
-    eventType: input.eventType,
     entityType: "user",
     entityId: input.userId,
     metadata: input.metadata,
-  };
+  });
 }
 
 // Keyed on the Session object that express-session hands to store.set, so the

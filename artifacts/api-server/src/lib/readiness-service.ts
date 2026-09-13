@@ -4,6 +4,7 @@ import {
   Prisma,
   type ReadinessScore,
 } from "@prisma/client";
+import { CompanyArchivedError } from "./company-service";
 import { prisma } from "./prisma";
 import {
   calculateReadiness,
@@ -123,6 +124,8 @@ export async function getReadinessDashboard(organizationId: string) {
       where: { id: organizationId },
       include: {
         companies: {
+          // Archived clients are no longer monitored.
+          where: { archivedAt: null },
           orderBy: [{ readinessScore: "asc" }, { name: "asc" }],
           include: {
             readinessScores: {
@@ -140,14 +143,17 @@ export async function getReadinessDashboard(organizationId: string) {
     }),
     prisma.readinessScore.findMany({
       where: {
-        company: { organizationId },
+        company: { organizationId, archivedAt: null },
         checkedAt: { gte: sixMonthsAgo },
       },
       select: { score: true, checkedAt: true },
       orderBy: { checkedAt: "asc" },
     }),
     prisma.incident.findMany({
-      where: { organizationId },
+      where: {
+        organizationId,
+        OR: [{ companyId: null }, { company: { archivedAt: null } }],
+      },
       include: { company: { select: { id: true, name: true } } },
       orderBy: { occurredAt: "desc" },
       take: 5,
@@ -296,9 +302,10 @@ export async function calculateAndPersistCompanyReadiness(
   // would accept any company id in the database.
   const company = await prisma.company.findFirst({
     where: { id: companyId, organizationId: actor.organizationId },
-    select: { id: true, organizationId: true },
+    select: { id: true, organizationId: true, archivedAt: true },
   });
   if (!company) return null;
+  if (company.archivedAt) throw new CompanyArchivedError();
 
   const checkedAt = new Date();
   const assessment = calculateReadiness(input);
@@ -312,8 +319,21 @@ export async function calculateAndPersistCompanyReadiness(
     risks: assessment.risks,
   };
 
-  await prisma.$transaction([
-    prisma.readinessScore.create({
+  await prisma.$transaction(async (tx) => {
+    // Scoped to the organization and to an active client in the same statement
+    // that writes, and first: if the client was archived since the lookup
+    // above, nothing is recorded.
+    const { count } = await tx.company.updateMany({
+      where: { id: companyId, organizationId: actor.organizationId, archivedAt: null },
+      data: {
+        readinessScore: assessment.score,
+        peppolStatus: assessment.status as PeppolStatus,
+        lastCheckedAt: checkedAt,
+      },
+    });
+    if (count !== 1) throw new CompanyArchivedError();
+
+    await tx.readinessScore.create({
       data: {
         companyId,
         score: assessment.score,
@@ -322,16 +342,8 @@ export async function calculateAndPersistCompanyReadiness(
         source,
         details,
       },
-    }),
-    prisma.company.update({
-      where: { id: companyId },
-      data: {
-        readinessScore: assessment.score,
-        peppolStatus: assessment.status as PeppolStatus,
-        lastCheckedAt: checkedAt,
-      },
-    }),
-    prisma.auditEvent.create({
+    });
+    await tx.auditEvent.create({
       data: {
         organizationId: company.organizationId,
         actorId: actor.userId,
@@ -345,8 +357,8 @@ export async function calculateAndPersistCompanyReadiness(
           checkedAt: checkedAt.toISOString(),
         },
       },
-    }),
-  ]);
+    });
+  });
 
   return {
     companyId,

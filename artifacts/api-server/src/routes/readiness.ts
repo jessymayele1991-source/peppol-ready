@@ -9,13 +9,14 @@ import {
   calculateAndPersistCompanyReadiness,
   getReadinessDashboard,
 } from "../lib/readiness-service";
-import { badRequest, notFound, unauthorized } from "../lib/errors";
+import { CompanyArchivedError } from "../lib/company-service";
+import { badRequest, conflict, notFound, unauthorized } from "../lib/errors";
 import { requireAuth } from "../middlewares/require-auth";
 import { requireCapability } from "../middlewares/require-capability";
 
 const router: IRouter = Router();
 
-router.get("/readiness/dashboard", requireAuth, async (req, res) => {
+router.get("/readiness/dashboard", requireAuth, requireCapability("clients.view"), async (req, res) => {
   if (!req.auth) throw unauthorized();
 
   const dashboard = await getReadinessDashboard(req.auth.organizationId);
@@ -39,11 +40,17 @@ router.post(
       throw badRequest("The readiness assessment is invalid.");
     }
 
-    const assessment = await calculateAndPersistCompanyReadiness(
-      params.data.companyId,
-      body.data,
-      req.auth,
-    );
+    let assessment: Awaited<ReturnType<typeof calculateAndPersistCompanyReadiness>>;
+    try {
+      assessment = await calculateAndPersistCompanyReadiness(
+        params.data.companyId,
+        body.data,
+        req.auth,
+      );
+    } catch (error) {
+      if (error instanceof CompanyArchivedError) throw conflict(error.message);
+      throw error;
+    }
     // Also the answer for a company in another organization: a client must not
     // be able to tell "not yours" apart from "does not exist".
     if (!assessment) throw notFound("Company not found.");

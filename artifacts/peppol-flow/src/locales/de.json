@@ -146,14 +146,147 @@
     "incident_noma_certificate": "Endpoint-Zertifikat läuft bald ab",
     "incident_green_resolved": "Teilnehmersuche verzögert"
   },
+  "clients": {
+    "eyebrow": "Mandantenstamm",
+    "title": "Mandanten",
+    "subtitle": "Verwalten Sie die Mandantenakten Ihrer Kanzlei und deren Ansprechpartner.",
+    "create": "Neuer Mandant",
+    "archived": "Archiviert",
+    "neverChecked": "Noch nicht geprüft",
+    "loadError": "Mandanten konnten nicht geladen werden",
+    "filters": {
+      "search": "Nach Name, E-Mail, USt-IdNr. oder Registernummer suchen",
+      "status": "Ansicht",
+      "statusOptions": {
+        "active": "Aktiv",
+        "archived": "Archiviert",
+        "all": "Alle"
+      },
+      "peppolStatus": "Peppol",
+      "any": "Alle",
+      "industry": "Branche",
+      "sort": "Sortieren",
+      "clear": "Filter zurücksetzen"
+    },
+    "sort": {
+      "name": "Name A–Z",
+      "-name": "Name Z–A",
+      "readinessScore": "Score aufsteigend",
+      "-readinessScore": "Score absteigend",
+      "lastCheckedAt": "Älteste Prüfung",
+      "-lastCheckedAt": "Neueste Prüfung",
+      "createdAt": "Zuerst hinzugefügt",
+      "-createdAt": "Zuletzt hinzugefügt"
+    },
+    "table": {
+      "client": "Mandant",
+      "vatNumber": "USt-IdNr.",
+      "status": "Peppol-Status",
+      "score": "Bereitschaftsscore",
+      "industry": "Branche",
+      "checked": "Letzte Prüfung"
+    },
+    "empty": {
+      "title": "Noch keine Mandanten",
+      "description": "Fügen Sie Ihren ersten Mandanten hinzu, um die Peppol-Bereitschaft Ihres Mandantenstamms zu verfolgen.",
+      "readOnly": "Diesem Arbeitsbereich wurden noch keine Mandanten hinzugefügt.",
+      "filtered": "Keine Mandanten entsprechen diesen Filtern."
+    },
+    "pagination": {
+      "summary": "{{from}}–{{to}} von {{total}} Mandanten",
+      "page": "Seite {{page}} von {{pages}}"
+    },
+    "fields": {
+      "name": "Name",
+      "legalName": "Rechtlicher Name",
+      "vatNumber": "USt-IdNr.",
+      "registrationNumber": "Unternehmensnummer (KBO/KvK)",
+      "email": "E-Mail",
+      "phone": "Telefon",
+      "industry": "Branche",
+      "accountingPackage": "Buchhaltungssoftware",
+      "addressLine": "Adresse",
+      "postalCode": "Postleitzahl",
+      "city": "Ort",
+      "country": "Land",
+      "countryHint": "Zweistelliger Ländercode, z. B. BE oder NL."
+    },
+    "form": {
+      "createTitle": "Neuer Mandant",
+      "editTitle": "Mandant bearbeiten",
+      "description": "USt-IdNr. und Unternehmensnummern werden ohne Leerzeichen oder Punkte gespeichert und sind innerhalb Ihrer Kanzlei eindeutig.",
+      "cancel": "Abbrechen",
+      "save": "Speichern"
+    },
+    "toast": {
+      "created": "Mandant hinzugefügt",
+      "updated": "Mandant aktualisiert",
+      "archived": "Mandant archiviert",
+      "restored": "Mandant wiederhergestellt",
+      "contactCreated": "Ansprechpartner hinzugefügt",
+      "contactUpdated": "Ansprechpartner aktualisiert",
+      "contactDeleted": "Ansprechpartner gelöscht"
+    },
+    "errors": {
+      "unexpected": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
+      "invalid": "Bitte prüfen Sie Ihre Eingaben.",
+      "forbidden": "Ihre Rolle erlaubt diese Aktion nicht.",
+      "notFound": "Dieser Mandant oder Ansprechpartner existiert nicht mehr.",
+      "duplicateVat": "Ein Mandant mit dieser USt-IdNr. existiert bereits in Ihrer Kanzlei. Ist er archiviert, stellen Sie ihn wieder her.",
+      "duplicateRegistration": "Ein Mandant mit dieser Unternehmensnummer existiert bereits in Ihrer Kanzlei. Ist er archiviert, stellen Sie ihn wieder her.",
+      "archived": "Dieser Mandant ist archiviert. Stellen Sie ihn zuerst wieder her.",
+      "conflict": "Diese Änderung steht im Konflikt mit vorhandenen Daten."
+    },
+    "validation": {
+      "required": "Pflichtfeld.",
+      "tooLong": "Dieser Wert ist zu lang.",
+      "format": "Ungültiger Wert."
+    },
+    "detail": {
+      "back": "Zurück zu den Mandanten",
+      "notFoundTitle": "Mandant nicht gefunden",
+      "notFoundDescription": "Dieser Mandant existiert nicht oder gehört nicht zu Ihrem aktuellen Arbeitsbereich.",
+      "retryDescription": "Bitte versuchen Sie es erneut.",
+      "edit": "Bearbeiten",
+      "archive": "Archivieren",
+      "restore": "Wiederherstellen",
+      "archivedNotice": "Archiviert am {{date}}. Der Mandant wird im Dashboard nicht berücksichtigt und kann erst nach der Wiederherstellung geändert werden.",
+      "overview": "Übersicht",
+      "contacts": "Ansprechpartner",
+      "details": "Angaben",
+      "address": "Adresse",
+      "readiness": "Peppol-Bereitschaft",
+      "createdAt": "Hinzugefügt am",
+      "archiveTitle": "{{name}} archivieren?",
+      "archiveDescription": "Der Mandant verschwindet aus der aktiven Liste und dem Dashboard. Alle Daten bleiben erhalten und Sie können ihn später wiederherstellen.",
+      "restoreTitle": "{{name}} wiederherstellen?",
+      "restoreDescription": "Der Mandant wird wieder aktiv und im Dashboard berücksichtigt."
+    },
+    "contacts": {
+      "add": "Ansprechpartner hinzufügen",
+      "empty": "Noch keine Ansprechpartner.",
+      "primary": "Primär",
+      "edit": "{{name}} bearbeiten",
+      "delete": "{{name}} löschen",
+      "deleteTitle": "{{name}} löschen?",
+      "deleteDescription": "Dieser Ansprechpartner wird endgültig gelöscht.",
+      "deleteConfirm": "Löschen",
+      "createTitle": "Ansprechpartner hinzufügen",
+      "editTitle": "Ansprechpartner bearbeiten",
+      "formDescription": "Ein Mandant hat höchstens einen primären Ansprechpartner.",
+      "fields": {
+        "name": "Name",
+        "role": "Funktion",
+        "email": "E-Mail",
+        "phone": "Telefon",
+        "isPrimary": "Primärer Ansprechpartner",
+        "isPrimaryHint": "Ersetzt den aktuellen primären Ansprechpartner dieses Mandanten."
+      }
+    }
+  },
   "placeholder": {
     "tagline": "Ein fokussierter Arbeitsbereich für Teams, die mit Sicherheit arbeiten.",
     "prepare": "Arbeitsbereich vorbereiten",
-    "clients": {
-      "eyebrow": "Kundenverzeichnis",
-      "title": "Ihr Kundennetzwerk ist bereit zur Verbindung",
-      "description": "Nach dem Import kann Ihr Team jedes Peppol-Profil suchen, segmentieren und prüfen."
-    },
     "readiness": {
       "eyebrow": "Bereitschaftsanalyse",
       "title": "Ein klareres Bild entsteht",

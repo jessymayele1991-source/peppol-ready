@@ -40,14 +40,33 @@ describe("permission matrix", () => {
     ).toBe(false);
   });
 
-  it("lets a viewer read reports and nothing else", () => {
+  it("lets a viewer read clients and reports and nothing else", () => {
     expect(capabilitiesForRole(MembershipRole.VIEWER)).toEqual([
+      "clients.view",
       "reports.view",
     ]);
   });
 
+  it("lets every role read clients (D1)", () => {
+    for (const role of Object.values(MembershipRole)) {
+      expect(roleHasCapability(role, "clients.view")).toBe(true);
+    }
+  });
+
+  it("keeps archiving to owners and admins (D2)", () => {
+    expect(roleHasCapability(MembershipRole.OWNER, "clients.archive")).toBe(true);
+    expect(roleHasCapability(MembershipRole.ADMIN, "clients.archive")).toBe(true);
+    expect(roleHasCapability(MembershipRole.MEMBER, "clients.archive")).toBe(false);
+    expect(roleHasCapability(MembershipRole.VIEWER, "clients.archive")).toBe(false);
+  });
+
+  it("lets a member create and edit clients without archiving them", () => {
+    expect(roleHasCapability(MembershipRole.MEMBER, "clients.write")).toBe(true);
+    expect(roleHasCapability(MembershipRole.MEMBER, "clients.archive")).toBe(false);
+  });
+
   it("never lets a viewer write", () => {
-    for (const capability of ["clients.write", "scans.write", "tasks.manage", "reports.generate"] as const) {
+    for (const capability of ["clients.write", "clients.archive", "scans.write", "tasks.manage", "reports.generate"] as const) {
       expect(roleHasCapability(MembershipRole.VIEWER, capability)).toBe(false);
     }
   });
@@ -57,6 +76,7 @@ describe("permission matrix", () => {
     capabilities.push("workspace.transfer");
 
     expect(capabilitiesForRole(MembershipRole.VIEWER)).toEqual([
+      "clients.view",
       "reports.view",
     ]);
   });

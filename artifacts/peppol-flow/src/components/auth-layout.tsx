@@ -66,22 +66,26 @@ export function AuthLayout({
   );
 }
 
-/** A labelled text input in the signed-out forms' style. */
+/** A labelled text input in the signed-out forms' style, also used by the client forms. */
 export function AuthField({
   id,
   label,
   hint,
+  error,
   ...input
-}: InputHTMLAttributes<HTMLInputElement> & { id: string; label: string; hint?: string }) {
+}: InputHTMLAttributes<HTMLInputElement> & { id: string; label: string; hint?: string; error?: string }) {
   return (
     <div className="space-y-1.5">
       <label htmlFor={id} className="block text-xs font-bold">{label}</label>
       <input
         id={id}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${id}-error` : undefined}
         {...input}
         className="h-10 w-full rounded-lg border border-[hsl(var(--border))] bg-white px-3 text-sm outline-none transition-colors focus-visible:border-[hsl(var(--primary))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))]"
       />
       {hint && <p className="text-[11px] text-[hsl(var(--muted-foreground))]">{hint}</p>}
+      {error && <p id={`${id}-error`} className="text-[11px] font-semibold text-[hsl(3_69%_45%)]">{error}</p>}
     </div>
   );
 }

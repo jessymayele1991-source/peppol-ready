@@ -43,6 +43,11 @@ Peppol Ready helps accounting firms monitor and improve Peppol readiness, compli
 - `artifacts/api-server/src/lib/readiness-engine.ts` — deterministic weighted scoring and explainable risk rules
 - `artifacts/api-server/src/lib/readiness-service.ts` — Prisma-backed assessments and dashboard aggregation
 - `artifacts/api-server/src/routes/readiness.ts` — readiness calculation and dashboard endpoints
+- `artifacts/api-server/src/lib/company-service.ts` — client and contact management: tenant-scoped, row-locked writes with their audit events
+- `artifacts/api-server/src/routes/companies.ts` — client and contact endpoints
+- `artifacts/api-server/src/lib/audit-event.ts` — the shared audit row builder, used by auth and client events
+- `artifacts/peppol-flow/src/pages/clients.tsx` and `client-detail.tsx` — client list (query state in the URL) and client detail
+- `artifacts/peppol-flow/src/components/clients/` — client and contact forms, validated against the generated `@workspace/api-zod` schemas
 - `artifacts/api-server/src/lib/permissions.ts` — the capability matrix; the single source for both server enforcement and the capabilities shipped in the session
 - `artifacts/api-server/src/middlewares/require-auth.ts` — the only place tenant context is established
 - `artifacts/peppol-flow/src/auth/session-context.tsx` — session identity, sign-out, and workspace switching in the UI
@@ -66,6 +71,11 @@ Peppol Ready helps accounting firms monitor and improve Peppol readiness, compli
 - Sign-in, sign-out and organization switches are audited in `audit_events`, committed by `PrismaSessionStore` in the same transaction as the session write. Audit events are queued with `queueAuditOnSave` / `queueAuditOnDestroy`; never write them from a route directly. A switch writes one event in each organization and names neither to the other.
 - Failed sign-ins go to structured warn logs (`auth.login.failed`), never to `audit_events`: an unknown account has no organization, and a database write only for real accounts would reopen account enumeration. The email is logged only as an HMAC pseudonym.
 - Tenant boundaries are enforced by PostgreSQL, not only by API code. Task, Incident and Report reference companies through composite foreign keys on (companyId, organizationId). User references on tasks, reports and readiness scans pass the `enforce_tenant_membership` trigger, which checks membership at write time only, so history survives a member leaving. `AuditEvent.actorId` is deliberately exempt: a membership check there could block a sign-out audit.
+- Client writes lock the client row (`SELECT … WHERE id AND organizationId FOR UPDATE`) and then write only through `updateMany`/`deleteMany` filtered on the organization, checking the count. There is no `update({ where: { id } })` on companies or contacts; `tenant-scope.test.ts` enforces this. Another firm's client answers 404 on every route.
+- Archiving is a state, not a deletion: `POST /companies/:id/archive` and `/restore` (clients.archive, OWNER and ADMIN). An archived client is read-only (409 on edits, contact changes and readiness calculation) and left out of the dashboard, its trend and its incidents. Archive and restore are idempotent and audited only when the state changes.
+- VAT and registration numbers are stored upper case without whitespace or dots and are unique per organization, enforced by unique indexes and CHECK constraints. An archived client keeps its numbers, so re-adding one answers 409 with a hint to restore it.
+- Client audit events (`company.*`, `contact.*`) carry the entity id, the actor and the names of changed fields only, never values. An edit that changes nothing writes nothing.
+- Client and contact inputs never carry readiness score, Peppol status, last check, organization or archive state: request bodies are strict and reject them with 400.
 - Seed records use stable IDs and upserts so development seeding is safe to rerun.
 - Readiness is calculated from five explicit factors totaling 100 points; every failed factor produces an explainable remediation signal.
 - The target schema supports normalized client contacts, ten-check readiness scans, generated reports, per-user locale preferences, and audit activity.
@@ -78,7 +88,7 @@ Peppol Ready helps accounting firms monitor and improve Peppol readiness, compli
 
 ## Product
 
-The current release provides a dashboard-first SaaS shell for client readiness monitoring, including readiness KPIs, distribution and trend views, action prioritization, incident visibility, and a searchable client overview.
+The current release provides a dashboard-first SaaS shell for client readiness monitoring, including readiness KPIs, distribution and trend views, action prioritization, incident visibility, and client management: a searchable, filterable client list, client details, contacts, and archiving.
 
 ## User preferences
 
@@ -99,6 +109,9 @@ The current release provides a dashboard-first SaaS shell for client readiness m
 - Dev startup also runs the migration guard: run `db:migrate` against a fresh database before `pnpm --filter @workspace/api-server run dev`.
 - The `companyTenant` relations on Task, Incident and Report exist only to create the composite foreign keys. Query through `company`, never through `companyTenant`.
 - The membership trigger raises `foreign_key_violation`. Prisma reports it as P2003 with no constraint name and without the trigger's message; map P2003 to a client error when adding write endpoints for tasks, reports or scans.
+- The company management migration refuses to run if one organization holds two clients whose VAT or registration numbers are equal after normalization, and changes nothing. Merge or correct them, run `prisma migrate resolve --rolled-back 20260914120000_company_management`, then deploy again.
+- Prisma passes `contains` to `LIKE` without escaping `%`, `_` and `\`. Escape user search input with `escapeLike` (see `company-service.ts`) or a search for `%` matches every row.
+- `prisma.config.ts` fixes the schema and migrations path, so `prisma migrate deploy --schema <other>` still applies the checked-in migrations.
 - The tenant integrity migration refuses to run if existing data already crosses a tenant boundary or holds a future assessment timestamp, and changes nothing. Resolve the rows, run `prisma migrate resolve --rolled-back 20260912120000_tenant_integrity`, then deploy again.
 
 ## Pointers
