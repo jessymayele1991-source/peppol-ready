@@ -147,6 +147,16 @@ export const LOGIN_LIMITS = {
   concurrentVerifications: 16,
 } as const;
 
+export const REGISTRATION_LIMITS = {
+  /**
+   * Every registration attempt from one client address, successful or not.
+   * Kept separate from the sign-in counters: creating accounts is rare, and
+   * each attempt that reaches the database answers "is this email taken?".
+   */
+  perClient: 10,
+  windowMs: 60 * 60 * 1000,
+} as const;
+
 export const loginProtection = {
   client: new FixedWindowLimiter({
     limit: LOGIN_LIMITS.perClient,
@@ -156,13 +166,19 @@ export const loginProtection = {
     limit: LOGIN_LIMITS.perAccount,
     windowMs: LOGIN_LIMITS.windowMs,
   }),
+  /** Shared with registration: hashing a new password costs the same scrypt work. */
   verifications: new ConcurrencyGate(LOGIN_LIMITS.concurrentVerifications),
+  registration: new FixedWindowLimiter({
+    limit: REGISTRATION_LIMITS.perClient,
+    windowMs: REGISTRATION_LIMITS.windowMs,
+  }),
 };
 
 /** Test hook: counters are process-global. */
 export function resetLoginProtection(): void {
   loginProtection.client.clear();
   loginProtection.account.clear();
+  loginProtection.registration.clear();
 }
 
 // Expired windows are dropped lazily on access; this sweep bounds memory for
@@ -170,4 +186,5 @@ export function resetLoginProtection(): void {
 setInterval(() => {
   loginProtection.client.prune();
   loginProtection.account.prune();
+  loginProtection.registration.prune();
 }, 60_000).unref();

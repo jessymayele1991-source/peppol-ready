@@ -7,6 +7,7 @@ export type ApiErrorCode =
   | "unauthorized"
   | "forbidden"
   | "not_found"
+  | "conflict"
   | "payload_too_large"
   | "too_many_requests"
   | "internal_error";
@@ -49,6 +50,10 @@ export function forbidden(
 
 export function notFound(message: string): AppError {
   return new AppError(404, "not_found", message);
+}
+
+export function conflict(message: string): AppError {
+  return new AppError(409, "conflict", message);
 }
 
 export function payloadTooLarge(

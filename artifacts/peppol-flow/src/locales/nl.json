@@ -209,6 +209,28 @@
     "help": "Geen toegang? Vraag de eigenaar van je werkruimte om een uitnodiging.",
     "signingOut": "Bezig met afmelden…",
     "loading": "Werkruimte laden…",
-    "switchWorkspace": "Wissel van werkruimte"
+    "switchWorkspace": "Wissel van werkruimte",
+    "noAccount": "Nog geen account?",
+    "goToRegister": "Registreren"
+  },
+  "register": {
+    "eyebrow": "Nieuw account",
+    "title": "Maak je account aan",
+    "subtitle": "Start een eigen werkruimte voor je kantoor.",
+    "name": "Naam",
+    "confirmPassword": "Wachtwoord bevestigen",
+    "passwordHint": "Minstens {{min}} tekens.",
+    "submit": "Account aanmaken",
+    "submitting": "Account wordt aangemaakt…",
+    "haveAccount": "Al een account?",
+    "goToLogin": "Aanmelden",
+    "errors": {
+      "passwordTooShort": "Het wachtwoord moet minstens {{min}} tekens hebben.",
+      "passwordMismatch": "De wachtwoorden komen niet overeen.",
+      "emailInUse": "Er bestaat al een account met dit e-mailadres. Meld je aan.",
+      "invalid": "Controleer je naam, e-mailadres en wachtwoord.",
+      "tooManyAttempts": "Te veel pogingen. Probeer het later opnieuw.",
+      "unexpected": "Account aanmaken lukte niet. Probeer het zo meteen opnieuw."
+    }
   }
 }

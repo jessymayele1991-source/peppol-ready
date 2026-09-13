@@ -17,6 +17,7 @@ import { SESSION_SECRET } from "./session-secret";
  */
 
 export const AUTH_EVENTS = {
+  registered: "auth.registered",
   loginSucceeded: "auth.login.success",
   loginFailed: "auth.login.failed",
   logout: "auth.logout",

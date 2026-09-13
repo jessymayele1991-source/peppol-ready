@@ -209,6 +209,28 @@
     "help": "Noch kein Zugang? Bitten Sie den Inhaber des Arbeitsbereichs um eine Einladung.",
     "signingOut": "Abmeldung läuft…",
     "loading": "Arbeitsbereich wird geladen…",
-    "switchWorkspace": "Arbeitsbereich wechseln"
+    "switchWorkspace": "Arbeitsbereich wechseln",
+    "noAccount": "Noch kein Konto?",
+    "goToRegister": "Registrieren"
+  },
+  "register": {
+    "eyebrow": "Neues Konto",
+    "title": "Konto erstellen",
+    "subtitle": "Starten Sie einen eigenen Arbeitsbereich für Ihre Kanzlei.",
+    "name": "Name",
+    "confirmPassword": "Passwort bestätigen",
+    "passwordHint": "Mindestens {{min}} Zeichen.",
+    "submit": "Konto erstellen",
+    "submitting": "Konto wird erstellt…",
+    "haveAccount": "Bereits ein Konto?",
+    "goToLogin": "Anmelden",
+    "errors": {
+      "passwordTooShort": "Das Passwort muss mindestens {{min}} Zeichen lang sein.",
+      "passwordMismatch": "Die Passwörter stimmen nicht überein.",
+      "emailInUse": "Für diese E-Mail-Adresse gibt es bereits ein Konto. Bitte melden Sie sich an.",
+      "invalid": "Prüfen Sie Namen, E-Mail-Adresse und Passwort.",
+      "tooManyAttempts": "Zu viele Versuche. Bitte versuchen Sie es später erneut.",
+      "unexpected": "Das Konto konnte nicht erstellt werden. Bitte versuchen Sie es gleich erneut."
+    }
   }
 }

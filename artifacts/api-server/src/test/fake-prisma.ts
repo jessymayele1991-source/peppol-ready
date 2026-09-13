@@ -48,6 +48,7 @@ export function createFakePrisma() {
     sessions: new Map<string, { data: unknown; expiresAt: Date }>(),
     audit: [] as AuditRow[],
     companies: new Map<string, Row>(),
+    organizations: new Map<string, Row>(),
     readinessScores: [] as Row[],
     transactions: 0,
     failNextTransaction: false,
@@ -62,12 +63,56 @@ export function createFakePrisma() {
     return memberships.find((m) => m["organizationId"] === organizationId) ?? null;
   };
 
+  let nextId = 0;
+  const newId = (prefix: string) => `${prefix}_fake_${(nextId += 1)}`;
+
+  /** Mirrors the unique index on users.email, as Prisma reports it. */
+  const uniqueEmailViolation = () =>
+    Object.assign(new Error("Unique constraint failed on the fields: (`email`)"), {
+      code: "P2002",
+      meta: { target: ["email"] },
+    });
+
   const prisma = {
     user: {
       findUnique: ({ where }: { where: { email?: string; id?: string } }) =>
         lazy(() => (where.email !== undefined ? userByEmail(where.email) : (state.users.get(where.id ?? "") ?? null))),
+      create: ({ data }: { data: { name: string; email: string; passwordHash: string } }) =>
+        lazy(() => {
+          if (userByEmail(data.email)) throw uniqueEmailViolation();
+          const id = newId("user");
+          state.users.set(id, { id, ...data, avatarInitials: null, preferredLocale: "nl", memberships: [] });
+          return { id };
+        }),
+    },
+    organization: {
+      findUnique: ({ where }: { where: { id: string } }) =>
+        lazy(() => ({
+          id: where.id,
+          name: (state.organizations.get(where.id)?.["name"] as string | undefined) ?? `Organization ${where.id}`,
+          companies: [...state.companies.values()]
+            .filter((company) => company["organizationId"] === where.id)
+            .map((company) => ({ ...company, readinessScores: [], incidents: [] })),
+        })),
+      create: ({ data }: { data: { name: string; slug: string } }) =>
+        lazy(() => {
+          const id = newId("org");
+          state.organizations.set(id, { id, ...data, plan: "PROFESSIONAL" });
+          return { id };
+        }),
     },
     membership: {
+      create: ({ data }: { data: { organizationId: string; userId: string; role: string } }) =>
+        lazy(() => {
+          const organization = state.organizations.get(data.organizationId);
+          const user = state.users.get(data.userId);
+          (user?.["memberships"] as Row[]).push({
+            organizationId: data.organizationId,
+            role: data.role,
+            organization: { id: organization?.["id"], name: organization?.["name"], plan: organization?.["plan"] },
+          });
+          return data;
+        }),
       findUnique: ({ where }: { where: { organizationId_userId: { organizationId: string; userId: string } } }) =>
         lazy(() => {
           const { organizationId, userId } = where.organizationId_userId;
@@ -121,23 +166,21 @@ export function createFakePrisma() {
         }),
       findMany: () => lazy(() => []),
     },
-    organization: {
-      findUnique: ({ where }: { where: { id: string } }) =>
-        lazy(() => ({
-          id: where.id,
-          name: `Organization ${where.id}`,
-          companies: [...state.companies.values()]
-            .filter((company) => company["organizationId"] === where.id)
-            .map((company) => ({ ...company, readinessScores: [], incidents: [] })),
-        })),
-    },
     incident: { findMany: () => lazy(() => []) },
-    $transaction: async (operations: Array<LazyOperation<unknown>>) => {
+    /**
+     * Array form, as the session store uses, and callback form, as registration
+     * uses. The callback form has no rollback here; atomicity of registration is
+     * proven against PostgreSQL in the database tests.
+     */
+    $transaction: async (
+      operations: Array<LazyOperation<unknown>> | ((tx: unknown) => Promise<unknown>),
+    ): Promise<unknown> => {
       state.transactions += 1;
       if (state.failNextTransaction) {
         state.failNextTransaction = false;
         throw new Error("simulated transaction failure");
       }
+      if (typeof operations === "function") return operations(prisma);
       return operations.map((operation) => operation.run());
     },
   };

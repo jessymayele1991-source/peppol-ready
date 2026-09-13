@@ -209,6 +209,28 @@
     "help": "No access yet? Ask your workspace owner for an invitation.",
     "signingOut": "Signing out…",
     "loading": "Loading your workspace…",
-    "switchWorkspace": "Switch workspace"
+    "switchWorkspace": "Switch workspace",
+    "noAccount": "No account yet?",
+    "goToRegister": "Register"
+  },
+  "register": {
+    "eyebrow": "New account",
+    "title": "Create your account",
+    "subtitle": "Start a workspace of your own for your firm.",
+    "name": "Name",
+    "confirmPassword": "Confirm password",
+    "passwordHint": "At least {{min}} characters.",
+    "submit": "Create account",
+    "submitting": "Creating account…",
+    "haveAccount": "Already have an account?",
+    "goToLogin": "Sign in",
+    "errors": {
+      "passwordTooShort": "The password must be at least {{min}} characters.",
+      "passwordMismatch": "The passwords do not match.",
+      "emailInUse": "An account with this email address already exists. Sign in instead.",
+      "invalid": "Check your name, email address and password.",
+      "tooManyAttempts": "Too many attempts. Try again later.",
+      "unexpected": "Creating the account failed. Please try again in a moment."
+    }
   }
 }

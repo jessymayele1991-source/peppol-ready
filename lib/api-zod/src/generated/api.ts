@@ -44,6 +44,49 @@ export const LoginResponse = zod.object({
 
 
 /**
+ * Creates a user together with a new organization in which that user is the owner, then starts a session exactly as sign-in does. Accepts JSON only. Attempts are limited per client address.
+ * @summary Create an account
+ */
+export const registerBodyNameMax = 100;
+
+export const registerBodyEmailMin = 3;
+export const registerBodyEmailMax = 254;
+
+export const registerBodyPasswordMin = 12;
+export const registerBodyPasswordMax = 256;
+
+
+
+export const RegisterBody = zod.strictObject({
+  "name": zod.string().min(1).max(registerBodyNameMax),
+  "email": zod.string().min(registerBodyEmailMin).max(registerBodyEmailMax),
+  "password": zod.string().min(registerBodyPasswordMin).max(registerBodyPasswordMax)
+})
+
+export const RegisterResponse = zod.object({
+  "user": zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string(),
+  "avatarInitials": zod.string().describe('Nullable in the database; the server derives it from the name so the contract always carries a value.'),
+  "preferredLocale": zod.string()
+}),
+  "organization": zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "plan": zod.enum(['STARTER', 'PROFESSIONAL', 'ENTERPRISE'])
+}),
+  "role": zod.enum(['OWNER', 'ADMIN', 'MEMBER', 'VIEWER']),
+  "capabilities": zod.array(zod.enum(['workspace.manage', 'workspace.transfer', 'members.manage', 'clients.write', 'scans.write', 'tasks.manage', 'reports.generate', 'reports.view', 'audit.viewAll', 'audit.viewOwn'])),
+  "memberships": zod.array(zod.object({
+  "organizationId": zod.string(),
+  "organizationName": zod.string(),
+  "role": zod.enum(['OWNER', 'ADMIN', 'MEMBER', 'VIEWER'])
+}))
+}).describe('Invariant: organization.id always appears in memberships, role is always that membership\'s role, and capabilities is always the derivation of role through the server\'s permission matrix.')
+
+
+/**
  * Destroys the current session.
  * @summary Sign out
  */

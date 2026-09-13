@@ -49,6 +49,40 @@ paths:
           $ref: "#/components/responses/PayloadTooLarge"
         "429":
           $ref: "#/components/responses/TooManyRequests"
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Create an account
+      description: >-
+        Creates a user together with a new organization in which that user is
+        the owner, then starts a session exactly as sign-in does. Accepts JSON
+        only. Attempts are limited per client address.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterInput"
+      responses:
+        "201":
+          description: Account created and session started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          description: An account with this email address already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
   /auth/logout:
     post:
       operationId: logout
@@ -236,6 +270,7 @@ components:
                   unauthorized,
                   forbidden,
                   not_found,
+                  conflict,
                   payload_too_large,
                   too_many_requests,
                   internal_error,
@@ -272,6 +307,22 @@ components:
           type: string
           minLength: 1
       required: [email, password]
+    RegisterInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        email:
+          type: string
+          minLength: 3
+          maxLength: 254
+        password:
+          type: string
+          minLength: 12
+          maxLength: 256
+      required: [name, email, password]
     SwitchOrganizationInput:
       type: object
       properties:

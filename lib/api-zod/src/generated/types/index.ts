@@ -28,6 +28,7 @@ export * from './readinessDashboard';
 export * from './readinessDashboardOrganization';
 export * from './readinessFactor';
 export * from './readinessTrendPoint';
+export * from './registerInput';
 export * from './riskIndicator';
 export * from './riskSeverity';
 export * from './session';

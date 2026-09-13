@@ -1,7 +1,7 @@
 import { type ReactNode, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AlertTriangle, BarChart3, Bell, Check, ChevronDown, CircleHelp, Languages, LayoutDashboard, LoaderCircle, LogOut, Menu, Search, Settings, ShieldCheck, Users, X, Zap } from 'lucide-react';
-import { Link, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
+import { Link, Redirect, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -12,6 +12,7 @@ import NotFound from '@/pages/not-found';
 import { Dashboard } from '@/pages/dashboard';
 import { Login } from '@/pages/login';
 import { Placeholder, type PlaceholderPage } from '@/pages/placeholder';
+import { Register } from '@/pages/register';
 
 const queryClient = new QueryClient();
 
@@ -124,7 +125,11 @@ function Router() {
   const { session, isLoading } = useSession();
 
   if (isLoading) return <AppLoading />;
-  if (!session) return <Login />;
+  // Signed out: registration has its own path; every other path shows sign-in,
+  // so a deep link still lands on a working form.
+  if (!session) {
+    return <Switch><Route path="/register" component={Register} /><Route component={Login} /></Switch>;
+  }
 
   const placeholderRoutes: Array<{ path: string; page: PlaceholderPage }> = [
     { path: '/clients', page: 'clients' }, { path: '/readiness', page: 'readiness' },
@@ -132,7 +137,7 @@ function Router() {
     { path: '/reports', page: 'reports' }, { path: '/users', page: 'users' },
     { path: '/settings', page: 'settings' },
   ];
-  return <RoutedErrorBoundary><Shell><Switch><Route path="/" component={Dashboard} />{placeholderRoutes.map(({ path, page }) => <Route key={path} path={path}><Placeholder page={page} /></Route>)}<Route component={NotFound} /></Switch></Shell></RoutedErrorBoundary>;
+  return <RoutedErrorBoundary><Shell><Switch><Route path="/" component={Dashboard} /><Route path="/register"><Redirect to="/" replace /></Route>{placeholderRoutes.map(({ path, page }) => <Route key={path} path={path}><Placeholder page={page} /></Route>)}<Route component={NotFound} /></Switch></Shell></RoutedErrorBoundary>;
 }
 
 function RoutedErrorBoundary({ children }: { children: ReactNode }) {

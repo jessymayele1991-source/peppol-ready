@@ -13,6 +13,7 @@ export const ApiErrorErrorCode = {
   unauthorized: 'unauthorized',
   forbidden: 'forbidden',
   not_found: 'not_found',
+  conflict: 'conflict',
   payload_too_large: 'payload_too_large',
   too_many_requests: 'too_many_requests',
   internal_error: 'internal_error',
@@ -65,6 +66,24 @@ export const Capability = {
 export interface LoginInput {
   email: string;
   /** @minLength 1 */
+  password: string;
+}
+
+export interface RegisterInput {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  name: string;
+  /**
+     * @minLength 3
+     * @maxLength 254
+     */
+  email: string;
+  /**
+     * @minLength 12
+     * @maxLength 256
+     */
   password: string;
 }
 

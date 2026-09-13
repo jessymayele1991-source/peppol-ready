@@ -209,6 +209,28 @@
     "help": "Pas encore d’accès ? Demandez une invitation au propriétaire de l’espace.",
     "signingOut": "Déconnexion en cours…",
     "loading": "Chargement de votre espace…",
-    "switchWorkspace": "Changer d’espace"
+    "switchWorkspace": "Changer d’espace",
+    "noAccount": "Pas encore de compte ?",
+    "goToRegister": "S’inscrire"
+  },
+  "register": {
+    "eyebrow": "Nouveau compte",
+    "title": "Créez votre compte",
+    "subtitle": "Démarrez un espace de travail pour votre cabinet.",
+    "name": "Nom",
+    "confirmPassword": "Confirmer le mot de passe",
+    "passwordHint": "Au moins {{min}} caractères.",
+    "submit": "Créer le compte",
+    "submitting": "Création du compte…",
+    "haveAccount": "Déjà un compte ?",
+    "goToLogin": "Se connecter",
+    "errors": {
+      "passwordTooShort": "Le mot de passe doit contenir au moins {{min}} caractères.",
+      "passwordMismatch": "Les mots de passe ne correspondent pas.",
+      "emailInUse": "Un compte existe déjà avec cette adresse e-mail. Connectez-vous.",
+      "invalid": "Vérifiez votre nom, votre adresse e-mail et votre mot de passe.",
+      "tooManyAttempts": "Trop de tentatives. Réessayez plus tard.",
+      "unexpected": "La création du compte a échoué. Réessayez dans un instant."
+    }
   }
 }

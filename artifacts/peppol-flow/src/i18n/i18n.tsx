@@ -98,6 +98,21 @@ function readStoredLanguage(key: string) {
 }
 
 /**
+ * Records a language choice for an account before its session is adopted. A
+ * newly registered account has no preference on this device yet, so without
+ * this the interface would switch from the language the visitor registered in
+ * to the account's server default the moment the session arrives.
+ */
+export function rememberLanguageFor(userId: string, language: string) {
+  if (!locales[language]) return;
+  try {
+    window.localStorage.setItem(preferenceKeyFor(userId), language);
+  } catch {
+    // Same as above: a remembered language is a convenience, never required.
+  }
+}
+
+/**
  * `userId` is optional because the sign-in screen renders before anyone is
  * known; that scope stores its choice under an anonymous key. Once a session
  * arrives the provider switches scope and adopts the account's stored

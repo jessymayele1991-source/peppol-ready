@@ -111,6 +111,8 @@ Het wachtwoord hangt af van hoe je startte:
 De seed draait alleen op een lege database. Opnieuw laden met een ander
 wachtwoord: `pnpm db:seed` (overschrijft de demogegevens).
 
+Je kunt ook zelf een account aanmaken via **Nog geen account? Registreren** onder het aanmeldformulier (http://localhost:5173/register). Je krijgt dan een eigen, lege werkruimte waarin je eigenaar bent.
+
 ## Veelgebruikte commando's
 
 | Commando | Doet |
