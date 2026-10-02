@@ -1,3 +1,11 @@
+/**
+ * The scoring rules behind an assessment. Stored on every assessment row, so a
+ * historical score stays explainable after these rules change: raise this
+ * whenever a factor, weight or threshold below changes, and never reinterpret
+ * an assessment that was recorded under an earlier version.
+ */
+export const ENGINE_VERSION = 1;
+
 export type PeppolReadinessStatus =
   | "READY"
   | "CONFIGURING"

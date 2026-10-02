@@ -139,9 +139,9 @@ describe.skipIf(!url)("tenant integrity in the database", () => {
       );
     });
 
-    it("refuses a readiness scan completed by a member of another organization", async () => {
+    it("refuses an assessment completed by a member of another organization", async () => {
       await expectMembershipRejected(
-        db.readinessScan.create({ data: { companyId: companyA, completedById: memberB, score: 50, category: "ADVANCED", completedAt: new Date() } }),
+        db.readinessScore.create({ data: { companyId: companyA, completedById: memberB, score: 50, status: "CONFIGURING", checkedAt: new Date() } }),
       );
     });
 
@@ -155,7 +155,7 @@ describe.skipIf(!url)("tenant integrity in the database", () => {
     it("accepts members of the row's own organization", async () => {
       await expect(db.task.create({ data: { organizationId: orgA, assignedToId: memberA, createdById: memberA, title: "own" } })).resolves.toBeTruthy();
       await expect(db.report.create({ data: { organizationId: orgA, generatedById: memberA, type: "RISK" } })).resolves.toBeTruthy();
-      await expect(db.readinessScan.create({ data: { companyId: companyA, completedById: memberA, score: 50, category: "ADVANCED" } })).resolves.toBeTruthy();
+      await expect(db.readinessScore.create({ data: { companyId: companyA, completedById: memberA, score: 50, status: "CONFIGURING", checkedAt: new Date() } })).resolves.toBeTruthy();
     });
 
     it("keeps history when a member leaves, and refuses new assignments to them", async () => {
@@ -202,13 +202,6 @@ describe.skipIf(!url)("tenant integrity in the database", () => {
       );
     });
 
-    it("refuses a readiness scan completed in the future", async () => {
-      await expectRejected(
-        db.readinessScan.create({ data: { companyId: companyA, score: 50, category: "ADVANCED", completedAt: new Date("2099-01-01T00:00:00Z") } }),
-        /readiness_scans_completedAt_not_future/,
-      );
-    });
-
     it("accepts the present and the past", async () => {
       await expect(db.readinessScore.create({ data: { ...answers, companyId: companyA, checkedAt: new Date() } })).resolves.toBeTruthy();
       await expect(db.readinessScore.create({ data: { ...answers, companyId: companyA, checkedAt: new Date("2025-01-01T00:00:00Z") } })).resolves.toBeTruthy();
@@ -230,13 +223,12 @@ describe.skipIf(!url)("tenant integrity in the database", () => {
         SELECT conname FROM pg_constraint WHERE conname IN (
           'tasks_companyId_organizationId_fkey', 'incidents_companyId_organizationId_fkey',
           'reports_companyId_organizationId_fkey', 'readiness_scores_checkedAt_not_future',
-          'companies_lastCheckedAt_not_future', 'readiness_scans_startedAt_not_future',
-          'readiness_scans_completedAt_not_future')`;
+          'companies_lastCheckedAt_not_future')`;
       const triggers = await db.$queryRaw<Array<{ tgname: string }>>`
         SELECT tgname FROM pg_trigger WHERE tgname IN (
           'tasks_enforce_tenant_membership', 'reports_enforce_tenant_membership',
-          'readiness_scans_enforce_tenant_membership')`;
-      expect(constraints).toHaveLength(7);
+          'readiness_scores_enforce_tenant_membership')`;
+      expect(constraints).toHaveLength(5);
       expect(triggers).toHaveLength(3);
     });
 

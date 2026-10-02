@@ -78,7 +78,11 @@ Peppol Ready helps accounting firms monitor and improve Peppol readiness, compli
 - Client and contact inputs never carry readiness score, Peppol status, last check, organization or archive state: request bodies are strict and reject them with 400.
 - Seed records use stable IDs and upserts so development seeding is safe to rerun.
 - Readiness is calculated from five explicit factors totaling 100 points; every failed factor produces an explainable remediation signal.
-- The target schema supports normalized client contacts, ten-check readiness scans, generated reports, per-user locale preferences, and audit activity.
+- There is one readiness model. `readiness_scores` is the canonical assessment — one immutable row per assessment, carrying score, status, source, `engineVersion` and `completedById` — and `readiness_checks` hangs on it (`scoreId`) for per-control-point outcomes and evidence. `readiness_scans` and `ReadinessCategory` were removed in `20261002120000_readiness_consolidation`; `PeppolStatus` is the only readiness status vocabulary. Never reintroduce a second assessment table or status enum.
+- Score and status are read from the stored assessment, never recalculated: the assessment row leads, the `companies` columns are the fallback for a client that was never assessed, so the dashboard, the client list and the client page always agree. Risks come from the snapshot in `details.risks`, falling back to deriving them from the stored answers for assessments written before the engine stored them. Staleness and incident risks do depend on the current moment and are still derived per request.
+- `ENGINE_VERSION` in `readiness-engine.ts` is stamped on every assessment. Raise it whenever a factor, weight or threshold changes, and never reinterpret an assessment recorded under an earlier version.
+- `readiness_scores.completedById` passes the same `enforce_tenant_membership` trigger as tasks and reports, in its `@company` form: the organization is resolved through `companyId`, so an assessment can never credit a user from another firm.
+- The target schema supports normalized client contacts, versioned readiness assessments with per-control-point evidence, generated reports, per-user locale preferences, and audit activity.
 - Scope explicitly excludes invoice processing, banking, OCR, ledgers, VAT filings, and accounting transactions.
 - Dashboard reads are organization-scoped and derive KPIs, breakdowns, risk actions, incidents, and trends from stored assessments.
 - Dutch is the default UI language. Every user-facing string must come from the locale files; never hardcode interface copy in components.
@@ -112,6 +116,7 @@ The current release provides a dashboard-first SaaS shell for client readiness m
 - The company management migration refuses to run if one organization holds two clients whose VAT or registration numbers are equal after normalization, and changes nothing. Merge or correct them, run `prisma migrate resolve --rolled-back 20260914120000_company_management`, then deploy again.
 - Prisma passes `contains` to `LIKE` without escaping `%`, `_` and `\`. Escape user search input with `escapeLike` (see `company-service.ts`) or a search for `%` matches every row.
 - `prisma.config.ts` fixes the schema and migrations path, so `prisma migrate deploy --schema <other>` still applies the checked-in migrations.
+- The readiness consolidation migration refuses to run while `readiness_scans` or `readiness_checks` hold rows, and changes nothing: it drops the first and re-parents the second. Resolve those rows, run `prisma migrate resolve --rolled-back 20261002120000_readiness_consolidation`, then deploy again. Rolling it back means running its `down.sql` **before** reverting the application code: the earlier `migration-guard.ts` requires the `readiness_scans` objects and refuses to start without them.
 - The tenant integrity migration refuses to run if existing data already crosses a tenant boundary or holds a future assessment timestamp, and changes nothing. Resolve the rows, run `prisma migrate resolve --rolled-back 20260912120000_tenant_integrity`, then deploy again.
 
 ## Pointers

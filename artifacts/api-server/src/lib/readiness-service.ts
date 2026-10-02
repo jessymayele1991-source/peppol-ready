@@ -7,7 +7,9 @@ import {
 import { CompanyArchivedError } from "./company-service";
 import { prisma } from "./prisma";
 import {
+  ENGINE_VERSION,
   calculateReadiness,
+  type PeppolReadinessStatus,
   type ReadinessInput,
   type RiskIndicator,
   type RiskSeverity,
@@ -28,6 +30,68 @@ function readAssessmentInput(details: Prisma.JsonValue | null): ReadinessInput {
     peppolCapableSoftware: value["peppolCapableSoftware"] === true,
     certificateValid: value["certificateValid"] === true,
     successfulTestInvoice: value["successfulTestInvoice"] === true,
+  };
+}
+
+const RISK_SEVERITIES: readonly RiskSeverity[] = ["info", "warning", "critical"];
+
+/**
+ * The risks exactly as the engine recorded them with the assessment. Returns
+ * null for anything that is not a complete snapshot — assessments written before
+ * the engine stored its risks carry only the answers — so the caller can fall
+ * back to deriving them from those answers.
+ */
+function readStoredRisks(details: Prisma.JsonValue | null): RiskIndicator[] | null {
+  const value =
+    details && typeof details === "object" && !Array.isArray(details) ? details : null;
+  const stored = value?.["risks"];
+  if (!Array.isArray(stored)) return null;
+
+  const risks: RiskIndicator[] = [];
+  for (const entry of stored) {
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) return null;
+    const { code, label, severity, message, remediation } = entry as Record<string, unknown>;
+    if (
+      typeof code !== "string" ||
+      typeof label !== "string" ||
+      typeof message !== "string" ||
+      typeof remediation !== "string" ||
+      typeof severity !== "string" ||
+      !RISK_SEVERITIES.includes(severity as RiskSeverity)
+    ) {
+      return null;
+    }
+    risks.push({ code, label, severity: severity as RiskSeverity, message, remediation });
+  }
+  return risks;
+}
+
+/** The engine's own rule: one critical risk outranks any number of warnings. */
+function riskLevelOf(risks: readonly RiskIndicator[]): RiskSeverity {
+  if (risks.some((risk) => risk.severity === "critical")) return "critical";
+  return risks.length > 0 ? "warning" : "info";
+}
+
+/**
+ * Score and status come from the stored assessment, never from recalculating it:
+ * the engine may have changed since, and the client pages read the same stored
+ * values. The assessment row leads, the company columns are the fallback for a
+ * client that was never assessed. Risks come from the stored snapshot, or from
+ * the recorded answers when an older row has no snapshot.
+ */
+function readStoredAssessment(
+  latestScore: Pick<ReadinessScore, "score" | "status" | "details"> | null,
+  company: { readinessScore: number; peppolStatus: PeppolStatus },
+) {
+  const risks =
+    readStoredRisks(latestScore?.details ?? null) ??
+    calculateReadiness(readAssessmentInput(latestScore?.details ?? null)).risks;
+
+  return {
+    score: latestScore?.score ?? company.readinessScore,
+    status: (latestScore?.status ?? company.peppolStatus) as PeppolReadinessStatus,
+    risks,
+    riskLevel: riskLevelOf(risks),
   };
 }
 
@@ -164,9 +228,7 @@ export async function getReadinessDashboard(organizationId: string) {
 
   const companies = organization.companies.map((company) => {
     const latestScore = company.readinessScores[0] ?? null;
-    const assessment = calculateReadiness(
-      readAssessmentInput(latestScore?.details ?? null),
-    );
+    const assessment = readStoredAssessment(latestScore, company);
     const operationalRisks = getStaleRisk(
       latestScore?.checkedAt ?? company.lastCheckedAt,
       now,
@@ -336,6 +398,7 @@ export async function calculateAndPersistCompanyReadiness(
     await tx.readinessScore.create({
       data: {
         companyId,
+        engineVersion: ENGINE_VERSION,
         score: assessment.score,
         status: assessment.status as PeppolStatus,
         checkedAt,

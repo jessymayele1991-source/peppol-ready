@@ -47,7 +47,9 @@ beforeAll(async () => {
     name: "Atelier Noma",
     email: null,
     accountingPackage: null,
+    // The stored columns the dashboard reads, as the database defaults them.
     readinessScore: 0,
+    peppolStatus: "NOT_REGISTERED",
     lastCheckedAt: null,
   });
 

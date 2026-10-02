@@ -92,7 +92,15 @@ export function createFakePrisma() {
           name: (state.organizations.get(where.id)?.["name"] as string | undefined) ?? `Organization ${where.id}`,
           companies: [...state.companies.values()]
             .filter((company) => company["organizationId"] === where.id)
-            .map((company) => ({ ...company, readinessScores: [], incidents: [] })),
+            .map((company) => ({
+              // The dashboard reads the stored score and status, so the fake
+              // supplies the same column defaults the database would.
+              readinessScore: 0,
+              peppolStatus: "NOT_REGISTERED",
+              ...company,
+              readinessScores: [],
+              incidents: [],
+            })),
         })),
       create: ({ data }: { data: { name: string; slug: string } }) =>
         lazy(() => {

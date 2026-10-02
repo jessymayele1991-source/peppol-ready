@@ -101,7 +101,7 @@ describe("evaluateDatabaseObjects", () => {
     expect(result.missing).toEqual([
       "trigger tasks_enforce_tenant_membership",
       "trigger reports_enforce_tenant_membership",
-      "trigger readiness_scans_enforce_tenant_membership",
+      "trigger readiness_scores_enforce_tenant_membership",
       "function enforce_tenant_membership",
     ]);
   });
@@ -114,14 +114,35 @@ describe("evaluateDatabaseObjects", () => {
     expect(result.missing).toContain("constraint tasks_companyId_organizationId_fkey");
   });
 
-  it("names exactly what the tenant integrity migration creates", () => {
-    const sql = readFileSync(join(migrationsDir, "20260912120000_tenant_integrity", "migration.sql"), "utf8");
+  it("names only objects a shipped migration actually creates", () => {
+    // The enforcement objects come from two migrations: tenant integrity
+    // installed them, and readiness consolidation moved the assessment trigger
+    // onto readiness_scores. A name in neither file would make the server refuse
+    // to start against a correctly migrated database.
+    const sql = ["20260912120000_tenant_integrity", "20261002120000_readiness_consolidation"]
+      .map((migration) => readFileSync(join(migrationsDir, migration, "migration.sql"), "utf8"))
+      .join("\n");
+
     for (const name of [
       ...REQUIRED_DATABASE_OBJECTS.constraints,
       ...REQUIRED_DATABASE_OBJECTS.triggers,
       ...REQUIRED_DATABASE_OBJECTS.functions,
     ]) {
-      expect(sql).toContain(`"${name}"`);
+      expect(sql, name).toContain(`"${name}"`);
+    }
+  });
+
+  it("no longer requires the objects readiness consolidation removed", () => {
+    const required: readonly string[] = [
+      ...REQUIRED_DATABASE_OBJECTS.constraints,
+      ...REQUIRED_DATABASE_OBJECTS.triggers,
+    ];
+    for (const gone of [
+      "readiness_scans_startedAt_not_future",
+      "readiness_scans_completedAt_not_future",
+      "readiness_scans_enforce_tenant_membership",
+    ]) {
+      expect(required).not.toContain(gone);
     }
   });
 });
@@ -193,6 +214,49 @@ describe("shipped migrations", () => {
     ]) {
       expect(sql).toContain(`"${name}"`);
     }
+  });
+
+  it("includes the readiness consolidation migration, after client management", () => {
+    const sorted = [...directories].sort();
+    expect(sorted.indexOf("20261002120000_readiness_consolidation")).toBeGreaterThan(
+      sorted.indexOf("20260914120000_company_management"),
+    );
+  });
+
+  it("the readiness consolidation migration refuses rows in the tables it removes, before any DDL", () => {
+    const sql = readFileSync(join(migrationsDir, "20261002120000_readiness_consolidation", "migration.sql"), "utf8");
+    const preflight = sql.indexOf("DO $$");
+    const firstDdl = sql.search(/^(CREATE|ALTER|DROP)\s/m);
+
+    expect(preflight).toBeGreaterThan(-1);
+    expect(firstDdl).toBeGreaterThan(preflight);
+    expect(sql).toMatch(/RAISE EXCEPTION/);
+    expect(sql).toMatch(/count\(\*\) INTO scan_count FROM "public"\."readiness_scans"/);
+    expect(sql).toMatch(/count\(\*\) INTO check_count FROM "public"\."readiness_checks"/);
+    // It drops the unused scan model and nothing else.
+    expect(sql.match(/^DROP TABLE .*$/gm)).toEqual(['DROP TABLE "public"."readiness_scans";']);
+    expect(sql).not.toMatch(/DROP TABLE .*readiness_(scores|checks)/);
+    // The assessment keeps its own tenant check, reusing the existing function.
+    expect(sql).toContain('EXECUTE FUNCTION "public"."enforce_tenant_membership"(\'@company\', \'completedById\')');
+    expect(sql).not.toMatch(/CREATE (OR REPLACE )?FUNCTION/);
+  });
+
+  it("ships a rollback for the readiness consolidation that keeps assessments", () => {
+    const down = readFileSync(join(migrationsDir, "20261002120000_readiness_consolidation", "down.sql"), "utf8");
+
+    expect(down).toContain('CREATE TABLE "public"."readiness_scans"');
+    expect(down).toContain('CREATE TYPE "public"."ReadinessCategory"');
+    expect(down).toContain('RENAME COLUMN "scoreId" TO "scanId"');
+
+    // Only the two added columns go; no assessment row is touched. Checked
+    // against the statements, not the comments, which do tell the operator to
+    // delete the _prisma_migrations row.
+    const statements = down
+      .split("\n")
+      .filter((line) => !line.trimStart().startsWith("--"))
+      .join("\n");
+    expect(statements).not.toMatch(/(DELETE FROM|TRUNCATE(\s+TABLE)?|DROP TABLE)\s+("public"\.)?"?readiness_scores"?/i);
+    expect(statements).not.toMatch(/DROP TABLE "public"\."readiness_checks"/);
   });
 
   it("build.mjs bakes the migration list into the bundle", () => {

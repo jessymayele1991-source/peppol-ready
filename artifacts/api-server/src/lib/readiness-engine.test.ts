@@ -1,5 +1,7 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { calculateReadiness, type ReadinessInput } from "./readiness-engine";
+import { ENGINE_VERSION, calculateReadiness, type ReadinessInput } from "./readiness-engine";
 
 const allFailing: ReadinessInput = {
   participantRegistered: false,
@@ -82,5 +84,24 @@ describe("calculateReadiness", () => {
       expect(risk.remediation.length).toBeGreaterThan(0);
       expect(risk.message.length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe("ENGINE_VERSION", () => {
+  it("is the version the service stamps on every assessment it writes", () => {
+    // The column defaults to 1, so a service that forgot to pass the version
+    // would still produce version-1 rows and no database test could tell.
+    // This asserts the write itself carries it, which is what keeps a future
+    // version 2 from being recorded as version 1.
+    const service = readFileSync(join(import.meta.dirname, "readiness-service.ts"), "utf8");
+    const create = service.slice(service.indexOf("tx.readinessScore.create("));
+
+    expect(create).toMatch(/engineVersion:\s*ENGINE_VERSION/);
+    expect(service).toMatch(/import \{[\s\S]*?ENGINE_VERSION[\s\S]*?\} from "\.\/readiness-engine"/);
+  });
+
+  it("is a whole number, so an assessment's rules are identifiable", () => {
+    expect(Number.isInteger(ENGINE_VERSION)).toBe(true);
+    expect(ENGINE_VERSION).toBeGreaterThanOrEqual(1);
   });
 });

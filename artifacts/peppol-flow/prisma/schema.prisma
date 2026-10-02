@@ -36,7 +36,7 @@ model User {
   assignedTasks    Task[]          @relation("TaskAssignee")
   createdTasks     Task[]          @relation("TaskCreator")
   auditEvents      AuditEvent[]    @relation("AuditActor")
-  completedScans   ReadinessScan[] @relation("ReadinessScanCompleter")
+  completedAssessments ReadinessScore[] @relation("ReadinessScoreCompleter")
   generatedReports Report[]        @relation("ReportGenerator")
   preferredLocale  String          @default("nl")
 
@@ -100,7 +100,6 @@ model Company {
   tasks              Task[]
   incidents          Incident[]
   contacts           ClientContact[]
-  readinessScans     ReadinessScan[]
   reports            Report[]
 
   // Tenant integrity: the relations below reference (id, organizationId), so a
@@ -137,47 +136,41 @@ model ClientContact {
   @@map("client_contacts")
 }
 
-model ReadinessScan {
-  id            String            @id @default(cuid())
-  companyId     String
-  completedById String?
-  score         Int
-  category      ReadinessCategory
-  source        String?
-  startedAt     DateTime          @default(now()) @db.Timestamptz(3)
-  completedAt   DateTime?         @db.Timestamptz(3)
-  createdAt     DateTime          @default(now()) @db.Timestamptz(3)
-  company       Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  completedBy   User?             @relation("ReadinessScanCompleter", fields: [completedById], references: [id], onDelete: SetNull)
-  checks        ReadinessCheck[]
-
-  @@index([companyId, completedAt])
-  @@map("readiness_scans")
-}
-
+/// One control point of an assessment: its outcome and the evidence note the
+/// accountant recorded for it. Hangs on the assessment, which owns the tenant
+/// boundary through its company.
 model ReadinessCheck {
-  id        String        @id @default(cuid())
-  scanId    String
+  id        String         @id @default(cuid())
+  scoreId   String
   key       String
   passed    Boolean
   evidence  String?
-  createdAt DateTime      @default(now()) @db.Timestamptz(3)
-  scan      ReadinessScan @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  createdAt DateTime       @default(now()) @db.Timestamptz(3)
+  score     ReadinessScore @relation(fields: [scoreId], references: [id], onDelete: Cascade)
 
-  @@unique([scanId, key])
+  @@unique([scoreId, key])
   @@map("readiness_checks")
 }
 
+/// The canonical readiness assessment: one immutable row per assessment moment.
+/// `engineVersion` records which scoring rules produced it, so a historical
+/// score stays explainable after the engine changes.
 model ReadinessScore {
-  id        String       @id @default(cuid())
-  companyId String
-  score     Int
-  status    PeppolStatus
-  checkedAt DateTime     @db.Timestamptz(3)
-  source    String?
-  details   Json?
-  createdAt DateTime     @default(now()) @db.Timestamptz(3)
-  company   Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  id            String           @id @default(cuid())
+  companyId     String
+  completedById String?
+  engineVersion Int              @default(1)
+  score         Int
+  status        PeppolStatus
+  checkedAt     DateTime         @db.Timestamptz(3)
+  source        String?
+  details       Json?
+  createdAt     DateTime         @default(now()) @db.Timestamptz(3)
+  company       Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  /// Tenant-checked at write time by the `enforce_tenant_membership` trigger,
+  /// which resolves the organization through `companyId`.
+  completedBy   User?            @relation("ReadinessScoreCompleter", fields: [completedById], references: [id], onDelete: SetNull)
+  checks        ReadinessCheck[]
 
   @@index([companyId, checkedAt])
   @@map("readiness_scores")
@@ -300,14 +293,6 @@ enum PeppolStatus {
   CONFIGURING
   AT_RISK
   NOT_REGISTERED
-}
-
-enum ReadinessCategory {
-  NOT_STARTED
-  BASIC
-  ADVANCED
-  READY
-  FULLY_COMPLIANT
 }
 
 enum ReportType {

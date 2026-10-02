@@ -11,8 +11,8 @@ Peppol Ready is een multi-tenant readiness-, compliance- en risicoplatform voor 
 | `/` | Dashboard | Portefeuille-KPI's, verdeling, risico's, voortgang en incidenten |
 | `/clients` | Klanten | Zoeken, filteren, sorteren en pagineren |
 | `/clients/:companyId` | Klantdossier | Profiel, contactpersonen, scans, taken, risico's en audittrail |
-| `/readiness` | Readiness Center | Scanwachtrij, statusgroepen en scanhistorie |
-| `/readiness/:companyId` | Readiness Scan | Tien controlepunten beoordelen en score verklaren |
+| `/readiness` | Readiness Center | Scanwachtrij, statusgroepen en scanhistorie — nog niet gebouwd (placeholder) |
+| `/readiness/:companyId` | Readiness Scan | Beoordelen en score verklaren — nog niet gebouwd; voorzien als tab in het klantdossier |
 | `/actions` | Taken | Open, in behandeling en voltooide klantacties |
 | `/compliance` | Compliance Center | Checklist, open punten, aanbevelingen en voortgang |
 | `/incidents` | Risico's | Kritieke, actievereiste en gereed-signalen |
@@ -40,9 +40,9 @@ Alle serverqueries worden op `organizationId` begrensd. Actor, tenant, tijdstemp
 - `Membership` koppelt een gebruiker aan één organisatie en rol.
 - `Company` is het klantdossier met KvK-, btw-, branche- en ERP-metadata.
 - `ClientContact` bevat één of meer contactpersonen per klant.
-- `ReadinessScan` is een onveranderlijk scanmoment met score en categorie.
-- `ReadinessCheck` bewaart de uitkomst en bewijsnotitie per controlepunt.
-- `ReadinessScore` blijft tijdens de migratie bestaan als historische compatibiliteitslaag voor het huidige dashboard.
+- `ReadinessScore` is de canonieke beoordeling: één onveranderlijke rij per beoordelingsmoment, met score, status, bron, `engineVersion` en de beoordelaar (`completedById`).
+- `ReadinessCheck` bewaart de uitkomst en bewijsnotitie per controlepunt en hangt aan een beoordeling (`scoreId`).
+- `ReadinessScan` en `ReadinessCategory` zijn verwijderd in `20261002120000_readiness_consolidation`: ze zijn nooit gebruikt en vormden een tweede readinessmodel met een eigen statusvocabulaire.
 - `Task` koppelt opvolgwerk optioneel aan een klant en medewerker.
 - `Incident` koppelt compliance- of leveringsrisico's optioneel aan een klant.
 - `Report` bewaart type, taal, periode, status en het uiteindelijke object-storagepad.
@@ -50,20 +50,15 @@ Alle serverqueries worden op `organizationId` begrensd. Actor, tenant, tijdstemp
 
 ## Readinessmodel
 
-De doelchecklist bevat tien gelijkwaardig verklaarbare controlepunten:
+Er is één readinessmodel. `readiness_scores` is de canonieke beoordeling en `readiness_checks` bewaart per controlepunt de uitkomst en het bewijs. `PeppolStatus` (`READY`, `CONFIGURING`, `AT_RISK`, `NOT_REGISTERED`) is het enige statusvocabulaire; er is geen tweede categorie-enum.
 
-1. KvK-nummer ingevuld
-2. Btw-nummer aanwezig
-3. E-mailadres aanwezig
-4. ERP-software bekend
-5. UBL-ondersteuning
-6. Peppol-ID geregistreerd
-7. Facturen digitaal
-8. Leveranciers digitaal
-9. Ontvangt e-facturen
-10. Verstuurt e-facturen
+De actieve engine weegt vijf factoren tot 100 punten: Peppol-registratie (30), ontvangstadres (20), Peppol-geschikte software (20), geldig certificaat (15) en een geslaagde testfactuur (15). Elke gefaalde factor levert een verklaarbaar risico met remediatie.
 
-De categorieën zijn `NOT_STARTED`, `BASIC`, `ADVANCED`, `READY` en `FULLY_COMPLIANT`. De bestaande vijf-factor-engine blijft actief tot de tien controles via contract-first API's en migratie van historische scores zijn ingevoerd.
+`engineVersion` legt vast welke regels een score hebben voortgebracht. Een historische beoordeling wordt nooit opnieuw geïnterpreteerd: wijzigen de factoren, gewichten of drempels, dan stijgt het versienummer en behouden oudere beoordelingen hun eigen versie.
+
+Score en status worden gelezen uit de opgeslagen beoordeling, nooit opnieuw berekend. De precedentie is: laatste beoordeling, anders de kolommen op `companies` (voor een klant die nog niet beoordeeld is). Risico's komen uit de opgeslagen momentopname in `details.risks`; ontbreekt die of is ze onvolledig — zoals bij beoordelingen van voor deze consolidatie — dan worden ze afgeleid uit de opgeslagen antwoorden. Verouderingsrisico's (`ASSESSMENT_MISSING`, `ASSESSMENT_STALE`) en incidentrisico's (`OPEN_CRITICAL_INCIDENT`) hangen van het huidige moment af en worden wél bij elke uitvraag bepaald.
+
+Een uitbreiding van de vragenlijst naar tien controlepunten is een openstaande beslissing voor de volgende fase, niet een bestaand ontwerp. Vier van de eerder beoogde punten (KvK-nummer, btw-nummer, e-mailadres, ERP-software) zijn stamdata op `Company`; of die meewegen in de score moet dan expliciet worden besloten.
 
 ## UX-wireframes
 

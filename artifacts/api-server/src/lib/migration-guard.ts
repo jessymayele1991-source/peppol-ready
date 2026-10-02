@@ -57,7 +57,8 @@ export function evaluateMigrations(
  * and columns but is not guaranteed to carry triggers, functions or named
  * constraints. A database can then hold every Prisma migration record and every
  * table while missing the tenant boundary itself. These names come from
- * 20260912120000_tenant_integrity.
+ * 20260912120000_tenant_integrity, except the assessment trigger, which
+ * 20261002120000_readiness_consolidation moved onto readiness_scores.
  */
 export const REQUIRED_DATABASE_OBJECTS = {
   constraints: [
@@ -66,13 +67,11 @@ export const REQUIRED_DATABASE_OBJECTS = {
     "reports_companyId_organizationId_fkey",
     "readiness_scores_checkedAt_not_future",
     "companies_lastCheckedAt_not_future",
-    "readiness_scans_startedAt_not_future",
-    "readiness_scans_completedAt_not_future",
   ],
   triggers: [
     "tasks_enforce_tenant_membership",
     "reports_enforce_tenant_membership",
-    "readiness_scans_enforce_tenant_membership",
+    "readiness_scores_enforce_tenant_membership",
   ],
   functions: ["enforce_tenant_membership"],
 } as const;
