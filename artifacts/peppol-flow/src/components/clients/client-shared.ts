@@ -39,6 +39,8 @@ export function clientErrorKey(cause: unknown): string {
       if (/registration number/i.test(message)) return 'clients.errors.duplicateRegistration';
       if (/archived/i.test(message)) return 'clients.errors.archived';
       return 'clients.errors.conflict';
+    case 429:
+      return 'clients.errors.tooManyAssessments';
     default:
       return 'clients.errors.unexpected';
   }

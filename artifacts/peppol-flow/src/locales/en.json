@@ -131,6 +131,16 @@
     "AT_RISK": "At risk",
     "NOT_REGISTERED": "Not registered"
   },
+  "riskRemediation": {
+    "NOT_REGISTERED": "Register the client with a certified Peppol access point.",
+    "MISSING_RECEIVING_ADDRESS": "Configure the receiving address and have it verified.",
+    "SOFTWARE_NOT_READY": "Enable a supported connector or move to Peppol-ready software.",
+    "INVALID_CERTIFICATE": "Renew the access point certificate and confirm it validates.",
+    "TEST_INVOICE_MISSING": "Send a Peppol test invoice and check the confirmation.",
+    "ASSESSMENT_MISSING": "Run a complete readiness assessment.",
+    "ASSESSMENT_STALE": "Assess the client again with current information.",
+    "OPEN_CRITICAL_INCIDENT": "Resolve the critical incident, then assess again."
+  },
   "risk": {
     "NOT_REGISTERED": "Not registered",
     "MISSING_RECEIVING_ADDRESS": "Missing receiving address",
@@ -235,7 +245,8 @@
       "duplicateVat": "A client with this VAT number already exists in your firm. If it is archived, restore it instead.",
       "duplicateRegistration": "A client with this registration number already exists in your firm. If it is archived, restore it instead.",
       "archived": "This client is archived. Restore it first.",
-      "conflict": "This change conflicts with existing data."
+      "conflict": "This change conflicts with existing data.",
+      "tooManyAssessments": "Too many assessments were recorded in a short time. Please try again later."
     },
     "validation": {
       "required": "Required field.",
@@ -281,6 +292,68 @@
         "phone": "Phone",
         "isPrimary": "Primary contact",
         "isPrimaryHint": "Replaces this client's current primary contact."
+      }
+    },
+    "readiness": {
+      "tab": "Readiness",
+      "eyebrow": "Peppol assessment",
+      "start": "Start assessment",
+      "reassess": "Assess again",
+      "submit": "Save assessment",
+      "answerYes": "Yes",
+      "answerNo": "No",
+      "formDescription": "Answer every question and record what you saw. The server calculates the score from your answers.",
+      "evidenceLabel": "Evidence or note (optional)",
+      "evidencePlaceholder": "Where did you check this?",
+      "evidenceCounter": "{{count}}/{{max}}",
+      "answeredOf": "{{answered}} of {{total}} questions answered",
+      "loadError": "The assessment could not be loaded",
+      "empty": {
+        "title": "Not assessed yet",
+        "description": "Run the first readiness assessment to see the score, risks and recommendations.",
+        "readOnly": "This client has not been assessed yet.",
+        "archived": "This client is archived and has not been assessed. Restore it to assess."
+      },
+      "result": {
+        "scoreLabel": "Readiness score",
+        "assessedAt": "Assessed on {{date}}",
+        "byYou": "by you",
+        "byColleague": "by a colleague",
+        "engine": "rules version {{version}}",
+        "factors": "Control points",
+        "risks": "Risks and recommendations",
+        "noRisks": "No risks: this client is fully Peppol-ready.",
+        "noEvidence": "No note recorded.",
+        "passed": "Passed",
+        "failed": "Not passed"
+      },
+      "toast": {
+        "recorded": "Assessment saved"
+      },
+      "errors": {
+        "invalid": "Please check your answers and notes."
+      },
+      "questions": {
+        "participantRegistered": {
+          "label": "Is the client registered in the Peppol network?",
+          "hint": "An active registration with a certified access point, with a Peppol ID."
+        },
+        "receivingAddressConfigured": {
+          "label": "Is a receiving address configured and verified?",
+          "hint": "Inbound documents have to be able to reach the client."
+        },
+        "peppolCapableSoftware": {
+          "label": "Does the accounting software support the Peppol flow?",
+          "hint": "A connector or package that can send and receive e-invoices."
+        },
+        "certificateValid": {
+          "label": "Is the access point certificate valid?",
+          "hint": "Not expired and verifiable; without trust, exchange is refused."
+        },
+        "successfulTestInvoice": {
+          "label": "Has a test invoice succeeded end to end?",
+          "hint": "A complete chain from sending to confirmed receipt."
+        }
       }
     }
   },

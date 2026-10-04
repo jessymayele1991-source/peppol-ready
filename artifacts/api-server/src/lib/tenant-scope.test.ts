@@ -41,9 +41,11 @@ describe("tenant context", () => {
       ...source.matchAll(/router\.(?:get|post|patch|delete)\(([\s\S]*?)async\s*\(/g),
     ].map((match) => match[1] ?? "");
 
-    expect(chains).toHaveLength(2);
+    // Dashboard, calculate, and the latest assessment.
+    expect(chains).toHaveLength(3);
     for (const chain of chains) {
       expect(chain).toContain("requireAuth");
+      expect(chain).toMatch(/requireCapability\("(clients\.view|scans\.write)"\)/);
     }
   });
 

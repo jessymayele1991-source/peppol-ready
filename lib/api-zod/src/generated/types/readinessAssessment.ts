@@ -5,13 +5,22 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { AssessmentCheck } from './assessmentCheck';
 import type { PeppolStatus } from './peppolStatus';
 import type { ReadinessFactor } from './readinessFactor';
 import type { RiskIndicator } from './riskIndicator';
 import type { RiskSeverity } from './riskSeverity';
 
 export interface ReadinessAssessment {
+  assessmentId: string;
   companyId: string;
+  /** The scoring rules that produced this assessment. A score recorded under an earlier version is never reinterpreted. */
+  engineVersion: number;
+  /**
+     * The user who completed it, as recorded by the server.
+     * @nullable
+     */
+  completedById: string | null;
   /**
      * @minimum 0
      * @maximum 100
@@ -21,5 +30,6 @@ export interface ReadinessAssessment {
   riskLevel: RiskSeverity;
   factors: ReadinessFactor[];
   risks: RiskIndicator[];
+  checks: AssessmentCheck[];
   calculatedAt: Date;
 }

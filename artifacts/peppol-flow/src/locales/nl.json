@@ -131,6 +131,16 @@
     "AT_RISK": "Risico",
     "NOT_REGISTERED": "Niet geregistreerd"
   },
+  "riskRemediation": {
+    "NOT_REGISTERED": "Registreer de klant bij een gecertificeerd Peppol-toegangspunt.",
+    "MISSING_RECEIVING_ADDRESS": "Stel het ontvangstadres in en laat het verifiëren.",
+    "SOFTWARE_NOT_READY": "Activeer een ondersteunde connector of stap over naar Peppol-geschikte software.",
+    "INVALID_CERTIFICATE": "Vernieuw het certificaat van het toegangspunt en controleer de geldigheid.",
+    "TEST_INVOICE_MISSING": "Verstuur een Peppol-testfactuur en controleer de bevestiging.",
+    "ASSESSMENT_MISSING": "Voer een volledige gereedheidsbeoordeling uit.",
+    "ASSESSMENT_STALE": "Beoordeel de klant opnieuw met de huidige gegevens.",
+    "OPEN_CRITICAL_INCIDENT": "Los het kritieke incident op en beoordeel daarna opnieuw."
+  },
   "risk": {
     "NOT_REGISTERED": "Niet geregistreerd",
     "MISSING_RECEIVING_ADDRESS": "Ontvangstadres ontbreekt",
@@ -235,7 +245,8 @@
       "duplicateVat": "Een klant met dit btw-nummer bestaat al in je kantoor. Is die gearchiveerd, herstel hem dan.",
       "duplicateRegistration": "Een klant met dit ondernemingsnummer bestaat al in je kantoor. Is die gearchiveerd, herstel hem dan.",
       "archived": "Deze klant is gearchiveerd. Herstel hem eerst.",
-      "conflict": "Deze wijziging botst met bestaande gegevens."
+      "conflict": "Deze wijziging botst met bestaande gegevens.",
+      "tooManyAssessments": "Er zijn te veel beoordelingen op korte tijd opgeslagen. Probeer het straks opnieuw."
     },
     "validation": {
       "required": "Verplicht veld.",
@@ -281,6 +292,68 @@
         "phone": "Telefoon",
         "isPrimary": "Primaire contactpersoon",
         "isPrimaryHint": "Vervangt de huidige primaire contactpersoon van deze klant."
+      }
+    },
+    "readiness": {
+      "tab": "Gereedheid",
+      "eyebrow": "Peppol-beoordeling",
+      "start": "Beoordeling starten",
+      "reassess": "Opnieuw beoordelen",
+      "submit": "Beoordeling opslaan",
+      "answerYes": "Ja",
+      "answerNo": "Nee",
+      "formDescription": "Antwoord op elke vraag en leg vast wat je zag. De score wordt door de server berekend uit je antwoorden.",
+      "evidenceLabel": "Bewijs of toelichting (optioneel)",
+      "evidencePlaceholder": "Waar heb je dit gecontroleerd?",
+      "evidenceCounter": "{{count}}/{{max}}",
+      "answeredOf": "{{answered}} van {{total}} vragen beantwoord",
+      "loadError": "De beoordeling kon niet worden geladen",
+      "empty": {
+        "title": "Nog geen beoordeling",
+        "description": "Voer de eerste gereedheidsbeoordeling uit om score, risico's en aanbevelingen te zien.",
+        "readOnly": "Deze klant is nog niet beoordeeld.",
+        "archived": "Deze klant is gearchiveerd en nog niet beoordeeld. Herstel de klant om te beoordelen."
+      },
+      "result": {
+        "scoreLabel": "Gereedheidsscore",
+        "assessedAt": "Beoordeeld op {{date}}",
+        "byYou": "door jou",
+        "byColleague": "door een collega",
+        "engine": "regelversie {{version}}",
+        "factors": "Controlepunten",
+        "risks": "Risico's en aanbevelingen",
+        "noRisks": "Geen risico's: deze klant is volledig Peppol-gereed.",
+        "noEvidence": "Geen toelichting vastgelegd.",
+        "passed": "Gehaald",
+        "failed": "Niet gehaald"
+      },
+      "toast": {
+        "recorded": "Beoordeling opgeslagen"
+      },
+      "errors": {
+        "invalid": "Controleer je antwoorden en toelichtingen."
+      },
+      "questions": {
+        "participantRegistered": {
+          "label": "Is de klant geregistreerd in het Peppol-netwerk?",
+          "hint": "Een actieve registratie bij een gecertificeerd toegangspunt, met een Peppol-ID."
+        },
+        "receivingAddressConfigured": {
+          "label": "Is een ontvangstadres ingesteld en gecontroleerd?",
+          "hint": "Inkomende documenten moeten bij de klant kunnen aankomen."
+        },
+        "peppolCapableSoftware": {
+          "label": "Ondersteunt het boekhoudpakket de Peppol-flow?",
+          "hint": "Een connector of pakket dat e-facturen kan versturen en ontvangen."
+        },
+        "certificateValid": {
+          "label": "Is het certificaat van het toegangspunt geldig?",
+          "hint": "Niet verlopen en controleerbaar; zonder vertrouwen wordt uitwisseling geweigerd."
+        },
+        "successfulTestInvoice": {
+          "label": "Is er een geslaagde testfactuur verstuurd?",
+          "hint": "Een volledige keten van verzenden tot bevestigde ontvangst."
+        }
       }
     }
   },

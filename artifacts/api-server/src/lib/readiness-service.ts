@@ -33,6 +33,18 @@ function readAssessmentInput(details: Prisma.JsonValue | null): ReadinessInput {
   };
 }
 
+/**
+ * What the accountant saw when answering, one optional note per question. Keys
+ * match the answers, so a note always lands on the control point it belongs to.
+ */
+export type AssessmentEvidence = Partial<Record<keyof ReadinessInput, string>>;
+
+/** Blank or whitespace-only notes are stored as absent, never as "". */
+function normalizeEvidence(value: string | undefined): string | null {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
+}
+
 const RISK_SEVERITIES: readonly RiskSeverity[] = ["info", "warning", "critical"];
 
 /**
@@ -175,6 +187,85 @@ function buildTrend(
     }
       : null;
   }).filter((point): point is NonNullable<typeof point> => point !== null);
+}
+
+/**
+ * The stored assessment in the shape the API returns. Both the route that
+ * records an assessment and the route that reads the latest one go through
+ * here, so what a client sees right after assessing is what it sees on the next
+ * page load.
+ */
+function toAssessmentResponse(assessment: {
+  id: string;
+  companyId: string;
+  engineVersion: number;
+  completedById: string | null;
+  score: number;
+  status: PeppolStatus;
+  checkedAt: Date;
+  details: Prisma.JsonValue | null;
+  checks: Array<{ key: string; passed: boolean; evidence: string | null }>;
+}) {
+  const recomputed = calculateReadiness(readAssessmentInput(assessment.details));
+  const risks = readStoredRisks(assessment.details) ?? recomputed.risks;
+
+  return {
+    assessmentId: assessment.id,
+    companyId: assessment.companyId,
+    engineVersion: assessment.engineVersion,
+    completedById: assessment.completedById,
+    score: assessment.score,
+    status: assessment.status as PeppolReadinessStatus,
+    riskLevel: riskLevelOf(risks),
+    // Labels and weights are presentation of the rules, not stored data; the
+    // answers come from the assessment, so they describe this assessment.
+    factors: recomputed.factors,
+    risks,
+    // Ordered by the engine's own factor order, not by how the database
+    // returned them, so recording and reading an assessment answer identically.
+    checks: recomputed.factors.flatMap((factor) => {
+      const stored = assessment.checks.find((check) => check.key === factor.key);
+      return stored ? [{ key: stored.key, passed: stored.passed, evidence: stored.evidence }] : [];
+    }),
+    calculatedAt: assessment.checkedAt,
+  };
+}
+
+const assessmentSelect = {
+  id: true,
+  companyId: true,
+  engineVersion: true,
+  completedById: true,
+  score: true,
+  status: true,
+  checkedAt: true,
+  details: true,
+  checks: { select: { key: true, passed: true, evidence: true }, orderBy: { key: "asc" } },
+} as const satisfies Prisma.ReadinessScoreSelect;
+
+/**
+ * The most recent assessment of a client in the caller's organization, or null
+ * when the client was never assessed. Tenant-scoped through the company, which
+ * owns the assessment: an assessment id alone would accept any row in the
+ * database. Archived clients can be read; they just cannot be assessed.
+ */
+export async function getLatestCompanyAssessment(
+  actor: { userId: string; organizationId: string },
+  companyId: string,
+) {
+  const company = await prisma.company.findFirst({
+    where: { id: companyId, organizationId: actor.organizationId },
+    select: { id: true },
+  });
+  if (!company) return { found: false as const };
+
+  const assessment = await prisma.readinessScore.findFirst({
+    where: { companyId, company: { organizationId: actor.organizationId } },
+    orderBy: [{ checkedAt: "desc" }, { id: "desc" }],
+    select: assessmentSelect,
+  });
+
+  return { found: true as const, assessment: assessment ? toAssessmentResponse(assessment) : null };
 }
 
 export async function getReadinessDashboard(organizationId: string) {
@@ -359,6 +450,7 @@ export async function calculateAndPersistCompanyReadiness(
   input: ReadinessInput,
   actor: { userId: string; organizationId: string },
   source: AssessmentSource = ASSESSMENT_SOURCE.manual,
+  evidence: AssessmentEvidence = {},
 ) {
   // Scoped to the caller's organization: looking a company up by id alone
   // would accept any company id in the database.
@@ -371,17 +463,19 @@ export async function calculateAndPersistCompanyReadiness(
 
   const checkedAt = new Date();
   const assessment = calculateReadiness(input);
+  // The answers feed the legacy risk fallback and the risks are the snapshot the
+  // dashboard reads. Per-factor outcomes live in readiness_checks, so they are
+  // deliberately not repeated here.
   const details: Prisma.InputJsonValue = {
     participantRegistered: input.participantRegistered,
     receivingAddressConfigured: input.receivingAddressConfigured,
     peppolCapableSoftware: input.peppolCapableSoftware,
     certificateValid: input.certificateValid,
     successfulTestInvoice: input.successfulTestInvoice,
-    factors: assessment.factors,
     risks: assessment.risks,
   };
 
-  await prisma.$transaction(async (tx) => {
+  const recorded = await prisma.$transaction(async (tx) => {
     // Scoped to the organization and to an active client in the same statement
     // that writes, and first: if the client was archived since the lookup
     // above, nothing is recorded.
@@ -395,9 +489,13 @@ export async function calculateAndPersistCompanyReadiness(
     });
     if (count !== 1) throw new CompanyArchivedError();
 
-    await tx.readinessScore.create({
+    // The actor comes from the session, never from the request: a body-supplied
+    // user would let a member credit a colleague. The membership trigger on
+    // readiness_scores is the database's own backstop.
+    const stored = await tx.readinessScore.create({
       data: {
         companyId,
+        completedById: actor.userId,
         engineVersion: ENGINE_VERSION,
         score: assessment.score,
         status: assessment.status as PeppolStatus,
@@ -405,7 +503,21 @@ export async function calculateAndPersistCompanyReadiness(
         source,
         details,
       },
+      select: { id: true },
     });
+
+    // One control point per factor, with the note the accountant left for it.
+    // Written after the archive check above, inside the same transaction, so an
+    // assessment that is refused leaves no control points behind.
+    await tx.readinessCheck.createMany({
+      data: assessment.factors.map((factor) => ({
+        scoreId: stored.id,
+        key: factor.key,
+        passed: factor.passed,
+        evidence: normalizeEvidence(evidence[factor.key]),
+      })),
+    });
+
     await tx.auditEvent.create({
       data: {
         organizationId: company.organizationId,
@@ -413,7 +525,11 @@ export async function calculateAndPersistCompanyReadiness(
         eventType: "readiness.calculated",
         entityType: "company",
         entityId: companyId,
+        // Identifiers and outcome only. Evidence notes are the accountant's own
+        // words about a client and never enter the audit trail.
         metadata: {
+          assessmentId: stored.id,
+          engineVersion: ENGINE_VERSION,
           score: assessment.score,
           status: assessment.status,
           source,
@@ -421,11 +537,23 @@ export async function calculateAndPersistCompanyReadiness(
         },
       },
     });
+
+    return stored.id;
   });
 
-  return {
+  return toAssessmentResponse({
+    id: recorded,
     companyId,
-    ...assessment,
-    calculatedAt: checkedAt,
-  };
+    engineVersion: ENGINE_VERSION,
+    completedById: actor.userId,
+    score: assessment.score,
+    status: assessment.status as PeppolStatus,
+    checkedAt,
+    details: details as Prisma.JsonValue,
+    checks: assessment.factors.map((factor) => ({
+      key: factor.key,
+      passed: factor.passed,
+      evidence: normalizeEvidence(evidence[factor.key]),
+    })),
+  });
 }

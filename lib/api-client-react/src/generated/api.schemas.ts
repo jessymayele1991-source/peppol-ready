@@ -416,9 +416,36 @@ export const RiskSeverity = {
 } as const;
 
 /**
+ * What the accountant saw when answering, one note per question. Optional per question and optional as a whole; a note is stored with the control point it belongs to, never in the audit trail. Keys match the answers.
+ */
+export interface AssessmentEvidence {
+  /** @maxLength 500 */
+  participantRegistered?: string;
+  /** @maxLength 500 */
+  receivingAddressConfigured?: string;
+  /** @maxLength 500 */
+  peppolCapableSoftware?: string;
+  /** @maxLength 500 */
+  certificateValid?: string;
+  /** @maxLength 500 */
+  successfulTestInvoice?: string;
+}
+
+/**
+ * One control point of a recorded assessment, with the evidence note the accountant stored for it.
+ */
+export interface AssessmentCheck {
+  key: string;
+  passed: boolean;
+  /** @nullable */
+  evidence: string | null;
+}
+
+/**
  * Assessment answers only. The assessment time and its source are set by the server; requests that carry them, or any other field, are rejected.
  */
 export interface ReadinessAssessmentInput {
+  evidence?: AssessmentEvidence;
   participantRegistered: boolean;
   receivingAddressConfigured: boolean;
   peppolCapableSoftware: boolean;
@@ -444,7 +471,15 @@ export interface RiskIndicator {
 }
 
 export interface ReadinessAssessment {
+  assessmentId: string;
   companyId: string;
+  /** The scoring rules that produced this assessment. A score recorded under an earlier version is never reinterpreted. */
+  engineVersion: number;
+  /**
+     * The user who completed it, as recorded by the server.
+     * @nullable
+     */
+  completedById: string | null;
   /**
      * @minimum 0
      * @maximum 100
@@ -454,6 +489,7 @@ export interface ReadinessAssessment {
   riskLevel: RiskSeverity;
   factors: ReadinessFactor[];
   risks: RiskIndicator[];
+  checks: AssessmentCheck[];
   calculatedAt: string;
 }
 

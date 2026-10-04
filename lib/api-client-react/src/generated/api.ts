@@ -623,7 +623,7 @@ export const calculateCompanyReadiness = async (companyId: string,
 
 
 
-export const getCalculateCompanyReadinessMutationOptions = <TError = ErrorType<BadRequestResponse | ApiError | PayloadTooLargeResponse>,
+export const getCalculateCompanyReadinessMutationOptions = <TError = ErrorType<BadRequestResponse | ApiError | PayloadTooLargeResponse | TooManyRequestsResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof calculateCompanyReadiness>>, TError,{companyId: string;data: BodyType<ReadinessAssessmentInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof calculateCompanyReadiness>>, TError,{companyId: string;data: BodyType<ReadinessAssessmentInput>}, TContext> => {
 
@@ -652,12 +652,12 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type CalculateCompanyReadinessMutationResult = NonNullable<Awaited<ReturnType<typeof calculateCompanyReadiness>>>
     export type CalculateCompanyReadinessMutationBody = BodyType<ReadinessAssessmentInput>
-    export type CalculateCompanyReadinessMutationError = ErrorType<BadRequestResponse | ApiError | PayloadTooLargeResponse>
+    export type CalculateCompanyReadinessMutationError = ErrorType<BadRequestResponse | ApiError | PayloadTooLargeResponse | TooManyRequestsResponse>
 
     /**
  * @summary Calculate company readiness
  */
-export const useCalculateCompanyReadiness = <TError = ErrorType<BadRequestResponse | ApiError | PayloadTooLargeResponse>,
+export const useCalculateCompanyReadiness = <TError = ErrorType<BadRequestResponse | ApiError | PayloadTooLargeResponse | TooManyRequestsResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof calculateCompanyReadiness>>, TError,{companyId: string;data: BodyType<ReadinessAssessmentInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof calculateCompanyReadiness>>,
@@ -667,6 +667,84 @@ export const useCalculateCompanyReadiness = <TError = ErrorType<BadRequestRespon
       > => {
       return useMutation(getCalculateCompanyReadinessMutationOptions(options));
     }
+
+export const getGetLatestCompanyAssessmentUrl = (companyId: string,) => {
+
+
+
+
+  return `/api/companies/${companyId}/readiness/latest`
+}
+
+/**
+ * The last recorded assessment of a client of the session's organization, with its control points and evidence. Answers 204 when the client has never been assessed. Readable for an archived client, which can be read but not assessed.
+ * @summary Get the most recent readiness assessment
+ */
+export const getLatestCompanyAssessment = async (companyId: string, options?: Parameters<typeof customFetch>[1]): Promise<ReadinessAssessment | void> => {
+
+  return customFetch<ReadinessAssessment | void>(getGetLatestCompanyAssessmentUrl(companyId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetLatestCompanyAssessmentQueryKey = (companyId: string,) => {
+    return [
+    `/api/companies/${companyId}/readiness/latest`
+    ] as const;
+    }
+
+
+export const getGetLatestCompanyAssessmentQueryOptions = <TData = Awaited<ReturnType<typeof getLatestCompanyAssessment>>, TError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>>(companyId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLatestCompanyAssessment>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetLatestCompanyAssessmentQueryKey(companyId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLatestCompanyAssessment>>> = ({ signal }) => getLatestCompanyAssessment(companyId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: companyId !== null && companyId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getLatestCompanyAssessment>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetLatestCompanyAssessmentQueryResult = NonNullable<Awaited<ReturnType<typeof getLatestCompanyAssessment>>>
+export type GetLatestCompanyAssessmentQueryError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>
+
+
+/**
+ * @summary Get the most recent readiness assessment
+ */
+
+export function useGetLatestCompanyAssessment<TData = Awaited<ReturnType<typeof getLatestCompanyAssessment>>, TError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>>(
+ companyId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLatestCompanyAssessment>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetLatestCompanyAssessmentQueryOptions(companyId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getListCompaniesUrl = (params?: ListCompaniesParams,) => {
   const normalizedParams = new URLSearchParams();

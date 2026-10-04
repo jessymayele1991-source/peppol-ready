@@ -47,6 +47,7 @@ export function createFakePrisma() {
     users: new Map<string, Row>(),
     sessions: new Map<string, { data: unknown; expiresAt: Date }>(),
     audit: [] as AuditRow[],
+    readinessChecks: [] as Row[],
     companies: new Map<string, Row>(),
     organizations: new Map<string, Row>(),
     readinessScores: [] as Row[],
@@ -179,10 +180,44 @@ export function createFakePrisma() {
     readinessScore: {
       create: ({ data }: { data: Row }) =>
         lazy(() => {
-          state.readinessScores.push(structuredClone(data));
-          return data;
+          // The service selects the new id to attach control points to it, so
+          // the fake hands out one the way the database would.
+          const stored = { id: newId("score"), ...structuredClone(data) };
+          state.readinessScores.push(stored);
+          return stored;
+        }),
+      findFirst: ({ where }: { where: { companyId: string } }) =>
+        lazy(() => {
+          const score = [...state.readinessScores]
+            .reverse()
+            .find((stored) => stored["companyId"] === where.companyId);
+          if (!score) return null;
+          // The service selects the control points alongside the assessment.
+          return {
+            ...score,
+            checks: state.readinessChecks
+              .filter((check) => check["scoreId"] === score["id"])
+              .map((check) => ({
+                key: check["key"],
+                passed: check["passed"],
+                evidence: check["evidence"] ?? null,
+              })),
+          };
         }),
       findMany: () => lazy(() => []),
+    },
+    readinessCheck: {
+      createMany: ({ data }: { data: Row[] }) =>
+        lazy(() => {
+          for (const check of data) state.readinessChecks.push(structuredClone(check));
+          return { count: data.length };
+        }),
+      findMany: ({ where }: { where?: { scoreId?: string } } = {}) =>
+        lazy(() =>
+          state.readinessChecks.filter(
+            (check) => where?.scoreId === undefined || check["scoreId"] === where.scoreId,
+          ),
+        ),
     },
     incident: { findMany: () => lazy(() => []) },
     /**
@@ -223,6 +258,7 @@ export function createFakePrisma() {
     state.sessions.clear();
     state.audit.length = 0;
     state.readinessScores.length = 0;
+    state.readinessChecks.length = 0;
     state.transactions = 0;
     state.failNextTransaction = false;
   }

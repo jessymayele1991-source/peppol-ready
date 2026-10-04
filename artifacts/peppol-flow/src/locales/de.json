@@ -131,6 +131,16 @@
     "AT_RISK": "Gefährdet",
     "NOT_REGISTERED": "Nicht registriert"
   },
+  "riskRemediation": {
+    "NOT_REGISTERED": "Registrieren Sie den Mandanten bei einem zertifizierten Peppol-Zugangspunkt.",
+    "MISSING_RECEIVING_ADDRESS": "Richten Sie die Empfangsadresse ein und lassen Sie sie prüfen.",
+    "SOFTWARE_NOT_READY": "Aktivieren Sie einen unterstützten Connector oder wechseln Sie zu Peppol-fähiger Software.",
+    "INVALID_CERTIFICATE": "Erneuern Sie das Zertifikat des Zugangspunkts und prüfen Sie seine Gültigkeit.",
+    "TEST_INVOICE_MISSING": "Senden Sie eine Peppol-Testrechnung und prüfen Sie die Bestätigung.",
+    "ASSESSMENT_MISSING": "Führen Sie eine vollständige Bereitschaftsbewertung durch.",
+    "ASSESSMENT_STALE": "Bewerten Sie den Mandanten mit aktuellen Daten erneut.",
+    "OPEN_CRITICAL_INCIDENT": "Beheben Sie den kritischen Vorfall und bewerten Sie danach erneut."
+  },
   "risk": {
     "NOT_REGISTERED": "Nicht registriert",
     "MISSING_RECEIVING_ADDRESS": "Empfangsadresse fehlt",
@@ -235,7 +245,8 @@
       "duplicateVat": "Ein Mandant mit dieser USt-IdNr. existiert bereits in Ihrer Kanzlei. Ist er archiviert, stellen Sie ihn wieder her.",
       "duplicateRegistration": "Ein Mandant mit dieser Unternehmensnummer existiert bereits in Ihrer Kanzlei. Ist er archiviert, stellen Sie ihn wieder her.",
       "archived": "Dieser Mandant ist archiviert. Stellen Sie ihn zuerst wieder her.",
-      "conflict": "Diese Änderung steht im Konflikt mit vorhandenen Daten."
+      "conflict": "Diese Änderung steht im Konflikt mit vorhandenen Daten.",
+      "tooManyAssessments": "Es wurden zu viele Bewertungen in kurzer Zeit gespeichert. Versuchen Sie es später erneut."
     },
     "validation": {
       "required": "Pflichtfeld.",
@@ -281,6 +292,68 @@
         "phone": "Telefon",
         "isPrimary": "Primärer Ansprechpartner",
         "isPrimaryHint": "Ersetzt den aktuellen primären Ansprechpartner dieses Mandanten."
+      }
+    },
+    "readiness": {
+      "tab": "Bereitschaft",
+      "eyebrow": "Peppol-Bewertung",
+      "start": "Bewertung starten",
+      "reassess": "Erneut bewerten",
+      "submit": "Bewertung speichern",
+      "answerYes": "Ja",
+      "answerNo": "Nein",
+      "formDescription": "Beantworten Sie jede Frage und halten Sie fest, was Sie gesehen haben. Der Server berechnet den Score aus Ihren Antworten.",
+      "evidenceLabel": "Nachweis oder Notiz (optional)",
+      "evidencePlaceholder": "Wo haben Sie das geprüft?",
+      "evidenceCounter": "{{count}}/{{max}}",
+      "answeredOf": "{{answered}} von {{total}} Fragen beantwortet",
+      "loadError": "Die Bewertung konnte nicht geladen werden",
+      "empty": {
+        "title": "Noch nicht bewertet",
+        "description": "Führen Sie die erste Bereitschaftsbewertung durch, um Score, Risiken und Empfehlungen zu sehen.",
+        "readOnly": "Dieser Mandant wurde noch nicht bewertet.",
+        "archived": "Dieser Mandant ist archiviert und wurde nicht bewertet. Stellen Sie ihn wieder her, um zu bewerten."
+      },
+      "result": {
+        "scoreLabel": "Bereitschaftsscore",
+        "assessedAt": "Bewertet am {{date}}",
+        "byYou": "von Ihnen",
+        "byColleague": "von einem Kollegen",
+        "engine": "Regelversion {{version}}",
+        "factors": "Kontrollpunkte",
+        "risks": "Risiken und Empfehlungen",
+        "noRisks": "Keine Risiken: dieser Mandant ist vollständig Peppol-bereit.",
+        "noEvidence": "Keine Notiz hinterlegt.",
+        "passed": "Erfüllt",
+        "failed": "Nicht erfüllt"
+      },
+      "toast": {
+        "recorded": "Bewertung gespeichert"
+      },
+      "errors": {
+        "invalid": "Prüfen Sie Ihre Antworten und Notizen."
+      },
+      "questions": {
+        "participantRegistered": {
+          "label": "Ist der Mandant im Peppol-Netz registriert?",
+          "hint": "Eine aktive Registrierung bei einem zertifizierten Zugangspunkt, mit Peppol-ID."
+        },
+        "receivingAddressConfigured": {
+          "label": "Ist eine Empfangsadresse eingerichtet und geprüft?",
+          "hint": "Eingehende Dokumente müssen den Mandanten erreichen können."
+        },
+        "peppolCapableSoftware": {
+          "label": "Unterstützt die Buchhaltungssoftware den Peppol-Ablauf?",
+          "hint": "Ein Connector oder eine Software, die E-Rechnungen senden und empfangen kann."
+        },
+        "certificateValid": {
+          "label": "Ist das Zertifikat des Zugangspunkts gültig?",
+          "hint": "Nicht abgelaufen und prüfbar; ohne Vertrauen wird der Austausch abgelehnt."
+        },
+        "successfulTestInvoice": {
+          "label": "Wurde eine Testrechnung vollständig erfolgreich übertragen?",
+          "hint": "Eine komplette Kette vom Versand bis zum bestätigten Empfang."
+        }
       }
     }
   },

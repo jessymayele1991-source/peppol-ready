@@ -1,12 +1,14 @@
 import { useState, type ReactNode } from 'react';
-import { Archive, ArrowLeft, CircleAlert, LoaderCircle, Pencil, Plus, RotateCcw, Star, Trash2, UserRound } from 'lucide-react';
+import { Archive, ArrowLeft, CircleAlert, ClipboardCheck, LoaderCircle, Pencil, Plus, RotateCcw, Star, Trash2, UserRound } from 'lucide-react';
 import { Link, useParams } from 'wouter';
 import {
   ApiError,
   getGetCompanyQueryKey,
+  getGetLatestCompanyAssessmentQueryKey,
   useArchiveCompany,
   useDeleteCompanyContact,
   useGetCompany,
+  useGetLatestCompanyAssessment,
   useRestoreCompany,
   type ClientContact,
 } from '@workspace/api-client-react';
@@ -14,6 +16,8 @@ import { useSession } from '@/auth/session-context';
 import { clientErrorKey, useRefreshClients } from '@/components/clients/client-shared';
 import { CompanyFormSheet } from '@/components/clients/company-form';
 import { ContactFormSheet } from '@/components/clients/contact-form';
+import { AssessmentForm } from '@/components/readiness/assessment-form';
+import { AssessmentResult } from '@/components/readiness/assessment-result';
 import { Badge, Button, Card, EmptyState, type PeppolStatusCode } from '@/components/peppol-ui';
 import {
   AlertDialog,
@@ -99,6 +103,8 @@ export function ClientDetail() {
   const archive = useArchiveCompany();
   const restore = useRestoreCompany();
   const removeContact = useDeleteCompanyContact();
+  const [tab, setTab] = useState('overview');
+  const [assessing, setAssessing] = useState(false);
   const [editing, setEditing] = useState(false);
   const [confirmArchive, setConfirmArchive] = useState(false);
   const [contactForm, setContactForm] = useState<{ open: boolean; contact?: ClientContact }>({ open: false });
@@ -106,6 +112,16 @@ export function ClientDetail() {
 
   const { data: company, isLoading, isError, error, refetch } = useGetCompany(companyId, {
     query: { queryKey: getGetCompanyQueryKey(companyId), retry: (count, cause) => !(cause instanceof ApiError && cause.status === 404) && count < 2 },
+  });
+
+  // Loaded when the tab is opened, not with the page: most visits never look.
+  // A client that was never assessed answers 204, which arrives as undefined.
+  const assessment = useGetLatestCompanyAssessment(companyId, {
+    query: {
+      queryKey: getGetLatestCompanyAssessmentQueryKey(companyId),
+      enabled: tab === 'readiness',
+      retry: (count, cause) => !(cause instanceof ApiError && cause.status === 404) && count < 2,
+    },
   });
 
   if (isLoading) {
@@ -177,9 +193,10 @@ export function ClientDetail() {
         </p>
       )}
 
-      <Tabs defaultValue="overview">
+      <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="overview" data-testid="tab-client-overview">{t('clients.detail.overview')}</TabsTrigger>
+          <TabsTrigger value="readiness" data-testid="tab-client-readiness">{t('clients.readiness.tab')}</TabsTrigger>
           <TabsTrigger value="contacts" data-testid="tab-client-contacts">{t('clients.detail.contacts')} <span className="ml-1.5 opacity-60">{formatNumber(company.contacts.length)}</span></TabsTrigger>
         </TabsList>
 
@@ -203,6 +220,57 @@ export function ClientDetail() {
               <Detail label={t('clients.table.checked')}>{company.lastCheckedAt ? formatDate(company.lastCheckedAt, { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : t('clients.neverChecked')}</Detail>
               <Detail label={t('clients.detail.createdAt')}>{formatDate(company.createdAt, { day: '2-digit', month: 'short', year: 'numeric' })}</Detail>
             </dl>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="readiness" className="mt-4">
+          <Card
+            title={t('clients.readiness.tab')}
+            eyebrow={t('clients.readiness.eyebrow')}
+            action={
+              can('scans.write') && !archived && !assessing ? (
+                <Button variant="quiet" onClick={() => setAssessing(true)} data-testid="button-start-assessment">
+                  <ClipboardCheck size={13} /> {t(assessment.data ? 'clients.readiness.reassess' : 'clients.readiness.start')}
+                </Button>
+              ) : undefined
+            }
+          >
+            {assessing ? (
+              <AssessmentForm
+                companyId={companyId}
+                onRecorded={() => setAssessing(false)}
+                onCancel={() => setAssessing(false)}
+              />
+            ) : assessment.isLoading ? (
+              <div className="flex min-h-[240px] items-center justify-center"><LoaderCircle className="animate-spin text-[hsl(var(--primary))]" size={24} /></div>
+            ) : assessment.isError ? (
+              <div className="flex min-h-[240px] flex-col items-center justify-center gap-3 text-center">
+                <CircleAlert className="text-[hsl(var(--destructive))]" size={26} />
+                <p className="text-sm font-semibold text-[hsl(var(--muted-foreground))]">{t('clients.readiness.loadError')}</p>
+                <Button onClick={() => void assessment.refetch()}>{t('common.retry')}</Button>
+              </div>
+            ) : assessment.data ? (
+              <AssessmentResult assessment={assessment.data} />
+            ) : (
+              <EmptyState
+                icon={<ClipboardCheck size={25} />}
+                title={t('clients.readiness.empty.title')}
+                description={t(
+                  archived
+                    ? 'clients.readiness.empty.archived'
+                    : can('scans.write')
+                      ? 'clients.readiness.empty.description'
+                      : 'clients.readiness.empty.readOnly',
+                )}
+                action={
+                  can('scans.write') && !archived ? (
+                    <Button onClick={() => setAssessing(true)} data-testid="button-start-first-assessment">
+                      <ClipboardCheck size={15} /> {t('clients.readiness.start')}
+                    </Button>
+                  ) : undefined
+                }
+              />
+            )}
           </Card>
         </TabsContent>
 

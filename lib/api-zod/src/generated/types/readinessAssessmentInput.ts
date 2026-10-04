@@ -5,11 +5,13 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { AssessmentEvidence } from './assessmentEvidence';
 
 /**
  * Assessment answers only. The assessment time and its source are set by the server; requests that carry them, or any other field, are rejected.
  */
 export interface ReadinessAssessmentInput {
+  evidence?: AssessmentEvidence;
   participantRegistered: boolean;
   receivingAddressConfigured: boolean;
   peppolCapableSoftware: boolean;

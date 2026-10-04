@@ -3,16 +3,29 @@ import {
   CalculateCompanyReadinessBody,
   CalculateCompanyReadinessParams,
   CalculateCompanyReadinessResponse,
+  GetLatestCompanyAssessmentParams,
+  GetLatestCompanyAssessmentResponse,
   GetReadinessDashboardResponse,
 } from "@workspace/api-zod";
 import {
   calculateAndPersistCompanyReadiness,
+  getLatestCompanyAssessment,
   getReadinessDashboard,
 } from "../lib/readiness-service";
+import { assessmentProtection } from "../lib/assessment-rate-limit";
 import { CompanyArchivedError } from "../lib/company-service";
-import { badRequest, conflict, notFound, unauthorized } from "../lib/errors";
+import {
+  badRequest,
+  conflict,
+  notFound,
+  tooManyRequests,
+  unauthorized,
+} from "../lib/errors";
 import { requireAuth } from "../middlewares/require-auth";
 import { requireCapability } from "../middlewares/require-capability";
+
+const TOO_MANY_ASSESSMENTS =
+  "Too many readiness assessments were recorded. Try again later.";
 
 const router: IRouter = Router();
 
@@ -40,12 +53,28 @@ router.post(
       throw badRequest("The readiness assessment is invalid.");
     }
 
+    // Recording an assessment writes an assessment, its control points, an
+    // audit event and the client row. Counted per user and per client, so
+    // neither a loop over the portfolio nor a loop against one client can bury
+    // its history. Peeked before the work and only counted once it is allowed.
+    const { companyId } = params.data;
+    const user = assessmentProtection.user.peek(req.auth.userId);
+    if (!user.allowed) throw tooManyRequests(user.retryAfterSeconds, TOO_MANY_ASSESSMENTS);
+    const company = assessmentProtection.company.peek(companyId);
+    if (!company.allowed) throw tooManyRequests(company.retryAfterSeconds, TOO_MANY_ASSESSMENTS);
+    assessmentProtection.user.consume(req.auth.userId);
+    assessmentProtection.company.consume(companyId);
+
+    const { evidence, ...answers } = body.data;
+
     let assessment: Awaited<ReturnType<typeof calculateAndPersistCompanyReadiness>>;
     try {
       assessment = await calculateAndPersistCompanyReadiness(
-        params.data.companyId,
-        body.data,
+        companyId,
+        answers,
         req.auth,
+        undefined,
+        evidence ?? {},
       );
     } catch (error) {
       if (error instanceof CompanyArchivedError) throw conflict(error.message);
@@ -56,6 +85,30 @@ router.post(
     if (!assessment) throw notFound("Company not found.");
 
     res.json(CalculateCompanyReadinessResponse.parse(assessment));
+  },
+);
+
+router.get(
+  "/companies/:companyId/readiness/latest",
+  requireAuth,
+  requireCapability("clients.view"),
+  async (req, res) => {
+    if (!req.auth) throw unauthorized();
+
+    const params = GetLatestCompanyAssessmentParams.safeParse(req.params);
+    // An unusable id cannot name a client of this organization, so it answers
+    // the same as one that belongs to another firm.
+    if (!params.success) throw notFound("Company not found.");
+
+    const result = await getLatestCompanyAssessment(req.auth, params.data.companyId);
+    if (!result.found) throw notFound("Company not found.");
+    // Never assessed is not an error: the client exists and has no assessment.
+    if (!result.assessment) {
+      res.status(204).end();
+      return;
+    }
+
+    res.json(GetLatestCompanyAssessmentResponse.parse(result.assessment));
   },
 );
 

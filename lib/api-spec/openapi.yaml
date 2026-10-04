@@ -240,6 +240,35 @@ paths:
                 $ref: "#/components/schemas/ApiError"
         "413":
           $ref: "#/components/responses/PayloadTooLarge"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+  /companies/{companyId}/readiness/latest:
+    get:
+      operationId: getLatestCompanyAssessment
+      tags: [readiness]
+      summary: Get the most recent readiness assessment
+      description: >-
+        The last recorded assessment of a client of the session's organization,
+        with its control points and evidence. Answers 204 when the client has
+        never been assessed. Readable for an archived client, which can be read
+        but not assessed.
+      parameters:
+        - $ref: "#/components/parameters/CompanyId"
+      responses:
+        "200":
+          description: The most recent assessment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadinessAssessment"
+        "204":
+          description: The client has never been assessed
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
   /companies:
     get:
       operationId: listCompanies
@@ -966,9 +995,47 @@ components:
     RiskSeverity:
       type: string
       enum: [info, warning, critical]
+    AssessmentEvidence:
+      type: object
+      description: >-
+        What the accountant saw when answering, one note per question. Optional
+        per question and optional as a whole; a note is stored with the control
+        point it belongs to, never in the audit trail. Keys match the answers.
+      properties:
+        participantRegistered:
+          type: string
+          maxLength: 500
+        receivingAddressConfigured:
+          type: string
+          maxLength: 500
+        peppolCapableSoftware:
+          type: string
+          maxLength: 500
+        certificateValid:
+          type: string
+          maxLength: 500
+        successfulTestInvoice:
+          type: string
+          maxLength: 500
+      additionalProperties: false
+    AssessmentCheck:
+      type: object
+      description: >-
+        One control point of a recorded assessment, with the evidence note the
+        accountant stored for it.
+      properties:
+        key:
+          type: string
+        passed:
+          type: boolean
+        evidence:
+          type: [string, "null"]
+      required: [key, passed, evidence]
     ReadinessAssessmentInput:
       type: object
       properties:
+        evidence:
+          $ref: "#/components/schemas/AssessmentEvidence"
         participantRegistered:
           type: boolean
         receivingAddressConfigured:
@@ -1022,8 +1089,18 @@ components:
     ReadinessAssessment:
       type: object
       properties:
+        assessmentId:
+          type: string
         companyId:
           type: string
+        engineVersion:
+          type: number
+          description: >-
+            The scoring rules that produced this assessment. A score recorded
+            under an earlier version is never reinterpreted.
+        completedById:
+          type: [string, "null"]
+          description: The user who completed it, as recorded by the server.
         score:
           type: number
           minimum: 0
@@ -1040,11 +1117,27 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/RiskIndicator"
+        checks:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssessmentCheck"
         calculatedAt:
           type: string
           format: date-time
       required:
-        [companyId, score, status, riskLevel, factors, risks, calculatedAt]
+        [
+          assessmentId,
+          companyId,
+          engineVersion,
+          completedById,
+          score,
+          status,
+          riskLevel,
+          factors,
+          risks,
+          checks,
+          calculatedAt,
+        ]
     DashboardKpis:
       type: object
       properties:

@@ -131,6 +131,16 @@
     "AT_RISK": "À risque",
     "NOT_REGISTERED": "Non enregistré"
   },
+  "riskRemediation": {
+    "NOT_REGISTERED": "Enregistrez le client auprès d’un point d’accès Peppol certifié.",
+    "MISSING_RECEIVING_ADDRESS": "Configurez l’adresse de réception et faites-la vérifier.",
+    "SOFTWARE_NOT_READY": "Activez un connecteur pris en charge ou passez à un logiciel compatible Peppol.",
+    "INVALID_CERTIFICATE": "Renouvelez le certificat du point d’accès et vérifiez sa validité.",
+    "TEST_INVOICE_MISSING": "Envoyez une facture de test Peppol et vérifiez la confirmation.",
+    "ASSESSMENT_MISSING": "Réalisez une évaluation complète de la préparation.",
+    "ASSESSMENT_STALE": "Réévaluez le client avec les informations actuelles.",
+    "OPEN_CRITICAL_INCIDENT": "Résolvez l’incident critique, puis réévaluez."
+  },
   "risk": {
     "NOT_REGISTERED": "Non enregistré",
     "MISSING_RECEIVING_ADDRESS": "Adresse de réception manquante",
@@ -235,7 +245,8 @@
       "duplicateVat": "Un client avec ce numéro de TVA existe déjà dans votre cabinet. S’il est archivé, restaurez-le.",
       "duplicateRegistration": "Un client avec ce numéro d’entreprise existe déjà dans votre cabinet. S’il est archivé, restaurez-le.",
       "archived": "Ce client est archivé. Restaurez-le d’abord.",
-      "conflict": "Cette modification entre en conflit avec des données existantes."
+      "conflict": "Cette modification entre en conflit avec des données existantes.",
+      "tooManyAssessments": "Trop d’évaluations ont été enregistrées en peu de temps. Réessayez plus tard."
     },
     "validation": {
       "required": "Champ obligatoire.",
@@ -281,6 +292,68 @@
         "phone": "Téléphone",
         "isPrimary": "Contact principal",
         "isPrimaryHint": "Remplace le contact principal actuel de ce client."
+      }
+    },
+    "readiness": {
+      "tab": "Préparation",
+      "eyebrow": "Évaluation Peppol",
+      "start": "Démarrer l’évaluation",
+      "reassess": "Réévaluer",
+      "submit": "Enregistrer l’évaluation",
+      "answerYes": "Oui",
+      "answerNo": "Non",
+      "formDescription": "Répondez à chaque question et notez ce que vous avez constaté. Le serveur calcule le score à partir de vos réponses.",
+      "evidenceLabel": "Preuve ou remarque (facultatif)",
+      "evidencePlaceholder": "Où l’avez-vous vérifié ?",
+      "evidenceCounter": "{{count}}/{{max}}",
+      "answeredOf": "{{answered}} question(s) sur {{total}} répondues",
+      "loadError": "Impossible de charger l’évaluation",
+      "empty": {
+        "title": "Pas encore évalué",
+        "description": "Réalisez la première évaluation pour voir le score, les risques et les recommandations.",
+        "readOnly": "Ce client n’a pas encore été évalué.",
+        "archived": "Ce client est archivé et n’a pas été évalué. Restaurez-le pour l’évaluer."
+      },
+      "result": {
+        "scoreLabel": "Score de préparation",
+        "assessedAt": "Évalué le {{date}}",
+        "byYou": "par vous",
+        "byColleague": "par un collègue",
+        "engine": "version des règles {{version}}",
+        "factors": "Points de contrôle",
+        "risks": "Risques et recommandations",
+        "noRisks": "Aucun risque : ce client est entièrement prêt pour Peppol.",
+        "noEvidence": "Aucune remarque enregistrée.",
+        "passed": "Validé",
+        "failed": "Non validé"
+      },
+      "toast": {
+        "recorded": "Évaluation enregistrée"
+      },
+      "errors": {
+        "invalid": "Vérifiez vos réponses et vos remarques."
+      },
+      "questions": {
+        "participantRegistered": {
+          "label": "Le client est-il enregistré dans le réseau Peppol ?",
+          "hint": "Un enregistrement actif auprès d’un point d’accès certifié, avec un identifiant Peppol."
+        },
+        "receivingAddressConfigured": {
+          "label": "Une adresse de réception est-elle configurée et vérifiée ?",
+          "hint": "Les documents entrants doivent pouvoir atteindre le client."
+        },
+        "peppolCapableSoftware": {
+          "label": "Le logiciel comptable prend-il en charge le flux Peppol ?",
+          "hint": "Un connecteur ou un logiciel capable d’envoyer et de recevoir des factures électroniques."
+        },
+        "certificateValid": {
+          "label": "Le certificat du point d’accès est-il valide ?",
+          "hint": "Non expiré et vérifiable ; sans confiance, l’échange est refusé."
+        },
+        "successfulTestInvoice": {
+          "label": "Une facture de test a-t-elle abouti de bout en bout ?",
+          "hint": "Une chaîne complète, de l’envoi à la réception confirmée."
+        }
       }
     }
   },

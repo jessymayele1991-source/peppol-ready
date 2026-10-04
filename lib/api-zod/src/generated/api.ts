@@ -234,7 +234,26 @@ export const CalculateCompanyReadinessParams = zod.object({
   "companyId": zod.coerce.string()
 })
 
+export const calculateCompanyReadinessBodyEvidenceParticipantRegisteredMax = 500;
+
+export const calculateCompanyReadinessBodyEvidenceReceivingAddressConfiguredMax = 500;
+
+export const calculateCompanyReadinessBodyEvidencePeppolCapableSoftwareMax = 500;
+
+export const calculateCompanyReadinessBodyEvidenceCertificateValidMax = 500;
+
+export const calculateCompanyReadinessBodyEvidenceSuccessfulTestInvoiceMax = 500;
+
+
+
 export const CalculateCompanyReadinessBody = zod.strictObject({
+  "evidence": zod.strictObject({
+  "participantRegistered": zod.string().max(calculateCompanyReadinessBodyEvidenceParticipantRegisteredMax).optional(),
+  "receivingAddressConfigured": zod.string().max(calculateCompanyReadinessBodyEvidenceReceivingAddressConfiguredMax).optional(),
+  "peppolCapableSoftware": zod.string().max(calculateCompanyReadinessBodyEvidencePeppolCapableSoftwareMax).optional(),
+  "certificateValid": zod.string().max(calculateCompanyReadinessBodyEvidenceCertificateValidMax).optional(),
+  "successfulTestInvoice": zod.string().max(calculateCompanyReadinessBodyEvidenceSuccessfulTestInvoiceMax).optional()
+}).optional().describe('What the accountant saw when answering, one note per question. Optional per question and optional as a whole; a note is stored with the control point it belongs to, never in the audit trail. Keys match the answers.'),
   "participantRegistered": zod.boolean(),
   "receivingAddressConfigured": zod.boolean(),
   "peppolCapableSoftware": zod.boolean(),
@@ -248,7 +267,10 @@ export const calculateCompanyReadinessResponseScoreMax = 100;
 
 
 export const CalculateCompanyReadinessResponse = zod.object({
+  "assessmentId": zod.string(),
   "companyId": zod.string(),
+  "engineVersion": zod.number().describe('The scoring rules that produced this assessment. A score recorded under an earlier version is never reinterpreted.'),
+  "completedById": zod.string().nullable().describe('The user who completed it, as recorded by the server.'),
   "score": zod.number().min(calculateCompanyReadinessResponseScoreMin).max(calculateCompanyReadinessResponseScoreMax),
   "status": zod.enum(['READY', 'CONFIGURING', 'AT_RISK', 'NOT_REGISTERED']),
   "riskLevel": zod.enum(['info', 'warning', 'critical']),
@@ -267,6 +289,60 @@ export const CalculateCompanyReadinessResponse = zod.object({
   "message": zod.string(),
   "remediation": zod.string()
 })),
+  "checks": zod.array(zod.object({
+  "key": zod.string(),
+  "passed": zod.boolean(),
+  "evidence": zod.string().nullable()
+}).describe('One control point of a recorded assessment, with the evidence note the accountant stored for it.')),
+  "calculatedAt": zod.coerce.date()
+})
+
+
+/**
+ * The last recorded assessment of a client of the session's organization, with its control points and evidence. Answers 204 when the client has never been assessed. Readable for an archived client, which can be read but not assessed.
+ * @summary Get the most recent readiness assessment
+ */
+export const getLatestCompanyAssessmentPathCompanyIdMax = 64;
+
+
+
+export const GetLatestCompanyAssessmentParams = zod.object({
+  "companyId": zod.coerce.string().min(1).max(getLatestCompanyAssessmentPathCompanyIdMax)
+})
+
+export const getLatestCompanyAssessmentResponseScoreMin = 0;
+export const getLatestCompanyAssessmentResponseScoreMax = 100;
+
+
+
+export const GetLatestCompanyAssessmentResponse = zod.object({
+  "assessmentId": zod.string(),
+  "companyId": zod.string(),
+  "engineVersion": zod.number().describe('The scoring rules that produced this assessment. A score recorded under an earlier version is never reinterpreted.'),
+  "completedById": zod.string().nullable().describe('The user who completed it, as recorded by the server.'),
+  "score": zod.number().min(getLatestCompanyAssessmentResponseScoreMin).max(getLatestCompanyAssessmentResponseScoreMax),
+  "status": zod.enum(['READY', 'CONFIGURING', 'AT_RISK', 'NOT_REGISTERED']),
+  "riskLevel": zod.enum(['info', 'warning', 'critical']),
+  "factors": zod.array(zod.object({
+  "key": zod.string(),
+  "label": zod.string(),
+  "weight": zod.number(),
+  "passed": zod.boolean(),
+  "earnedPoints": zod.number(),
+  "message": zod.string()
+})),
+  "risks": zod.array(zod.object({
+  "code": zod.string(),
+  "label": zod.string(),
+  "severity": zod.enum(['info', 'warning', 'critical']),
+  "message": zod.string(),
+  "remediation": zod.string()
+})),
+  "checks": zod.array(zod.object({
+  "key": zod.string(),
+  "passed": zod.boolean(),
+  "evidence": zod.string().nullable()
+}).describe('One control point of a recorded assessment, with the evidence note the accountant stored for it.')),
   "calculatedAt": zod.coerce.date()
 })
 

@@ -12,7 +12,7 @@ Peppol Ready is een multi-tenant readiness-, compliance- en risicoplatform voor 
 | `/clients` | Klanten | Zoeken, filteren, sorteren en pagineren |
 | `/clients/:companyId` | Klantdossier | Profiel, contactpersonen, scans, taken, risico's en audittrail |
 | `/readiness` | Readiness Center | Scanwachtrij, statusgroepen en scanhistorie — nog niet gebouwd (placeholder) |
-| `/readiness/:companyId` | Readiness Scan | Beoordelen en score verklaren — nog niet gebouwd; voorzien als tab in het klantdossier |
+| `/clients/:companyId` tab Gereedheid | Readiness Scan | Beoordelen, score verklaren, bewijs per controlepunt — gebouwd in fase 2B |
 | `/actions` | Taken | Open, in behandeling en voltooide klantacties |
 | `/compliance` | Compliance Center | Checklist, open punten, aanbevelingen en voortgang |
 | `/incidents` | Risico's | Kritieke, actievereiste en gereed-signalen |
@@ -56,6 +56,10 @@ De actieve engine weegt vijf factoren tot 100 punten: Peppol-registratie (30), o
 
 `engineVersion` legt vast welke regels een score hebben voortgebracht. Een historische beoordeling wordt nooit opnieuw geïnterpreteerd: wijzigen de factoren, gewichten of drempels, dan stijgt het versienummer en behouden oudere beoordelingen hun eigen versie.
 
+Een beoordeling wordt opgeslagen als één `readiness_scores`-rij met vijf `readiness_checks`-rijen: per controlepunt de uitkomst en de bewijsnotitie van de medewerker. De beoordelaar staat in `completedById` en komt altijd uit de sessie. Bewijs staat uitsluitend in `readiness_checks.evidence` en komt nooit in het auditspoor.
+
+`GET /companies/:companyId/readiness/latest` geeft de laatste beoordeling terug (204 als die niet bestaat) in exact dezelfde vorm als het antwoord op het opslaan, zodat het dossier na herladen hetzelfde toont.
+
 Score en status worden gelezen uit de opgeslagen beoordeling, nooit opnieuw berekend. De precedentie is: laatste beoordeling, anders de kolommen op `companies` (voor een klant die nog niet beoordeeld is). Risico's komen uit de opgeslagen momentopname in `details.risks`; ontbreekt die of is ze onvolledig — zoals bij beoordelingen van voor deze consolidatie — dan worden ze afgeleid uit de opgeslagen antwoorden. Verouderingsrisico's (`ASSESSMENT_MISSING`, `ASSESSMENT_STALE`) en incidentrisico's (`OPEN_CRITICAL_INCIDENT`) hangen van het huidige moment af en worden wél bij elke uitvraag bepaald.
 
 Een uitbreiding van de vragenlijst naar tien controlepunten is een openstaande beslissing voor de volgende fase, niet een bestaand ontwerp. Vier van de eerder beoogde punten (KvK-nummer, btw-nummer, e-mailadres, ERP-software) zijn stamdata op `Company`; of die meewegen in de score moet dan expliciet worden besloten.
@@ -81,10 +85,10 @@ Een uitbreiding van de vragenlijst naar tien controlepunten is een openstaande b
 ### Klantdossier / scan
 
 1. Samenvatting en risicostatus.
-2. Checklist met tien controlepunten, bewijs en toelichting.
-3. Verklaarbare score met categorie.
-4. Aanbevolen acties die als taak kunnen worden aangemaakt.
-5. Historie en auditactiviteit.
+2. Tab Gereedheid: vijf gewogen controlepunten beoordelen met een bewijsnotitie per vraag.
+3. Verklaarbare score met status, per controlepunt gehaald of niet, en het bewijs erbij.
+4. Risico's met aanbevolen remediatie; omzetten naar taken volgt in een latere fase.
+5. Historie en auditactiviteit volgen in fase 2C.
 
 ### Taken, compliance en rapporten
 
