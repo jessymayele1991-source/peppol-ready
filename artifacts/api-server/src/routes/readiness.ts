@@ -3,13 +3,20 @@ import {
   CalculateCompanyReadinessBody,
   CalculateCompanyReadinessParams,
   CalculateCompanyReadinessResponse,
+  GetCompanyAssessmentParams,
+  GetCompanyAssessmentResponse,
   GetLatestCompanyAssessmentParams,
   GetLatestCompanyAssessmentResponse,
   GetReadinessDashboardResponse,
+  ListCompanyAssessmentsParams,
+  ListCompanyAssessmentsQueryParams,
+  ListCompanyAssessmentsResponse,
 } from "@workspace/api-zod";
 import {
   calculateAndPersistCompanyReadiness,
+  getCompanyAssessment,
   getLatestCompanyAssessment,
+  listCompanyAssessments,
   getReadinessDashboard,
 } from "../lib/readiness-service";
 import { assessmentProtection } from "../lib/assessment-rate-limit";
@@ -109,6 +116,54 @@ router.get(
     }
 
     res.json(GetLatestCompanyAssessmentResponse.parse(result.assessment));
+  },
+);
+
+router.get(
+  "/companies/:companyId/readiness/assessments",
+  requireAuth,
+  requireCapability("clients.view"),
+  async (req, res) => {
+    if (!req.auth) throw unauthorized();
+
+    const params = ListCompanyAssessmentsParams.safeParse(req.params);
+    if (!params.success) throw notFound("Company not found.");
+    const query = ListCompanyAssessmentsQueryParams.safeParse(req.query);
+    if (!query.success) throw badRequest("The assessment query is invalid.");
+    if (
+      !Number.isInteger(query.data.page ?? 1) ||
+      !Number.isInteger(query.data.pageSize ?? 1)
+    ) {
+      throw badRequest("Page and page size must be whole numbers.");
+    }
+
+    const result = await listCompanyAssessments(req.auth, params.data.companyId, query.data);
+    if (!result.found) throw notFound("Company not found.");
+
+    res.json(ListCompanyAssessmentsResponse.parse(result.page));
+  },
+);
+
+router.get(
+  "/companies/:companyId/readiness/assessments/:assessmentId",
+  requireAuth,
+  requireCapability("clients.view"),
+  async (req, res) => {
+    if (!req.auth) throw unauthorized();
+
+    const params = GetCompanyAssessmentParams.safeParse(req.params);
+    // An unusable id cannot name an assessment of this organization, so it
+    // answers the same as one that belongs to another firm.
+    if (!params.success) throw notFound("Assessment not found.");
+
+    const assessment = await getCompanyAssessment(
+      req.auth,
+      params.data.companyId,
+      params.data.assessmentId,
+    );
+    if (!assessment) throw notFound("Assessment not found.");
+
+    res.json(GetCompanyAssessmentResponse.parse(assessment));
   },
 );
 

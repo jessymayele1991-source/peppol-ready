@@ -333,6 +333,18 @@
       "errors": {
         "invalid": "Vérifiez vos réponses et vos remarques."
       },
+      "history": {
+        "title": "Historique",
+        "eyebrow": "Évaluations dans le temps",
+        "empty": "Aucune évaluation dans l’historique pour l’instant.",
+        "loadError": "Impossible de charger l’historique",
+        "unknownAssessor": "collaborateur inconnu",
+        "riskCount": "{{count}} risque(s)",
+        "delta": {
+          "equal": "inchangé",
+          "incomparable": "autre version des règles"
+        }
+      },
       "questions": {
         "participantRegistered": {
           "label": "Le client est-il enregistré dans le réseau Peppol ?",

@@ -48,7 +48,7 @@ Peppol Ready helps accounting firms monitor and improve Peppol readiness, compli
 - `artifacts/api-server/src/lib/audit-event.ts` — the shared audit row builder, used by auth and client events
 - `artifacts/peppol-flow/src/pages/clients.tsx` and `client-detail.tsx` — client list (query state in the URL) and client detail
 - `artifacts/peppol-flow/src/components/clients/` — client and contact forms, validated against the generated `@workspace/api-zod` schemas
-- `artifacts/peppol-flow/src/components/readiness/` — the assessment questionnaire and its result panel, translated by key and risk code (never by the English labels the API returns)
+- `artifacts/peppol-flow/src/components/readiness/` — the assessment questionnaire, its result panel and the history timeline, translated by key and risk code (never by the English labels the API returns)
 - `artifacts/api-server/src/lib/permissions.ts` — the capability matrix; the single source for both server enforcement and the capabilities shipped in the session
 - `artifacts/api-server/src/middlewares/require-auth.ts` — the only place tenant context is established
 - `artifacts/peppol-flow/src/auth/session-context.tsx` — session identity, sign-out, and workspace switching in the UI
@@ -84,7 +84,11 @@ Peppol Ready helps accounting firms monitor and improve Peppol readiness, compli
 - Recording an assessment writes the assessment, one `readiness_checks` row per question with the accountant's evidence note, the audit event and the client's score columns, all in one transaction and all after the archived-client check. Evidence lives only in `readiness_checks.evidence`: never in `details`, never in audit metadata, which carries identifiers and the outcome only (`assessmentId`, `engineVersion`, score, status, source, time).
 - `readiness_scores.completedById` is always `req.auth.userId`. The contract rejects the field in a request body, and the membership trigger is the database's backstop.
 - `details` carries the five answers (for the legacy risk fallback) and the risk snapshot. Per-factor outcomes live in `readiness_checks`; do not write them back into the JSON.
-- Recording and reading an assessment go through one `toAssessmentResponse` in `readiness-service.ts`, including the order of the control points, so what a client sees right after assessing is what the next page load shows. `GET /companies/:id/readiness/latest` answers 204 when a client was never assessed.
+- Recording and reading an assessment go through one `toAssessmentResponse` in `readiness-service.ts`, including the order of the control points, so what a client sees right after assessing is what the next page load shows. `GET /companies/:id/readiness/latest` answers 204 when a client was never assessed, and `GET …/readiness/assessments/:assessmentId` answers the same shape for any assessment in the history.
+- The assessment history is read-only: `GET …/readiness/assessments` pages it newest first with `page`/`pageSize`/`total`, the same offset convention as the client list — never a cursor, so the product has one pagination shape. Rows carry score, movement, status, assessor and rules version, and never an evidence note; evidence is only in the single-assessment response, readable for `clients.view`.
+- A history row states its change against the previous assessment only when both were scored under the same `engineVersion`; otherwise `previousScore` and `scoreDelta` are null, because a change in the rules must never read as progress. The service reads one row beyond the page so the oldest row of a page can still state its change.
+- Assessments and their control points have no organization of their own: every read filters through the company (`company: { organizationId }`), and a single assessment filters on assessment, client and organization together. An assessment id alone, or paired with the wrong client, answers 404. `tenant-scope.test.ts` pins both filters.
+- `completedByName` is resolved through the `completedBy` relation at read time, so a renamed colleague reads correctly and a removed one reads as null (`onDelete: SetNull`). History outlives staff.
 - Assessment rate limits live in `assessment-rate-limit.ts`, per user and per client, with the same in-process limitation as the sign-in counters.
 - `ENGINE_VERSION` in `readiness-engine.ts` is stamped on every assessment. Raise it whenever a factor, weight or threshold changes, and never reinterpret an assessment recorded under an earlier version.
 - `readiness_scores.completedById` passes the same `enforce_tenant_membership` trigger as tasks and reports, in its `@company` form: the organization is resolved through `companyId`, so an assessment can never credit a user from another firm.
@@ -108,6 +112,7 @@ The current release provides a dashboard-first SaaS shell for client readiness m
 ## Gotchas
 
 - Run database commands from the PeppolFlow package: `db:generate`, `db:migrate`, and `db:seed`.
+- An operation with both path and query parameters makes orval emit `<Operation>Params` twice: the path-parameter schema in `lib/api-zod/src/generated/api.ts` and the query-parameter type in `generated/types`. Two star exports cannot carry one name (TS2308), so `lib/api-zod/src/index.ts` re-exports that name explicitly from the schemas. Add a line there when the contract gains another such operation — the library build fails until you do.
 - In the OpenAPI contract, score/count fields use `type: number`; this workspace's generated Zod target does not support the emitted `z.int()` helper. For the same reason, avoid `format: email` — it emits a Zod v4 helper the pinned Zod 3 lacks.
 - Orval runs with `clean: true`, so a failed generation leaves `lib/api-client-react/src/generated/` empty until the spec is fixed and codegen rerun.
 - The workspace excludes non-linux esbuild and rollup binaries on purpose, so vitest and the build only run on the linux deployment target. Typecheck runs anywhere.

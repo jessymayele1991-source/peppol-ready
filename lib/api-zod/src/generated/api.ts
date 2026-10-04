@@ -271,6 +271,7 @@ export const CalculateCompanyReadinessResponse = zod.object({
   "companyId": zod.string(),
   "engineVersion": zod.number().describe('The scoring rules that produced this assessment. A score recorded under an earlier version is never reinterpreted.'),
   "completedById": zod.string().nullable().describe('The user who completed it, as recorded by the server.'),
+  "completedByName": zod.string().nullable().describe('The name of that user at the time of reading, or null when the assessment was recorded before this was tracked or the user has since been removed from the workspace. History outlives staff.'),
   "score": zod.number().min(calculateCompanyReadinessResponseScoreMin).max(calculateCompanyReadinessResponseScoreMax),
   "status": zod.enum(['READY', 'CONFIGURING', 'AT_RISK', 'NOT_REGISTERED']),
   "riskLevel": zod.enum(['info', 'warning', 'critical']),
@@ -320,7 +321,107 @@ export const GetLatestCompanyAssessmentResponse = zod.object({
   "companyId": zod.string(),
   "engineVersion": zod.number().describe('The scoring rules that produced this assessment. A score recorded under an earlier version is never reinterpreted.'),
   "completedById": zod.string().nullable().describe('The user who completed it, as recorded by the server.'),
+  "completedByName": zod.string().nullable().describe('The name of that user at the time of reading, or null when the assessment was recorded before this was tracked or the user has since been removed from the workspace. History outlives staff.'),
   "score": zod.number().min(getLatestCompanyAssessmentResponseScoreMin).max(getLatestCompanyAssessmentResponseScoreMax),
+  "status": zod.enum(['READY', 'CONFIGURING', 'AT_RISK', 'NOT_REGISTERED']),
+  "riskLevel": zod.enum(['info', 'warning', 'critical']),
+  "factors": zod.array(zod.object({
+  "key": zod.string(),
+  "label": zod.string(),
+  "weight": zod.number(),
+  "passed": zod.boolean(),
+  "earnedPoints": zod.number(),
+  "message": zod.string()
+})),
+  "risks": zod.array(zod.object({
+  "code": zod.string(),
+  "label": zod.string(),
+  "severity": zod.enum(['info', 'warning', 'critical']),
+  "message": zod.string(),
+  "remediation": zod.string()
+})),
+  "checks": zod.array(zod.object({
+  "key": zod.string(),
+  "passed": zod.boolean(),
+  "evidence": zod.string().nullable()
+}).describe('One control point of a recorded assessment, with the evidence note the accountant stored for it.')),
+  "calculatedAt": zod.coerce.date()
+})
+
+
+/**
+ * The assessment history of a client of the session's organization, newest first, paginated on the server. Rows carry the score, its change against the previous assessment, who recorded it and under which scoring rules; control points and evidence notes are only in the single-assessment response. Readable for an archived client.
+ * @summary List a client's readiness assessments
+ */
+export const listCompanyAssessmentsPathCompanyIdMax = 64;
+
+
+
+export const ListCompanyAssessmentsParams = zod.object({
+  "companyId": zod.coerce.string().min(1).max(listCompanyAssessmentsPathCompanyIdMax)
+})
+
+
+export const listCompanyAssessmentsQueryPageSizeMax = 100;
+
+
+
+export const ListCompanyAssessmentsQueryParams = zod.object({
+  "page": zod.coerce.number().min(1).optional(),
+  "pageSize": zod.coerce.number().min(1).max(listCompanyAssessmentsQueryPageSizeMax).optional()
+})
+
+export const listCompanyAssessmentsResponseItemsItemScoreMin = 0;
+export const listCompanyAssessmentsResponseItemsItemScoreMax = 100;
+
+
+
+export const ListCompanyAssessmentsResponse = zod.object({
+  "items": zod.array(zod.object({
+  "assessmentId": zod.string(),
+  "calculatedAt": zod.coerce.date(),
+  "score": zod.number().min(listCompanyAssessmentsResponseItemsItemScoreMin).max(listCompanyAssessmentsResponseItemsItemScoreMax),
+  "status": zod.enum(['READY', 'CONFIGURING', 'AT_RISK', 'NOT_REGISTERED']),
+  "engineVersion": zod.number(),
+  "completedById": zod.string().nullable(),
+  "completedByName": zod.string().nullable(),
+  "riskCount": zod.number(),
+  "previousScore": zod.number().nullable().describe('The score of the assessment before this one, or null when this is the first one or the previous one used other scoring rules.'),
+  "scoreDelta": zod.number().nullable().describe('This score minus the previous one. Null whenever previousScore is null, so a change in the rules is never presented as progress.')
+}).describe('One row of a client\'s assessment history. Carries no control points and no evidence notes: those are only in the single-assessment response.')),
+  "page": zod.number(),
+  "pageSize": zod.number(),
+  "total": zod.number()
+})
+
+
+/**
+ * One recorded assessment of a client of the session's organization, with its control points and the evidence notes behind them. An assessment of another client, or of another organization, answers 404.
+ * @summary Get one readiness assessment
+ */
+export const getCompanyAssessmentPathCompanyIdMax = 64;
+
+export const getCompanyAssessmentPathAssessmentIdMax = 64;
+
+
+
+export const GetCompanyAssessmentParams = zod.object({
+  "companyId": zod.coerce.string().min(1).max(getCompanyAssessmentPathCompanyIdMax),
+  "assessmentId": zod.coerce.string().min(1).max(getCompanyAssessmentPathAssessmentIdMax)
+})
+
+export const getCompanyAssessmentResponseScoreMin = 0;
+export const getCompanyAssessmentResponseScoreMax = 100;
+
+
+
+export const GetCompanyAssessmentResponse = zod.object({
+  "assessmentId": zod.string(),
+  "companyId": zod.string(),
+  "engineVersion": zod.number().describe('The scoring rules that produced this assessment. A score recorded under an earlier version is never reinterpreted.'),
+  "completedById": zod.string().nullable().describe('The user who completed it, as recorded by the server.'),
+  "completedByName": zod.string().nullable().describe('The name of that user at the time of reading, or null when the assessment was recorded before this was tracked or the user has since been removed from the workspace. History outlives staff.'),
+  "score": zod.number().min(getCompanyAssessmentResponseScoreMin).max(getCompanyAssessmentResponseScoreMax),
   "status": zod.enum(['READY', 'CONFIGURING', 'AT_RISK', 'NOT_REGISTERED']),
   "riskLevel": zod.enum(['info', 'warning', 'critical']),
   "factors": zod.array(zod.object({

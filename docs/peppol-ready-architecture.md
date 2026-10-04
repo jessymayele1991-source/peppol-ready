@@ -60,6 +60,10 @@ Een beoordeling wordt opgeslagen als één `readiness_scores`-rij met vijf `read
 
 `GET /companies/:companyId/readiness/latest` geeft de laatste beoordeling terug (204 als die niet bestaat) in exact dezelfde vorm als het antwoord op het opslaan, zodat het dossier na herladen hetzelfde toont.
 
+De historiek is read-only. `GET /companies/:companyId/readiness/assessments` geeft de beoordelingen nieuwste eerst, gepagineerd met `page`, `pageSize` en `total`. Een rij bevat datum, score, de verandering tegenover de vorige beoordeling, status, beoordelaar, regelversie en het aantal risico's — nooit een bewijsnotitie. `GET /companies/:companyId/readiness/assessments/{assessmentId}` geeft één beoordeling volledig, inclusief controlepunten en bewijs, en antwoordt 404 voor een beoordeling van een andere klant of een ander kantoor.
+
+De verandering tegenover de vorige beoordeling wordt alleen vermeld als beide onder dezelfde `engineVersion` zijn berekend; anders zijn `previousScore` en `scoreDelta` leeg, zodat een regelwijziging nooit als vooruitgang wordt gelezen.
+
 Score en status worden gelezen uit de opgeslagen beoordeling, nooit opnieuw berekend. De precedentie is: laatste beoordeling, anders de kolommen op `companies` (voor een klant die nog niet beoordeeld is). Risico's komen uit de opgeslagen momentopname in `details.risks`; ontbreekt die of is ze onvolledig — zoals bij beoordelingen van voor deze consolidatie — dan worden ze afgeleid uit de opgeslagen antwoorden. Verouderingsrisico's (`ASSESSMENT_MISSING`, `ASSESSMENT_STALE`) en incidentrisico's (`OPEN_CRITICAL_INCIDENT`) hangen van het huidige moment af en worden wél bij elke uitvraag bepaald.
 
 Een uitbreiding van de vragenlijst naar tien controlepunten is een openstaande beslissing voor de volgende fase, niet een bestaand ontwerp. Vier van de eerder beoogde punten (KvK-nummer, btw-nummer, e-mailadres, ERP-software) zijn stamdata op `Company`; of die meewegen in de score moet dan expliciet worden besloten.
@@ -88,7 +92,7 @@ Een uitbreiding van de vragenlijst naar tien controlepunten is een openstaande b
 2. Tab Gereedheid: vijf gewogen controlepunten beoordelen met een bewijsnotitie per vraag.
 3. Verklaarbare score met status, per controlepunt gehaald of niet, en het bewijs erbij.
 4. Risico's met aanbevolen remediatie; omzetten naar taken volgt in een latere fase.
-5. Historie en auditactiviteit volgen in fase 2C.
+5. Historiek: beoordelingen nieuwste eerst met scoreverloop; een rij klapt open en toont die beoordeling volledig, zodat twee momenten naast elkaar gelegd kunnen worden. Auditactiviteit inzien volgt later.
 
 ### Taken, compliance en rapporten
 

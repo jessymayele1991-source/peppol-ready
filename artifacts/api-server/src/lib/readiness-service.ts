@@ -200,6 +200,7 @@ function toAssessmentResponse(assessment: {
   companyId: string;
   engineVersion: number;
   completedById: string | null;
+  completedByName: string | null;
   score: number;
   status: PeppolStatus;
   checkedAt: Date;
@@ -214,6 +215,7 @@ function toAssessmentResponse(assessment: {
     companyId: assessment.companyId,
     engineVersion: assessment.engineVersion,
     completedById: assessment.completedById,
+    completedByName: assessment.completedByName,
     score: assessment.score,
     status: assessment.status as PeppolReadinessStatus,
     riskLevel: riskLevelOf(risks),
@@ -240,8 +242,18 @@ const assessmentSelect = {
   status: true,
   checkedAt: true,
   details: true,
+  // The name as it is today, resolved through the relation rather than stored:
+  // a renamed colleague reads correctly, and a removed one reads as null
+  // because the foreign key clears itself (onDelete: SetNull).
+  completedBy: { select: { name: true } },
   checks: { select: { key: true, passed: true, evidence: true }, orderBy: { key: "asc" } },
 } as const satisfies Prisma.ReadinessScoreSelect;
+
+/** Flattens the selected relation into what the response builder expects. */
+function withCompletedByName<T extends { completedBy: { name: string } | null }>(assessment: T) {
+  const { completedBy, ...rest } = assessment;
+  return { ...rest, completedByName: completedBy?.name ?? null };
+}
 
 /**
  * The most recent assessment of a client in the caller's organization, or null
@@ -265,7 +277,118 @@ export async function getLatestCompanyAssessment(
     select: assessmentSelect,
   });
 
-  return { found: true as const, assessment: assessment ? toAssessmentResponse(assessment) : null };
+  return {
+    found: true as const,
+    assessment: assessment ? toAssessmentResponse(withCompletedByName(assessment)) : null,
+  };
+}
+
+const DEFAULT_HISTORY_PAGE_SIZE = 10;
+
+/** One row of the history: no control points, so no evidence notes. */
+const summarySelect = {
+  id: true,
+  engineVersion: true,
+  completedById: true,
+  completedBy: { select: { name: true } },
+  score: true,
+  status: true,
+  checkedAt: true,
+  details: true,
+} as const satisfies Prisma.ReadinessScoreSelect;
+
+type AssessmentRow = Prisma.ReadinessScoreGetPayload<{ select: typeof summarySelect }>;
+
+/**
+ * A history row. The change against the previous assessment is only stated when
+ * both were scored under the same rules: after an engine change, "from 65 to 80"
+ * would otherwise read as progress where the rules simply moved.
+ */
+function toSummary(assessment: AssessmentRow, previous: AssessmentRow | undefined) {
+  const comparable = previous !== undefined && previous.engineVersion === assessment.engineVersion;
+  const risks = readStoredRisks(assessment.details) ??
+    calculateReadiness(readAssessmentInput(assessment.details)).risks;
+
+  return {
+    assessmentId: assessment.id,
+    calculatedAt: assessment.checkedAt,
+    score: assessment.score,
+    status: assessment.status as PeppolReadinessStatus,
+    engineVersion: assessment.engineVersion,
+    completedById: assessment.completedById,
+    completedByName: assessment.completedBy?.name ?? null,
+    riskCount: risks.length,
+    previousScore: comparable ? previous.score : null,
+    scoreDelta: comparable ? assessment.score - previous.score : null,
+  };
+}
+
+/**
+ * A client's assessment history, newest first. Tenant-scoped twice over: the
+ * client is looked up within the caller's organization, and the rows are
+ * filtered through that company again.
+ *
+ * One row beyond the page is read so that the oldest row on the page can still
+ * state its change against its predecessor; it is dropped before answering.
+ */
+export async function listCompanyAssessments(
+  actor: { userId: string; organizationId: string },
+  companyId: string,
+  query: { page?: number; pageSize?: number } = {},
+) {
+  const page = query.page ?? 1;
+  const pageSize = query.pageSize ?? DEFAULT_HISTORY_PAGE_SIZE;
+
+  const company = await prisma.company.findFirst({
+    where: { id: companyId, organizationId: actor.organizationId },
+    select: { id: true },
+  });
+  if (!company) return { found: false as const };
+
+  const where: Prisma.ReadinessScoreWhereInput = {
+    companyId,
+    company: { organizationId: actor.organizationId },
+  };
+  // `id` breaks ties on identical timestamps, so paging can neither repeat nor
+  // skip a row.
+  const [total, rows] = await prisma.$transaction([
+    prisma.readinessScore.count({ where }),
+    prisma.readinessScore.findMany({
+      where,
+      select: summarySelect,
+      orderBy: [{ checkedAt: "desc" }, { id: "desc" }],
+      skip: (page - 1) * pageSize,
+      take: pageSize + 1,
+    }),
+  ]);
+
+  const items = rows
+    .slice(0, pageSize)
+    .map((assessment, index) => toSummary(assessment, rows[index + 1]));
+
+  return { found: true as const, page: { items, page, pageSize, total } };
+}
+
+/**
+ * One assessment of one client, with its control points and evidence. Filtered
+ * on all three of assessment, client and organization: an assessment id alone,
+ * or an id paired with the wrong client, must not reach a row.
+ */
+export async function getCompanyAssessment(
+  actor: { userId: string; organizationId: string },
+  companyId: string,
+  assessmentId: string,
+) {
+  const assessment = await prisma.readinessScore.findFirst({
+    where: {
+      id: assessmentId,
+      companyId,
+      company: { organizationId: actor.organizationId },
+    },
+    select: assessmentSelect,
+  });
+
+  return assessment ? toAssessmentResponse(withCompletedByName(assessment)) : null;
 }
 
 export async function getReadinessDashboard(organizationId: string) {
@@ -541,11 +664,19 @@ export async function calculateAndPersistCompanyReadiness(
     return stored.id;
   });
 
+  // Read after the transaction, by primary key: the name is presentation, and
+  // nothing about the recorded assessment depends on it.
+  const completedBy = await prisma.user.findUnique({
+    where: { id: actor.userId },
+    select: { name: true },
+  });
+
   return toAssessmentResponse({
     id: recorded,
     companyId,
     engineVersion: ENGINE_VERSION,
     completedById: actor.userId,
+    completedByName: completedBy?.name ?? null,
     score: assessment.score,
     status: assessment.status as PeppolStatus,
     checkedAt,

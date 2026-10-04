@@ -21,6 +21,7 @@ import type {
 
 import type {
   ApiError,
+  AssessmentPage,
   BadRequestResponse,
   ClientContact,
   ClientContactInput,
@@ -33,6 +34,7 @@ import type {
   ForbiddenResponse,
   HealthStatus,
   ListCompaniesParams,
+  ListCompanyAssessmentsParams,
   LoginInput,
   NotFoundResponse,
   PayloadTooLargeResponse,
@@ -734,6 +736,179 @@ export function useGetLatestCompanyAssessment<TData = Awaited<ReturnType<typeof 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetLatestCompanyAssessmentQueryOptions(companyId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListCompanyAssessmentsUrl = (companyId: string,
+    params?: ListCompanyAssessmentsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/companies/${companyId}/readiness/assessments?${stringifiedParams}` : `/api/companies/${companyId}/readiness/assessments`
+}
+
+/**
+ * The assessment history of a client of the session's organization, newest first, paginated on the server. Rows carry the score, its change against the previous assessment, who recorded it and under which scoring rules; control points and evidence notes are only in the single-assessment response. Readable for an archived client.
+ * @summary List a client's readiness assessments
+ */
+export const listCompanyAssessments = async (companyId: string,
+    params?: ListCompanyAssessmentsParams, options?: Parameters<typeof customFetch>[1]): Promise<AssessmentPage> => {
+
+  return customFetch<AssessmentPage>(getListCompanyAssessmentsUrl(companyId,params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListCompanyAssessmentsQueryKey = (companyId: string,
+    params?: ListCompanyAssessmentsParams,) => {
+    return [
+    `/api/companies/${companyId}/readiness/assessments`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListCompanyAssessmentsQueryOptions = <TData = Awaited<ReturnType<typeof listCompanyAssessments>>, TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>>(companyId: string,
+    params?: ListCompanyAssessmentsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCompanyAssessments>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListCompanyAssessmentsQueryKey(companyId,params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCompanyAssessments>>> = ({ signal }) => listCompanyAssessments(companyId,params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: companyId !== null && companyId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCompanyAssessments>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListCompanyAssessmentsQueryResult = NonNullable<Awaited<ReturnType<typeof listCompanyAssessments>>>
+export type ListCompanyAssessmentsQueryError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>
+
+
+/**
+ * @summary List a client's readiness assessments
+ */
+
+export function useListCompanyAssessments<TData = Awaited<ReturnType<typeof listCompanyAssessments>>, TError = ErrorType<BadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>>(
+ companyId: string,
+    params?: ListCompanyAssessmentsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCompanyAssessments>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListCompanyAssessmentsQueryOptions(companyId,params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetCompanyAssessmentUrl = (companyId: string,
+    assessmentId: string,) => {
+
+
+
+
+  return `/api/companies/${companyId}/readiness/assessments/${assessmentId}`
+}
+
+/**
+ * One recorded assessment of a client of the session's organization, with its control points and the evidence notes behind them. An assessment of another client, or of another organization, answers 404.
+ * @summary Get one readiness assessment
+ */
+export const getCompanyAssessment = async (companyId: string,
+    assessmentId: string, options?: Parameters<typeof customFetch>[1]): Promise<ReadinessAssessment> => {
+
+  return customFetch<ReadinessAssessment>(getGetCompanyAssessmentUrl(companyId,assessmentId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetCompanyAssessmentQueryKey = (companyId: string,
+    assessmentId: string,) => {
+    return [
+    `/api/companies/${companyId}/readiness/assessments/${assessmentId}`
+    ] as const;
+    }
+
+
+export const getGetCompanyAssessmentQueryOptions = <TData = Awaited<ReturnType<typeof getCompanyAssessment>>, TError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>>(companyId: string,
+    assessmentId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCompanyAssessment>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCompanyAssessmentQueryKey(companyId,assessmentId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCompanyAssessment>>> = ({ signal }) => getCompanyAssessment(companyId,assessmentId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: companyId !== null && companyId !== undefined && assessmentId !== null && assessmentId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCompanyAssessment>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetCompanyAssessmentQueryResult = NonNullable<Awaited<ReturnType<typeof getCompanyAssessment>>>
+export type GetCompanyAssessmentQueryError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>
+
+
+/**
+ * @summary Get one readiness assessment
+ */
+
+export function useGetCompanyAssessment<TData = Awaited<ReturnType<typeof getCompanyAssessment>>, TError = ErrorType<UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>>(
+ companyId: string,
+    assessmentId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCompanyAssessment>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetCompanyAssessmentQueryOptions(companyId,assessmentId,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

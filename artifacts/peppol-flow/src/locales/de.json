@@ -333,6 +333,18 @@
       "errors": {
         "invalid": "Prüfen Sie Ihre Antworten und Notizen."
       },
+      "history": {
+        "title": "Verlauf",
+        "eyebrow": "Bewertungen im Zeitverlauf",
+        "empty": "Noch keine Bewertungen im Verlauf.",
+        "loadError": "Der Verlauf konnte nicht geladen werden",
+        "unknownAssessor": "unbekannte Mitarbeiterin oder Mitarbeiter",
+        "riskCount": "{{count}} Risiken",
+        "delta": {
+          "equal": "unverändert",
+          "incomparable": "andere Regelversion"
+        }
+      },
       "questions": {
         "participantRegistered": {
           "label": "Ist der Mandant im Peppol-Netz registriert?",

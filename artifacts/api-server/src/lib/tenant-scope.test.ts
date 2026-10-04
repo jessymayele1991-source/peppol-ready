@@ -41,8 +41,8 @@ describe("tenant context", () => {
       ...source.matchAll(/router\.(?:get|post|patch|delete)\(([\s\S]*?)async\s*\(/g),
     ].map((match) => match[1] ?? "");
 
-    // Dashboard, calculate, and the latest assessment.
-    expect(chains).toHaveLength(3);
+    // Dashboard, calculate, the latest assessment, the history and one assessment.
+    expect(chains).toHaveLength(5);
     for (const chain of chains) {
       expect(chain).toContain("requireAuth");
       expect(chain).toMatch(/requireCapability\("(clients\.view|scans\.write)"\)/);
@@ -57,6 +57,37 @@ describe("tenant context", () => {
     expect(source).toMatch(
       /prisma\.company\.findFirst\(\{\s*where:\s*\{\s*id:\s*companyId,\s*organizationId:/,
     );
+  });
+
+  it("scopes every assessment read through the company's organization", () => {
+    const source = read("lib/readiness-service.ts");
+    // An assessment has no organization of its own; the company it belongs to
+    // carries the tenant. Every read must say so, either inline or through the
+    // shared filter the history list builds.
+    const scoped = "company: { organizationId: actor.organizationId }";
+    const reads = [...source.matchAll(/prisma\.readinessScore\.(findFirst|findMany|count)\(/g)];
+
+    // Every read either names the company's organization inline — the dashboard
+    // trend uses its own organizationId parameter — or reuses the scoped filter
+    // the history list builds.
+    expect(reads.length).toBeGreaterThanOrEqual(4);
+    for (const read of reads) {
+      const call = source.slice(read.index ?? 0, (read.index ?? 0) + 260);
+      expect(
+        /company: \{ organizationId/.test(call) || /\{\s*where\s*[,}]/.test(call),
+        read[0],
+      ).toBe(true);
+    }
+
+    // The shared filter of the history list, and the three-way filter of a
+    // single assessment: neither may be reached by id alone.
+    expect(source).toContain(`const where: Prisma.ReadinessScoreWhereInput = {
+    companyId,
+    ${scoped},
+  };`);
+    expect(source).toContain(`      id: assessmentId,
+      companyId,
+      ${scoped},`);
   });
 
   it("records the acting user on the audit event", () => {

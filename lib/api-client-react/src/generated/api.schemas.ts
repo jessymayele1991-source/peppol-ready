@@ -481,6 +481,11 @@ export interface ReadinessAssessment {
      */
   completedById: string | null;
   /**
+     * The name of that user at the time of reading, or null when the assessment was recorded before this was tracked or the user has since been removed from the workspace. History outlives staff.
+     * @nullable
+     */
+  completedByName: string | null;
+  /**
      * @minimum 0
      * @maximum 100
      */
@@ -491,6 +496,43 @@ export interface ReadinessAssessment {
   risks: RiskIndicator[];
   checks: AssessmentCheck[];
   calculatedAt: string;
+}
+
+/**
+ * One row of a client's assessment history. Carries no control points and no evidence notes: those are only in the single-assessment response.
+ */
+export interface AssessmentSummary {
+  assessmentId: string;
+  calculatedAt: string;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  score: number;
+  status: PeppolStatus;
+  engineVersion: number;
+  /** @nullable */
+  completedById: string | null;
+  /** @nullable */
+  completedByName: string | null;
+  riskCount: number;
+  /**
+     * The score of the assessment before this one, or null when this is the first one or the previous one used other scoring rules.
+     * @nullable
+     */
+  previousScore: number | null;
+  /**
+     * This score minus the previous one. Null whenever previousScore is null, so a change in the rules is never presented as progress.
+     * @nullable
+     */
+  scoreDelta: number | null;
+}
+
+export interface AssessmentPage {
+  items: AssessmentSummary[];
+  page: number;
+  pageSize: number;
+  total: number;
 }
 
 export interface DashboardKpis {
@@ -598,6 +640,18 @@ export type PayloadTooLargeResponse = ApiError;
  * Too many attempts; retry after the number of seconds in Retry-After
  */
 export type TooManyRequestsResponse = ApiError;
+
+export type ListCompanyAssessmentsParams = {
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+pageSize?: number;
+};
 
 export type ListCompaniesParams = {
 /**

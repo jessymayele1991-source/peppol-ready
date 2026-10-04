@@ -74,6 +74,22 @@ export function createFakePrisma() {
       meta: { target: ["email"] },
     });
 
+  /** What the service selects alongside an assessment: its control points and who completed it. */
+  const withChecks = (score: Row) => ({
+    ...score,
+    completedBy:
+      typeof score["completedById"] === "string"
+        ? { name: (state.users.get(score["completedById"] as string)?.["name"] as string) ?? "Unknown" }
+        : null,
+    checks: state.readinessChecks
+      .filter((check) => check["scoreId"] === score["id"])
+      .map((check) => ({
+        key: check["key"],
+        passed: check["passed"],
+        evidence: check["evidence"] ?? null,
+      })),
+  });
+
   const prisma = {
     user: {
       findUnique: ({ where }: { where: { email?: string; id?: string } }) =>
@@ -186,25 +202,34 @@ export function createFakePrisma() {
           state.readinessScores.push(stored);
           return stored;
         }),
-      findFirst: ({ where }: { where: { companyId: string } }) =>
+      findFirst: ({ where }: { where: { id?: string; companyId: string } }) =>
         lazy(() => {
+          // Newest first, as the service orders them; the fake keeps insertion
+          // order, so the last match is the newest.
           const score = [...state.readinessScores]
             .reverse()
-            .find((stored) => stored["companyId"] === where.companyId);
-          if (!score) return null;
-          // The service selects the control points alongside the assessment.
-          return {
-            ...score,
-            checks: state.readinessChecks
-              .filter((check) => check["scoreId"] === score["id"])
-              .map((check) => ({
-                key: check["key"],
-                passed: check["passed"],
-                evidence: check["evidence"] ?? null,
-              })),
-          };
+            .find(
+              (stored) =>
+                stored["companyId"] === where.companyId &&
+                (where.id === undefined || stored["id"] === where.id),
+            );
+          return score ? withChecks(score) : null;
         }),
-      findMany: () => lazy(() => []),
+      count: ({ where }: { where?: { companyId?: string } } = {}) =>
+        lazy(
+          () =>
+            state.readinessScores.filter(
+              (score) => where?.companyId === undefined || score["companyId"] === where.companyId,
+            ).length,
+        ),
+      findMany: ({ where, skip = 0, take }: { where?: { companyId?: string }; skip?: number; take?: number } = {}) =>
+        lazy(() => {
+          const matching = [...state.readinessScores]
+            .filter((score) => where?.companyId === undefined || score["companyId"] === where.companyId)
+            .reverse();
+          const page = take === undefined ? matching.slice(skip) : matching.slice(skip, skip + take);
+          return page.map(withChecks);
+        }),
     },
     readinessCheck: {
       createMany: ({ data }: { data: Row[] }) =>

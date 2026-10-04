@@ -333,6 +333,18 @@
       "errors": {
         "invalid": "Please check your answers and notes."
       },
+      "history": {
+        "title": "History",
+        "eyebrow": "Assessments over time",
+        "empty": "No assessments in the history yet.",
+        "loadError": "The history could not be loaded",
+        "unknownAssessor": "unknown colleague",
+        "riskCount": "{{count}} risks",
+        "delta": {
+          "equal": "unchanged",
+          "incomparable": "other rules version"
+        }
+      },
       "questions": {
         "participantRegistered": {
           "label": "Is the client registered in the Peppol network?",

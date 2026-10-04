@@ -22,6 +22,11 @@ export interface ReadinessAssessment {
      */
   completedById: string | null;
   /**
+     * The name of that user at the time of reading, or null when the assessment was recorded before this was tracked or the user has since been removed from the workspace. History outlives staff.
+     * @nullable
+     */
+  completedByName: string | null;
+  /**
      * @minimum 0
      * @maximum 100
      */

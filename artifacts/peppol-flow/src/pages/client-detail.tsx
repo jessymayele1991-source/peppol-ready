@@ -18,6 +18,7 @@ import { CompanyFormSheet } from '@/components/clients/company-form';
 import { ContactFormSheet } from '@/components/clients/contact-form';
 import { AssessmentForm } from '@/components/readiness/assessment-form';
 import { AssessmentResult } from '@/components/readiness/assessment-result';
+import { AssessmentTimeline } from '@/components/readiness/assessment-timeline';
 import { Badge, Button, Card, EmptyState, type PeppolStatusCode } from '@/components/peppol-ui';
 import {
   AlertDialog,
@@ -271,6 +272,10 @@ export function ClientDetail() {
                 }
               />
             )}
+          </Card>
+
+          <Card className="mt-5" title={t('clients.readiness.history.title')} eyebrow={t('clients.readiness.history.eyebrow')}>
+            <AssessmentTimeline companyId={companyId} />
           </Card>
         </TabsContent>
 

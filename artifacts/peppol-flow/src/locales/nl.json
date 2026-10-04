@@ -333,6 +333,18 @@
       "errors": {
         "invalid": "Controleer je antwoorden en toelichtingen."
       },
+      "history": {
+        "title": "Historiek",
+        "eyebrow": "Beoordelingen in de tijd",
+        "empty": "Nog geen beoordelingen in de historiek.",
+        "loadError": "De historiek kon niet worden geladen",
+        "unknownAssessor": "onbekende medewerker",
+        "riskCount": "{{count}} risico's",
+        "delta": {
+          "equal": "gelijk",
+          "incomparable": "andere regelversie"
+        }
+      },
       "questions": {
         "participantRegistered": {
           "label": "Is de klant geregistreerd in het Peppol-netwerk?",

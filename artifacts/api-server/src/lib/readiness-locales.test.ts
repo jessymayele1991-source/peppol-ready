@@ -80,6 +80,26 @@ describe("readiness translations", () => {
     },
   );
 
+  it.each(locales.map((locale) => [locale.code, locale] as const))(
+    "%s labels the assessment history, including every score movement",
+    (_code, locale) => {
+      for (const key of [
+        "clients.readiness.history.title",
+        "clients.readiness.history.eyebrow",
+        "clients.readiness.history.empty",
+        "clients.readiness.history.loadError",
+        "clients.readiness.history.unknownAssessor",
+        "clients.readiness.history.riskCount",
+        "clients.readiness.history.delta.equal",
+        // Shown instead of an arrow when two assessments used different
+        // scoring rules, so a rule change never reads as progress.
+        "clients.readiness.history.delta.incomparable",
+      ]) {
+        expect(message(locale.messages, key), key).toBeTypeOf("string");
+      }
+    },
+  );
+
   it("carries the same keys in every locale", () => {
     const [reference, ...others] = locales;
     const expected = keysOf(reference?.messages).sort();

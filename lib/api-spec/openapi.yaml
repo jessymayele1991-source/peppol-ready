@@ -269,6 +269,72 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+  /companies/{companyId}/readiness/assessments:
+    get:
+      operationId: listCompanyAssessments
+      tags: [readiness]
+      summary: List a client's readiness assessments
+      description: >-
+        The assessment history of a client of the session's organization, newest
+        first, paginated on the server. Rows carry the score, its change against
+        the previous assessment, who recorded it and under which scoring rules;
+        control points and evidence notes are only in the single-assessment
+        response. Readable for an archived client.
+      parameters:
+        - $ref: "#/components/parameters/CompanyId"
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: number
+            minimum: 1
+        - in: query
+          name: pageSize
+          required: false
+          schema:
+            type: number
+            minimum: 1
+            maximum: 100
+      responses:
+        "200":
+          description: A page of assessments, newest first
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssessmentPage"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /companies/{companyId}/readiness/assessments/{assessmentId}:
+    get:
+      operationId: getCompanyAssessment
+      tags: [readiness]
+      summary: Get one readiness assessment
+      description: >-
+        One recorded assessment of a client of the session's organization, with
+        its control points and the evidence notes behind them. An assessment of
+        another client, or of another organization, answers 404.
+      parameters:
+        - $ref: "#/components/parameters/CompanyId"
+        - $ref: "#/components/parameters/AssessmentId"
+      responses:
+        "200":
+          description: The assessment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadinessAssessment"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
   /companies:
     get:
       operationId: listCompanies
@@ -565,6 +631,14 @@ components:
     ContactId:
       in: path
       name: contactId
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 64
+    AssessmentId:
+      in: path
+      name: assessmentId
       required: true
       schema:
         type: string
@@ -1101,6 +1175,12 @@ components:
         completedById:
           type: [string, "null"]
           description: The user who completed it, as recorded by the server.
+        completedByName:
+          type: [string, "null"]
+          description: >-
+            The name of that user at the time of reading, or null when the
+            assessment was recorded before this was tracked or the user has
+            since been removed from the workspace. History outlives staff.
         score:
           type: number
           minimum: 0
@@ -1130,6 +1210,7 @@ components:
           companyId,
           engineVersion,
           completedById,
+          completedByName,
           score,
           status,
           riskLevel,
@@ -1138,6 +1219,68 @@ components:
           checks,
           calculatedAt,
         ]
+    AssessmentSummary:
+      type: object
+      description: >-
+        One row of a client's assessment history. Carries no control points and
+        no evidence notes: those are only in the single-assessment response.
+      properties:
+        assessmentId:
+          type: string
+        calculatedAt:
+          type: string
+          format: date-time
+        score:
+          type: number
+          minimum: 0
+          maximum: 100
+        status:
+          $ref: "#/components/schemas/PeppolStatus"
+        engineVersion:
+          type: number
+        completedById:
+          type: [string, "null"]
+        completedByName:
+          type: [string, "null"]
+        riskCount:
+          type: number
+        previousScore:
+          type: [number, "null"]
+          description: >-
+            The score of the assessment before this one, or null when this is
+            the first one or the previous one used other scoring rules.
+        scoreDelta:
+          type: [number, "null"]
+          description: >-
+            This score minus the previous one. Null whenever previousScore is
+            null, so a change in the rules is never presented as progress.
+      required:
+        [
+          assessmentId,
+          calculatedAt,
+          score,
+          status,
+          engineVersion,
+          completedById,
+          completedByName,
+          riskCount,
+          previousScore,
+          scoreDelta,
+        ]
+    AssessmentPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssessmentSummary"
+        page:
+          type: number
+        pageSize:
+          type: number
+        total:
+          type: number
+      required: [items, page, pageSize, total]
     DashboardKpis:
       type: object
       properties:
